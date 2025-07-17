@@ -2,12 +2,17 @@ from discord.ext import commands
 import discord
 import os
 from dotenv import load_dotenv
+from json_data_helpers import card_collection
+import random
 
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = 1339716688748216392
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+
+# Load cards database at startup
+cards = card_collection()
 
 @bot.event
 async def on_ready():
@@ -30,5 +35,19 @@ async def drop(ctx):
     
     # Announce user is dropping cards
     drop_message = await channel.send(f"🚨 {ctx.author.mention} came to drop some photocards! 🚨")
-    print("Cards available for dropping: ")
+    print("Cards available for dropping: ", cards)
+
+    # Randomly select 3 cards from database
+    dropped_cards = random.sample(cards, 3)
+
+    for card in dropped_cards:
+        await ctx.send(f"{ctx.author.mention} pulled {card['name']}")
+
+    # Embed when user drops cards
+    embed = discord.Embed(
+        title="✨ Card Drop! ✨",
+        description=f"{ctx.author.mention} just dropped some cards!",
+        color=discord.Color.blue()
+    )
+
 bot.run(TOKEN)
