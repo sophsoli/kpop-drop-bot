@@ -30,4 +30,5 @@ async def drop(ctx):
     
     # Announce user is dropping cards
     drop_message = await channel.send(f"🚨 {ctx.author.mention} came to drop some photocards! 🚨")
+    print("Cards available for dropping: ")
 bot.run(TOKEN)
