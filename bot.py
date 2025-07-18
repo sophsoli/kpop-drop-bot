@@ -8,17 +8,20 @@ import random
 from image_helpers import apply_frame, merge_cards_horizontally, resize_image
 import asyncio
 import time
+from collections import defaultdict
 
 FRAME_PATH = "./images/frame.png"
 
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = 1339716688748216392
+CHANNEL_ID = 1336418461240528931
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 # Load cards database at startup
 cards = card_collection()
+
+user_collections = defaultdict(list)
 
 # Rarities
 # rarities = {
@@ -98,7 +101,7 @@ async def drop(ctx):
     print("Cards available for dropping: ", cards)
 
     dropped_cards = []
-    reactions = ["🤞", "👍", "🥰"]
+    reactions = ["🫰", "🫶", "🥰"]
     # Randomly select 3 cards from database
     selected_cards = random.sample(cards, 3)
 
@@ -193,16 +196,42 @@ async def drop(ctx):
                     fought_off_mentions = ", ".join(f"<@{cid}>" for cid in challengers)
                     await ctx.send(f"{user.mention} fought off {fought_off_mentions} and gained a {card['rarity']}-Tier **{card['name']}** photocard! 🤩")
                 else:
-                    card = get_card_by_emoji(emoji, dropped_cards)
                     await ctx.send(f"{user.mention} gained a {card['rarity']}-Tier **{card['name']}** photocard! 🤩")
+            else:
+                card = get_card_by_emoji(emoji, dropped_cards)
+                await ctx.send(f"{user.mention} gained a {card['rarity']}-Tier **{card['name']}** photocard! 🤩")
 
-                claimed[emoji] = user.id
-                already_claimed_users.add(user.id)
-                user_cooldowns[user.id] = now
+            user_collections[user.id].append(card)
+
+            claimed[emoji] = user.id
+            already_claimed_users.add(user.id)
+            user_cooldowns[user.id] = now
 
         except asyncio.TimeoutError:
             break
+@bot.command()
+async def collection(ctx, member: discord.Member = None):
+    # If no member is specified, default to the command author
+    user = member or ctx.author
+    user_id = user.id
+    cards = user_collections.get(user_id, [])
 
+    if not cards:
+        await ctx.send(f"{user.display_name} doesn't have any photocards yet. 😢")
+        return
+    
+    embed = discord.Embed(
+        title=f"📸 {user.display_name}'s Collection",
+        color=discord.Color.blue()
+    )
 
+    for card in cards:
+        embed.add_field(
+            name=f"Sniping {user.display_name}'s collection",
+            value=f"🔥 {card['group']} • {card['name']} • {card['rarity']}",
+            inline=False
+        )
+
+    await ctx.send(embed=embed)
 
 bot.run(TOKEN)
