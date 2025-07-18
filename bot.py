@@ -3,12 +3,13 @@ import discord
 import os
 import io
 from dotenv import load_dotenv
-from json_data_helpers import card_collection
+from json_data_helpers import card_collection, load_collections, save_collections
 import random
 from image_helpers import apply_frame, merge_cards_horizontally, resize_image
 import asyncio
 import time
 from collections import defaultdict
+import uuid
 
 FRAME_PATH = "./images/frame.png"
 
@@ -21,7 +22,7 @@ bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 # Load cards database at startup
 cards = card_collection()
 
-user_collections = defaultdict(list)
+user_collections = defaultdict(list, load_collections())
 
 # Rarities
 # rarities = {
@@ -190,7 +191,10 @@ async def drop(ctx):
             if user.id == user_id:
                 challengers = [cid for cid in claim_challengers[emoji] if cid != user.id]
 
-                card = get_card_by_emoji(emoji, dropped_cards)
+                og_card = get_card_by_emoji(emoji, dropped_cards)
+                card = og_card.copy()
+                card.pop("reaction", None)
+                card["id"] = str(uuid.uuid4())
 
                 if challengers:
                     fought_off_mentions = ", ".join(f"<@{cid}>" for cid in challengers)
@@ -198,10 +202,14 @@ async def drop(ctx):
                 else:
                     await ctx.send(f"{user.mention} gained a {card['rarity']}-Tier **{card['name']}** photocard! 🤩")
             else:
-                card = get_card_by_emoji(emoji, dropped_cards)
+                og_card = get_card_by_emoji(emoji, dropped_cards)
+                card = og_card.copy()
+                card.pop("reaction", None)
+                card["id"] = str(uuid.uuid4())
                 await ctx.send(f"{user.mention} gained a {card['rarity']}-Tier **{card['name']}** photocard! 🤩")
 
-            user_collections[user.id].append(card)
+            user_collections[str(user.id)].append(card)
+            save_collections(user_collections)
 
             claimed[emoji] = user.id
             already_claimed_users.add(user.id)
@@ -213,7 +221,7 @@ async def drop(ctx):
 async def collection(ctx, member: discord.Member = None):
     # If no member is specified, default to the command author
     user = member or ctx.author
-    user_id = user.id
+    user_id = str(user.id)
     cards = user_collections.get(user_id, [])
 
     if not cards:
@@ -227,7 +235,7 @@ async def collection(ctx, member: discord.Member = None):
 
     for card in cards:
         embed.add_field(
-            name=f"Sniping {user.display_name}'s collection",
+            name="",
             value=f"🔥 {card['group']} • {card['name']} • {card['rarity']}",
             inline=False
         )

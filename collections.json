@@ -1,0 +1,40 @@
+{
+    "229803930945585152": [
+        {
+            "name": "Mingyu",
+            "group": "SEVENTEEN",
+            "image": "cards/mingyu.JPG",
+            "rarity": "Common",
+            "color": 11184810
+        },
+        {
+            "name": "Mingyu",
+            "group": "SEVENTEEN",
+            "image": "cards/mingyu.JPG",
+            "rarity": "Common",
+            "color": 11184810
+        },
+        {
+            "name": "Ros\u00e9",
+            "group": "BLACKPINK",
+            "image": "cards/rose.JPG",
+            "rarity": "Common",
+            "color": 11184810
+        },
+        {
+            "name": "Chaewon",
+            "group": "LESSERAFIM",
+            "image": "cards/chaewon.JPG",
+            "rarity": "Rare",
+            "color": 3447003
+        },
+        {
+            "name": "Joshua",
+            "group": "SEVENTEEN",
+            "image": "cards/joshua.JPG",
+            "rarity": "Common",
+            "color": 11184810,
+            "id": "d7437f03-1315-4ad0-8c9a-4d8a1e29b8eb"
+        }
+    ]
+}
