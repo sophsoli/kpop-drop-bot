@@ -2,16 +2,20 @@ import requests
 from PIL import Image
 from io import BytesIO
 
-def apply_frame(card_url, frame_path):
-    # Download card image from URL
-    response = requests.get(card_url)
-    card = Image.open(BytesIO(response.content)).convert("RGBA")
+
+def apply_frame(card_path, frame_path):
+    # # Download card image from URL
+    # response = requests.get(card_url)
+    # card = Image.open(BytesIO(response.content)).convert("RGBA")
 
     # Load Local Frame
     frame = Image.open(frame_path).convert("RGBA")
 
+    # Load card image
+    card_img = Image.open(card_path).convert("RGBA")
+
     #Resize card to match frame size
-    card = card.resize(frame.size)
+    card = card_img.resize(frame.size)
 
     #Merge card and frame
     return Image.alpha_composite(card, frame)

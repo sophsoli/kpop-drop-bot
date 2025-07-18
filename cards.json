@@ -2,16 +2,56 @@
     {
         "name": "Chaewon",
         "group": "LESSERAFIM",
-        "image": "https://media.discordapp.net/attachments/1339477207541878814/1340092206312198228/Kim-Chaewon-31.png?ex=687acf1f&is=68797d9f&hm=4d0db4b45084da56c4fd69927ace60ca2fd57d35ec6de5ea5b56b358f4655362&=&format=webp&quality=lossless&width=645&height=968"
+        "image": "cards/chaewon.JPG"
+    },
+    {
+        "name": "DK",
+        "group": "SEVENTEEN",
+        "image": "cards/dk.JPG"
+    },
+    {
+        "name": "Hanbin",
+        "group": "SOLO",
+        "image": "cards/hanbin.JPG"
+    },
+    {
+        "name": "Joshua",
+        "group": "SEVENTEEN",
+        "image": "cards/joshua.JPG"
+    },
+    {
+        "name": "Jungkook",
+        "group": "BTS",
+        "image": "cards/jungkook.JPG"
     },
     {
         "name": "Mingyu",
         "group": "SEVENTEEN",
-        "image": "https://media.discordapp.net/attachments/1339289261651787786/1339351397530992650/image.png?ex=687ac031&is=68796eb1&hm=b29832083a963cb8e0ee432a0972e7736018960c0f7923cf9a7e97b7339bba2a&=&format=webp&quality=lossless"
+        "image": "cards/mingyu.JPG"
     },
     {
-        "name": "Sophia",
-        "group": "KATSEYE",
-        "image": "https://cdn.discordapp.com/attachments/1339289261651787786/1339350469578850364/422b8be944a5f921f5d42f7e7379af46.png?ex=687abf53&is=68796dd3&hm=04a8c4770818e726492a6ffff13d51cf8cc7a811ee10ce38e405ac73c12b5c5e&"
+        "name": "Rosé",
+        "group": "BLACKPINK",
+        "image": "cards/rose.JPG"
+    },
+    {
+        "name": "Winter",
+        "group": "aespa",
+        "image": "cards/winter.JPG"
+    },
+    {
+        "name": "Wonwoo",
+        "group": "SEVENTEEN",
+        "image": "cards/wonwoo.JPG"
+    },
+    {
+        "name": "Yeji",
+        "group": "ITZY",
+        "image": "cards/yeji.JPG"
+    },
+    {
+        "name": "Yujin",
+        "group": "IVE",
+        "image": "cards/yujin.JPG"
     }
 ]
