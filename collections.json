@@ -31,6 +31,23 @@
             "rarity": "Rare",
             "color": 3447003,
             "id": "706621b4-7acf-4050-8013-43f470061ad0"
+        },
+        {
+            "name": "Chaewon",
+            "group": "LESSERAFIM",
+            "image": "cards/chaewon.JPG",
+            "rarity": "Common",
+            "color": 11184810,
+            "id": "510e5942-dc06-4462-bf1e-4890b10ed748"
+        },
+        {
+            "name": "Jungkook",
+            "group": "BTS",
+            "image": "cards/jungkook.JPG",
+            "rarity": "Rare",
+            "color": 3447003,
+            "short_id": 1,
+            "edition": 1
         }
     ],
     "106626132903788544": [

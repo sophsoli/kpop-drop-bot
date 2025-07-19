@@ -190,27 +190,35 @@ async def drop(ctx):
                 await ctx.send(f"⚠️ Sorry {user.mention} that card is out of stock.")
                 continue
 
-            if user.id == user_id:
-                challengers = [cid for cid in claim_challengers[emoji] if cid != user.id]
+            og_card = get_card_by_emoji(emoji, dropped_cards)
+            card = og_card.copy()
+            card.pop("reaction", None)
 
-                og_card = get_card_by_emoji(emoji, dropped_cards)
-                card = og_card.copy()
-                card.pop("reaction", None)
-                card["id"] = str(uuid.uuid4())
+            user_id_str = str(user.id)
+            user_cards = user_collections[user_id_str]
 
-                if challengers:
-                    fought_off_mentions = ", ".join(f"<@{cid}>" for cid in challengers)
-                    await ctx.send(f"{user.mention} fought off {fought_off_mentions} and gained a {card['rarity']}-Tier **{card['name']}** photocard! 🤩")
+            def get_next_short_id(collection):
+                if not collection:
+                        return 1
                 else:
-                    await ctx.send(f"{user.mention} gained a {card['rarity']}-Tier **{card['name']}** photocard! 🤩")
+                    max_id = max((c.get("short_id", 0) for c in collection), default=0)
+                    return max_id + 1
+            short_id = get_next_short_id(user_cards)
+
+            same_cards = [c for c in user_cards if c["name"] == card["name"] and c["rarity"] == card["rarity"]]
+            edition = len(same_cards) + 1
+
+            card["short_id"] = short_id
+            card["edition"] = edition
+
+            challengers = [cid for cid in claim_challengers[emoji] if cid != user.id]
+            if challengers:
+                fought_off_mentions = ", ".join(f"<@{cid}>" for cid in challengers)
+                await ctx.send(f"{user.mention} fought off {fought_off_mentions} and gained a {card['rarity']}-Tier **{card['name']}** photocard! 🤩")
             else:
-                og_card = get_card_by_emoji(emoji, dropped_cards)
-                card = og_card.copy()
-                card.pop("reaction", None)
-                card["id"] = str(uuid.uuid4())
                 await ctx.send(f"{user.mention} gained a {card['rarity']}-Tier **{card['name']}** photocard! 🤩")
 
-            user_collections[str(user.id)].append(card)
+            user_cards.append(card)
             save_collections(user_collections)
 
             claimed[emoji] = user.id
@@ -255,7 +263,7 @@ pending_trades = {}
 
 # COMMAND TRADE !trade
 @bot.command()
-async def trade(ctx, member: discord.Member, card_id: str):
+async def trade(ctx, member: discord.Member, card_short_id: int):
     sender_id = str(ctx.author.id)
     recipient_id = str(member.id)
 
@@ -265,7 +273,7 @@ async def trade(ctx, member: discord.Member, card_id: str):
         await ctx.send("You don't have any cards to trade.")
         return
     
-    card = next((c for c in user_collections[sender_id] if c.get("id") == card_id), None)
+    card = next((c for c in user_collections[sender_id] if c.get("short_id") == card_short_id), None)
     if not card:
         await ctx.send("Card not found in your inventory.")
         return
@@ -274,7 +282,7 @@ async def trade(ctx, member: discord.Member, card_id: str):
         pending_trades[sender_id] = {}
 
     pending_trades[sender_id][recipient_id] = {
-        "card_id": card["id"],
+        "card_id": card["short_id"],
         "status": "pending"
     }
 
