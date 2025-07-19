@@ -26,20 +26,6 @@ user_collections = defaultdict(list, ensure_card_ids(load_collections()))
 
 user_emojis = defaultdict(lambda: "🔥", load_user_emojis())  # Default to fire emoji
 
-# Rarities
-# rarities = {
-#     "Common": 50,
-#     "Rare": 25,
-#     "Epic": 15,
-#     "Legendary": 10
-# }
-
-
-# # Randomize rarity to each card
-# def assign_random_rarity(card):
-#     rarity = random.choices(list(rarities.keys()), list(rarities.values()), k=1)[0]
-#     card['rarity'] = rarity
-#     return card
 
 RARITY_TIERS = {
     "Common": {"color": 0xAAAAAA, "chance": 60},
@@ -68,6 +54,10 @@ def get_card_by_emoji(emoji, dropped_cards):
         if card['reaction'] == emoji:
             return card
     return None
+
+def generate_card_uid(name, short_id, edition):
+    name_code = ''.join(filter(str.isalpha, name.upper()))[:4]
+    return f"{name_code}{short_id:02}{edition:02}"
 
 @bot.event
 async def on_ready():
@@ -210,6 +200,7 @@ async def drop(ctx):
 
             card["short_id"] = short_id
             card["edition"] = edition
+            card["uid"] = generate_card_uid(card["name"], short_id, edition)
 
             challengers = [cid for cid in claim_challengers[emoji] if cid != user.id]
             if challengers:
@@ -251,9 +242,20 @@ async def collection(ctx, member: discord.Member = None):
     )
 
     for card in cards:
+        short_id = card.get("short_id", 0)
+        edition = card.get("edition", 1)
+        name = card.get("name", "Unknown")
+        group = card.get("group", "Unknown")
+        rarity = card.get("rarity", "Unknown")
+
+        uid = card.get("uid")
+        if not uid:
+            name_code = ''.join(filter(str.isalpha, name.upper()))[:4]
+            uid = f"{name_code}{short_id:02}{edition:02}"
+
         embed.add_field(
             name="",
-            value=f"{emoji} {card['group']} • {card['name']} • {card['rarity']}",
+            value=f"{emoji} {card['group']} • {card['name']} • {card['rarity']} • Edition {edition}",
             inline=False
         )
 
@@ -263,26 +265,30 @@ pending_trades = {}
 
 # COMMAND TRADE !trade
 @bot.command()
-async def trade(ctx, member: discord.Member, card_short_id: int):
+async def trade(ctx, member: discord.Member, uid: str):
     sender_id = str(ctx.author.id)
     recipient_id = str(member.id)
 
-    user_collections = defaultdict(list, load_collections())
+    # Reload Collection
+    user_collections = defaultdict(list, ensure_card_ids(load_collections()))
+
+    # Get Sender's Cards
+    sender_cards = user_collections.get(sender_id, [])
 
     if sender_id not in user_collections:
         await ctx.send("You don't have any cards to trade.")
         return
     
-    card = next((c for c in user_collections[sender_id] if c.get("short_id") == card_short_id), None)
+    card = next((c for c in sender_cards if c.get("uid") == uid), None)
     if not card:
-        await ctx.send("Card not found in your inventory.")
+        await ctx.send(f"❌ You don't have a card with UID `{uid}` in your collection.")
         return
     
     if sender_id not in pending_trades:
         pending_trades[sender_id] = {}
 
     pending_trades[sender_id][recipient_id] = {
-        "card_id": card["short_id"],
+        "uid": uid,
         "status": "pending"
     }
 
@@ -303,18 +309,19 @@ async def on_reaction_add(reaction, user):
 
             if trade.get("message_id") == message.id and str(user.id) == recipient_id:
                 # get card by ID
-                card_id = trade["card_id"]
+                uid = trade["uid"]
 
                 if emoji == "🤝":
                     user_collections = defaultdict(list, ensure_card_ids(load_collections()))
                     
-                    card = next((c for c in user_collections[sender_id] if c["id"] == card_id), None)
+                    sender_cards = user_collections.get(sender_id, [])
+                    card = next((c for c in sender_cards if c.get("uid") == uid), None)
                     if not card:
                         await message.channel.send("Trade failed. Card no longer exists.")
                         return
                     
                     # remove from sender
-                    user_collections[sender_id] = [c for c in user_collections[sender_id] if c["id"] != card_id]
+                    user_collections[sender_id] = [c for c in sender_cards if c.get("uid") != uid]
 
                     # add card to recipient
                     user_collections[recipient_id].append(card)
@@ -348,8 +355,9 @@ async def tag(ctx, emoji):
     await ctx.send(f"Tagged your collection as {emoji}!")
 
 @bot.command()
-async def mycards(ctx, *, card_name:str):
+async def mycards(ctx, *, card_name: str):
     user_id = str(ctx.author.id)
+    card_name = card_name.title()
     cards = user_collections.get(user_id, [])
 
     matching_cards = [
@@ -363,13 +371,29 @@ async def mycards(ctx, *, card_name:str):
     
     response = f'You have {len(matching_cards)} card(s) matching "{card_name}":\n'
 
+    emoji = user_emojis.get(user_id, "🔥")
+
+    embed = discord.Embed(
+        title=f'📸 Your Cards Matching "{card_name}":',
+        description=f"{len(matching_cards)} card(s)",
+        color=discord.Color.blue()
+    )
+
     for i, card in enumerate(matching_cards, 1):
-        emoji = user_emojis.get(user_id, "🔥")
-        response += f"{i}. {emoji} {card['group']} {card['name']} {card['rarity']}\n"
+        uid = card.get("uid", "N/A")
+        name = card.get("name", "Unknown")
+        group = card.get("group", "Unknown")
+        rarity = card.get("rarity", "Unknown")
 
-    response += "\nUse `!trade @user <name> <number>` to trade a specific card."
+        embed.add_field(
+            name=f"{i}. {emoji} {group} • {name} • ({rarity}) • #{uid}",
+            value="",
+            inline=False
+        )
 
-    await ctx.send(response)
+    embed.set_footer(text='Use "!trade @user <name> <uid>" to trade a specific card.')
+
+    await ctx.send(embed=embed)
 
 
 bot.run(TOKEN)

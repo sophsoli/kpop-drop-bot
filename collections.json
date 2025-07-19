@@ -47,7 +47,28 @@
             "rarity": "Rare",
             "color": 3447003,
             "short_id": 1,
-            "edition": 1
+            "edition": 1,
+            "id": "a1565184-8b4f-4ab9-940b-40305a051a1a"
+        },
+        {
+            "name": "Jungkook",
+            "group": "BTS",
+            "image": "cards/jungkook.JPG",
+            "rarity": "Common",
+            "color": 11184810,
+            "short_id": 2,
+            "edition": 1,
+            "id": "f4bb82c5-aaf0-4a4d-9a6e-b32e8574d55d"
+        },
+        {
+            "name": "Chaewon",
+            "group": "LESSERAFIM",
+            "image": "cards/chaewon.JPG",
+            "rarity": "Epic",
+            "color": 10181046,
+            "short_id": 3,
+            "edition": 1,
+            "id": "259b040c-ae47-4524-a8a2-fa5b4bbae34f"
         }
     ],
     "106626132903788544": [
@@ -138,6 +159,28 @@
             "rarity": "Common",
             "color": 11184810,
             "id": "5203f801-116b-4fc7-886e-42557b38cbcf"
+        },
+        {
+            "name": "Mingyu",
+            "group": "SEVENTEEN",
+            "image": "cards/mingyu.JPG",
+            "rarity": "Common",
+            "color": 11184810,
+            "short_id": 4,
+            "edition": 3,
+            "uid": "MING0403",
+            "id": "fe5e3865-5a79-446a-9777-df40822d009c"
+        },
+        {
+            "name": "Chaewon",
+            "group": "LESSERAFIM",
+            "image": "cards/chaewon.JPG",
+            "rarity": "Common",
+            "color": 11184810,
+            "short_id": 4,
+            "edition": 2,
+            "uid": "CHAE0402",
+            "id": "26edef17-78f2-4f41-8125-8dd9ed4e4ae6"
         }
     ]
 }
