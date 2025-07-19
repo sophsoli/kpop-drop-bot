@@ -23,6 +23,14 @@
             "rarity": "Epic",
             "color": 10181046,
             "id": "c758a087-dbf8-4dee-a19d-7553c1c18232"
+        },
+        {
+            "name": "Wonwoo",
+            "group": "SEVENTEEN",
+            "image": "cards/wonwoo.JPG",
+            "rarity": "Rare",
+            "color": 3447003,
+            "id": "706621b4-7acf-4050-8013-43f470061ad0"
         }
     ],
     "106626132903788544": [
@@ -97,6 +105,22 @@
             "rarity": "Rare",
             "color": 3447003,
             "id": "7252fcbe-4b3a-40d9-bdd6-81b94edc9536"
+        },
+        {
+            "name": "Chaewon",
+            "group": "LESSERAFIM",
+            "image": "cards/chaewon.JPG",
+            "rarity": "Epic",
+            "color": 10181046,
+            "id": "8be0b126-09f9-4cc0-b108-061277a79456"
+        },
+        {
+            "name": "Ros\u00e9",
+            "group": "BLACKPINK",
+            "image": "cards/rose.JPG",
+            "rarity": "Common",
+            "color": 11184810,
+            "id": "5203f801-116b-4fc7-886e-42557b38cbcf"
         }
     ]
 }

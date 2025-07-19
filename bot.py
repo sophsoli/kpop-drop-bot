@@ -3,7 +3,7 @@ import discord
 import os
 import io
 from dotenv import load_dotenv
-from json_data_helpers import card_collection, load_collections, save_collections, ensure_card_ids
+from json_data_helpers import card_collection, load_collections, save_collections, ensure_card_ids, load_user_emojis, save_user_emojis
 import random
 from image_helpers import apply_frame, merge_cards_horizontally, resize_image
 import asyncio
@@ -23,6 +23,8 @@ bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 cards = card_collection()
 
 user_collections = defaultdict(list, ensure_card_ids(load_collections()))
+
+user_emojis = defaultdict(lambda: "🔥", load_user_emojis())  # Default to fire emoji
 
 # Rarities
 # rarities = {
@@ -217,6 +219,8 @@ async def drop(ctx):
 
         except asyncio.TimeoutError:
             break
+
+# COLLECTION COMMAND !collection        
 @bot.command()
 async def collection(ctx, member: discord.Member = None):
     # If no member is specified, default to the command author
@@ -231,6 +235,8 @@ async def collection(ctx, member: discord.Member = None):
         await ctx.send(f"{user.display_name} doesn't have any photocards yet. 😢")
         return
     
+    emoji = user_emojis.get(user_id, "🔥")
+    
     embed = discord.Embed(
         title=f"📸 {user.display_name}'s Collection",
         color=discord.Color.blue()
@@ -239,7 +245,7 @@ async def collection(ctx, member: discord.Member = None):
     for card in cards:
         embed.add_field(
             name="",
-            value=f"🔥 {card['group']} • {card['name']} • {card['rarity']}",
+            value=f"{emoji} {card['group']} • {card['name']} • {card['rarity']}",
             inline=False
         )
 
@@ -247,6 +253,7 @@ async def collection(ctx, member: discord.Member = None):
 
 pending_trades = {}
 
+# COMMAND TRADE !trade
 @bot.command()
 async def trade(ctx, member: discord.Member, card_id: str):
     sender_id = str(ctx.author.id)
@@ -272,7 +279,7 @@ async def trade(ctx, member: discord.Member, card_id: str):
     }
 
     message = await ctx.send(f"{member.mention}, {ctx.author.display_name} wants to trade you a [**{card['rarity']}**] **{card['name']}** photocard. Accept?")
-    await message.add_reaction("✅")
+    await message.add_reaction("🤝")
     await message.add_reaction("❌")
 
     pending_trades[sender_id][recipient_id]["message_id"] = message.id
@@ -290,7 +297,7 @@ async def on_reaction_add(reaction, user):
                 # get card by ID
                 card_id = trade["card_id"]
 
-                if emoji == "✅":
+                if emoji == "🤝":
                     user_collections = defaultdict(list, ensure_card_ids(load_collections()))
                     
                     card = next((c for c in user_collections[sender_id] if c["id"] == card_id), None)
@@ -305,7 +312,7 @@ async def on_reaction_add(reaction, user):
                     user_collections[recipient_id].append(card)
 
                     save_collections(user_collections)
-                    await message.channel.send(f"✅ Trade accepted! {card['name']} photocard is now transferred.")
+                    await message.channel.send(f"✅ Trade accepted! **{card['name']}** photocard is now added to your collection!")
 
                     del pending_trades[sender_id][recipient_id]
                     if not pending_trades[sender_id]:
@@ -319,5 +326,17 @@ async def on_reaction_add(reaction, user):
                     if not pending_trades[sender_id]:
                         del pending_trades[sender_id]
                     return
+# TAG COMMAND !tag                
+@bot.command()
+async def tag(ctx, emoji):
+    user_id = str(ctx.author.id)
+
+    if len(emoji) > 2:
+        await ctx.send("Invalid!")
+        return
+
+    user_emojis[user_id] = emoji
+    save_user_emojis(user_emojis)
+    await ctx.send(f"Tagged your collection as {emoji}!")
 
 bot.run(TOKEN)
