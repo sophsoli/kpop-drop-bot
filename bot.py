@@ -3,7 +3,7 @@ import discord
 import os
 import io
 from dotenv import load_dotenv
-from json_data_helpers import card_collection, load_collections, save_collections
+from json_data_helpers import card_collection, load_collections, save_collections, ensure_card_ids
 import random
 from image_helpers import apply_frame, merge_cards_horizontally, resize_image
 import asyncio
@@ -22,7 +22,7 @@ bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 # Load cards database at startup
 cards = card_collection()
 
-user_collections = defaultdict(list, load_collections())
+user_collections = defaultdict(list, ensure_card_ids(load_collections()))
 
 # Rarities
 # rarities = {
@@ -185,7 +185,7 @@ async def drop(ctx):
                 continue
 
             if emoji in claimed:
-                await ctx.send(f"⚠️ {user.mention}, that card was already claimed.")
+                await ctx.send(f"⚠️ Sorry {user.mention} that card is out of stock.")
                 continue
 
             if user.id == user_id:
@@ -222,7 +222,10 @@ async def collection(ctx, member: discord.Member = None):
     # If no member is specified, default to the command author
     user = member or ctx.author
     user_id = str(user.id)
-    cards = user_collections.get(user_id, [])
+
+    # reload the latest collections from file, ensuring IDs
+    all_collections = defaultdict(list, ensure_card_ids(load_collections()))
+    cards = all_collections.get(user_id, [])
 
     if not cards:
         await ctx.send(f"{user.display_name} doesn't have any photocards yet. 😢")
@@ -241,5 +244,80 @@ async def collection(ctx, member: discord.Member = None):
         )
 
     await ctx.send(embed=embed)
+
+pending_trades = {}
+
+@bot.command()
+async def trade(ctx, member: discord.Member, card_id: str):
+    sender_id = str(ctx.author.id)
+    recipient_id = str(member.id)
+
+    user_collections = defaultdict(list, load_collections())
+
+    if sender_id not in user_collections:
+        await ctx.send("You don't have any cards to trade.")
+        return
+    
+    card = next((c for c in user_collections[sender_id] if c.get("id") == card_id), None)
+    if not card:
+        await ctx.send("Card not found in your inventory.")
+        return
+    
+    if sender_id not in pending_trades:
+        pending_trades[sender_id] = {}
+
+    pending_trades[sender_id][recipient_id] = {
+        "card_id": card["id"],
+        "status": "pending"
+    }
+
+    message = await ctx.send(f"{member.mention}, {ctx.author.display_name} wants to trade you a [**{card['rarity']}**] **{card['name']}** photocard. Accept?")
+    await message.add_reaction("✅")
+    await message.add_reaction("❌")
+
+    pending_trades[sender_id][recipient_id]["message_id"] = message.id
+
+@bot.event
+async def on_reaction_add(reaction, user):
+    message = reaction.message
+    emoji = str(reaction.emoji)
+
+    for sender_id in list(pending_trades):
+        for recipient_id in list(pending_trades[sender_id]):
+            trade = pending_trades[sender_id][recipient_id]
+
+            if trade.get("message_id") == message.id and str(user.id) == recipient_id:
+                # get card by ID
+                card_id = trade["card_id"]
+
+                if emoji == "✅":
+                    user_collections = defaultdict(list, ensure_card_ids(load_collections()))
+                    
+                    card = next((c for c in user_collections[sender_id] if c["id"] == card_id), None)
+                    if not card:
+                        await message.channel.send("Trade failed. Card no longer exists.")
+                        return
+                    
+                    # remove from sender
+                    user_collections[sender_id] = [c for c in user_collections[sender_id] if c["id"] != card_id]
+
+                    # add card to recipient
+                    user_collections[recipient_id].append(card)
+
+                    save_collections(user_collections)
+                    await message.channel.send(f"✅ Trade accepted! {card['name']} photocard is now transferred.")
+
+                    del pending_trades[sender_id][recipient_id]
+                    if not pending_trades[sender_id]:
+                        del pending_trades[sender_id]
+
+                elif emoji == "❌":
+                    await message.channel.send(f"❌ Trade was declined.")
+
+                    # clean up trade
+                    del pending_trades[sender_id][recipient_id]
+                    if not pending_trades[sender_id]:
+                        del pending_trades[sender_id]
+                    return
 
 bot.run(TOKEN)

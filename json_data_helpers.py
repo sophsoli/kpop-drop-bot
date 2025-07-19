@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 
 COLLECTIONS_FILE = "collections.json"
 
@@ -23,3 +24,14 @@ def load_collections():
 def save_collections(user_collections):
     with open(COLLECTIONS_FILE, 'w') as f:
         json.dump(user_collections, f, indent=4)
+
+def ensure_card_ids(collections):
+    changed = False
+    for user_id, cards in collections.items():
+        for card in cards:
+            if "id" not in card:
+                card["id"] = str(uuid.uuid4())
+                changed = True
+    if changed:
+        save_collections(collections)
+    return collections
