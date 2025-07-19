@@ -15,10 +15,11 @@ def apply_frame(card_path, frame_path):
     card_img = Image.open(card_path).convert("RGBA")
 
     #Resize card to match frame size
-    card = card_img.resize(frame.size)
+    resized_card = resize_and_pad_to_target(card_img, 1500, 2100)
+    frame = frame.resize(resized_card.size)
 
     #Merge card and frame
-    return Image.alpha_composite(card, frame)
+    return Image.alpha_composite(resized_card, frame)
 
 def merge_cards_horizontally(card_images, spacing=100, max_width=2000):
     widths, heights = zip(*(img.size for img in card_images))
@@ -49,3 +50,21 @@ def resize_image(image, max_width):
     new_height = int(float(image.height) * w_percent)
 
     return image.resize((max_width, new_height), Image.Resampling.LANCZOS)
+
+def resize_and_pad_to_target(image, target_width=1500, target_height=2100):
+    img_ratio = image.width / image.height
+    target_ratio = target_width / target_height
+
+    if img_ratio > target_ratio:
+        new_height = target_height
+        new_width = int(image.width * (target_height / image.height))
+    else:
+        new_width = target_width
+        new_height = int(image.height * (target_width / image.width))
+
+    image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+    left = (new_width - target_width) // 2
+    top = (new_height - target_height) // 2
+    right = left + target_width
+    bottom = top + target_height
+    return image.crop((left, top, right, bottom))
