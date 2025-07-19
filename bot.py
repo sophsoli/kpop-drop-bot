@@ -339,4 +339,29 @@ async def tag(ctx, emoji):
     save_user_emojis(user_emojis)
     await ctx.send(f"Tagged your collection as {emoji}!")
 
+@bot.command()
+async def mycards(ctx, *, card_name:str):
+    user_id = str(ctx.author.id)
+    cards = user_collections.get(user_id, [])
+
+    matching_cards = [
+        card for card in cards
+        if card_name.lower() in card["name"].lower()
+    ]
+
+    if not matching_cards:
+        await ctx.send(f'No cards matching "{card_name}" found in your collection.')
+        return
+    
+    response = f'You have {len(matching_cards)} card(s) matching "{card_name}":\n'
+
+    for i, card in enumerate(matching_cards, 1):
+        emoji = user_emojis.get(user_id, "🔥")
+        response += f"{i}. {emoji} {card['group']} {card['name']} {card['rarity']}\n"
+
+    response += "\nUse `!trade @user <name> <number>` to trade a specific card."
+
+    await ctx.send(response)
+
+
 bot.run(TOKEN)
