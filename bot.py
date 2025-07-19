@@ -9,7 +9,8 @@ from image_helpers import apply_frame, merge_cards_horizontally, resize_image
 import asyncio
 import time
 from collections import defaultdict
-import uuid
+from utils.paginator import CollectionView
+
 
 FRAME_PATH = "./images/frame.png"
 
@@ -236,30 +237,32 @@ async def collection(ctx, member: discord.Member = None):
     
     emoji = user_emojis.get(user_id, "🔥")
     
-    embed = discord.Embed(
-        title=f"📸 {user.display_name}'s Collection",
-        color=discord.Color.blue()
-    )
+    # embed = discord.Embed(
+    #     title=f"📸 {user.display_name}'s Collection",
+    #     color=discord.Color.blue()
+    # )
 
-    for card in cards:
-        short_id = card.get("short_id", 0)
-        edition = card.get("edition", 1)
-        name = card.get("name", "Unknown")
-        group = card.get("group", "Unknown")
-        rarity = card.get("rarity", "Unknown")
+    view = CollectionView(ctx, user, cards, emoji)
 
-        uid = card.get("uid")
-        if not uid:
-            name_code = ''.join(filter(str.isalpha, name.upper()))[:4]
-            uid = f"{name_code}{short_id:02}{edition:02}"
+    # for card in cards:
+    #     short_id = card.get("short_id", 0)
+    #     edition = card.get("edition", 1)
+    #     name = card.get("name", "Unknown")
+    #     group = card.get("group", "Unknown")
+    #     rarity = card.get("rarity", "Unknown")
 
-        embed.add_field(
-            name="",
-            value=f"{emoji} {card['group']} • {card['name']} • {card['rarity']} • Edition {edition}",
-            inline=False
-        )
+    #     uid = card.get("uid")
+    #     if not uid:
+    #         name_code = ''.join(filter(str.isalpha, name.upper()))[:4]
+    #         uid = f"{name_code}{short_id:02}{edition:02}"
 
-    await ctx.send(embed=embed)
+        # embed.add_field(
+        #     name="",
+        #     value=f"{emoji} {card['group']} • {card['name']} • {card['rarity']} • Edition {edition}",
+        #     inline=False
+        # )
+
+    await view.send()
 
 pending_trades = {}
 
@@ -369,7 +372,6 @@ async def mycards(ctx, *, card_name: str):
         await ctx.send(f'No cards matching "{card_name}" found in your collection.')
         return
     
-    response = f'You have {len(matching_cards)} card(s) matching "{card_name}":\n'
 
     emoji = user_emojis.get(user_id, "🔥")
 

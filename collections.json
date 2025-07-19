@@ -69,6 +69,17 @@
             "short_id": 3,
             "edition": 1,
             "id": "259b040c-ae47-4524-a8a2-fa5b4bbae34f"
+        },
+        {
+            "name": "Chaewon",
+            "group": "LESSERAFIM",
+            "image": "cards/chaewon.JPG",
+            "rarity": "Rare",
+            "color": 3447003,
+            "short_id": 4,
+            "edition": 1,
+            "uid": "CHAE0401",
+            "id": "cf7c2734-4a57-4085-b3e7-c94bc3b4981c"
         }
     ],
     "106626132903788544": [
