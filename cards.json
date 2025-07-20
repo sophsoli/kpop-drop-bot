@@ -1,57 +1,277 @@
 [
     {
-        "name": "Chaewon",
-        "group": "LESSERAFIM",
-        "image": "cards/chaewon.JPG"
+        "name": "Giselle",
+        "group": "aespa",
+        "image": "cards/aespa/giselle.JPG"
     },
     {
-        "name": "DK",
-        "group": "SEVENTEEN",
-        "image": "cards/dk.JPG"
+        "name": "Karina",
+        "group": "aespa",
+        "image": "cards/aespa/karina.JPG"
     },
     {
-        "name": "Hanbin",
-        "group": "SOLO",
-        "image": "cards/hanbin.JPG"
-    },
-    {
-        "name": "Joshua",
-        "group": "SEVENTEEN",
-        "image": "cards/joshua.JPG"
-    },
-    {
-        "name": "Jungkook",
-        "group": "BTS",
-        "image": "cards/jungkook.JPG"
-    },
-    {
-        "name": "Mingyu",
-        "group": "SEVENTEEN",
-        "image": "cards/mingyu.JPG"
-    },
-    {
-        "name": "Rosé",
-        "group": "BLACKPINK",
-        "image": "cards/rose.JPG"
+        "name": "Ningning",
+        "group": "aespa",
+        "image": "cards/aespa/ningning.JPG"
     },
     {
         "name": "Winter",
         "group": "aespa",
-        "image": "cards/winter.JPG"
+        "image": "cards/aespa/winter.JPG"
     },
     {
-        "name": "Wonwoo",
-        "group": "SEVENTEEN",
-        "image": "cards/wonwoo.JPG"
+        "name": "Jennie",
+        "group": "BLACKPINK",
+        "image": "cards/BLACKPINK/jennie.JPG"
+    },
+    {
+        "name": "Jisoo",
+        "group": "BLACKPINK",
+        "image": "cards/BLACKPINK/jisoo.JPG"
+    },
+    {
+        "name": "Lisa",
+        "group": "BLACKPINK",
+        "image": "cards/BLACKPINK/lisa.JPG"
+    },
+    {
+        "name": "Rosé",
+        "group": "BLACKPINK",
+        "image": "cards/BLACKPINK/rose.JPG"
+    },
+    {
+        "name": "J-Hope",
+        "group": "BTS",
+        "image": "cards/BTS/jhope.JPG"
+    },
+    {
+        "name": "Jimin",
+        "group": "BTS",
+        "image": "cards/BTS/jimin.JPG"
+    },
+    {
+        "name": "Jin",
+        "group": "BTS",
+        "image": "cards/BTS/jin.JPG"
+    },
+    {
+        "name": "Jungkook",
+        "group": "BTS",
+        "image": "cards/BTS/jungkook.JPG"
+    },
+    {
+        "name": "RM",
+        "group": "BTS",
+        "image": "cards/BTS/rm.JPG"
+    },
+    {
+        "name": "SUGA",
+        "group": "BTS",
+        "image": "cards/BTS/suga.JPG"
+    },
+    {
+        "name": "V",
+        "group": "BTS",
+        "image": "cards/BTS/v.JPG"
+    },
+    {
+        "name": "Chaeryeong",
+        "group": "ITZY",
+        "image": "cards/ITZY/chaeryeong.JPG"
+    },
+    {
+        "name": "Lia",
+        "group": "ITZY",
+        "image": "cards/ITZY/lia.JPG"
+    },
+    {
+        "name": "Ryujin",
+        "group": "ITZY",
+        "image": "cards/ITZY/ryujin.JPG"
     },
     {
         "name": "Yeji",
         "group": "ITZY",
-        "image": "cards/yeji.JPG"
+        "image": "cards/ITZY/yeji.JPG"
+    },
+    {
+        "name": "Yuna",
+        "group": "ITZY",
+        "image": "cards/ITZY/yuna.JPG"
+    },
+    {
+        "name": "Gaeul",
+        "group": "IVE",
+        "image": "cards/IVE/gaeul.JPG"
+    },
+    {
+        "name": "Leeseo",
+        "group": "IVE",
+        "image": "cards/IVE/leeseo.JPG"
+    },
+    {
+        "name": "Liz",
+        "group": "IVE",
+        "image": "cards/IVE/liz.JPG"
+    },
+    {
+        "name": "Rei",
+        "group": "IVE",
+        "image": "cards/IVE/rei.JPG"
+    },
+    {
+        "name": "Wonyoung",
+        "group": "IVE",
+        "image": "cards/IVE/wonyoung.JPG"
     },
     {
         "name": "Yujin",
         "group": "IVE",
-        "image": "cards/yujin.JPG"
+        "image": "cards/IVE/Yujin.JPG"
+    },
+    {
+        "name": "Chaewon",
+        "group": "LE SSERAFIM",
+        "image": "cards/LESSERAFIM/chaewon.JPG"
+    },
+    {
+        "name": "Eunchae",
+        "group": "LE SSERAFIM",
+        "image": "cards/LESSERAFIM/eunchae.JPG"
+    },
+    {
+        "name": "Kazuha",
+        "group": "LE SSERAFIM",
+        "image": "cards/LESSERAFIM/kazuha.JPG"
+    },
+    {
+        "name": "Sakura",
+        "group": "LE SSERAFIM",
+        "image": "cards/LESSERAFIM/Sakura.JPG"
+    },
+    {
+        "name": "Yunjin",
+        "group": "LE SSERAFIM",
+        "image": "cards/LESSERAFIM/yunjin.JPG"
+    },
+    {
+        "name": "Dino",
+        "group": "SEVENTEEN",
+        "image": "cards/SEVENTEEN/dino.JPG"
+    },
+    {
+        "name": "DK",
+        "group": "SEVENTEEN",
+        "image": "cards/SEVENTEEN/dk.JPG"
+    },
+    {
+        "name": "Hoshi",
+        "group": "SEVENTEEN",
+        "image": "cards/SEVENTEEN/hoshi.JPG"
+    },
+    {
+        "name": "Jeonghan",
+        "group": "SEVENTEEN",
+        "image": "cards/SEVENTEEN/jeonghan.JPG"
+    },
+    {
+        "name": "Joshua",
+        "group": "SEVENTEEN",
+        "image": "cards/SEVENTEEN/joshua.JPG"
+    },
+    {
+        "name": "Jun",
+        "group": "SEVENTEEN",
+        "image": "cards/SEVENTEEN/jun.JPG"
+    },
+    {
+        "name": "The8",
+        "group": "SEVENTEEN",
+        "image": "cards/SEVENTEEN/minghao.JPG"
+    },
+    {
+        "name": "Mingyu",
+        "group": "SEVENTEEN",
+        "image": "cards/SEVENTEEN/mingyu.JPG"
+    },
+    {
+        "name": "S.Coups",
+        "group": "SEVENTEEN",
+        "image": "cards/SEVENTEEN/scoups.JPG"
+    },
+    {
+        "name": "Seungkwan",
+        "group": "SEVENTEEN",
+        "image": "cards/SEVENTEEN/seungkwan.JPG"
+    },
+    {
+        "name": "Vernon",
+        "group": "SEVENTEEN",
+        "image": "cards/SEVENTEEN/vernon.JPG"
+    },
+    {
+        "name": "Wonwoo",
+        "group": "SEVENTEEN",
+        "image": "cards/SEVENTEEN/wonwoo.JPG"
+    },
+    {
+        "name": "Woozi",
+        "group": "SEVENTEEN",
+        "image": "cards/SEVENTEEN/woozi.JPG"
+    },
+    {
+        "name": "Hanbin",
+        "group": "Soloist",
+        "image": "cards/SOLOIST/hanbin.JPG"
+    },
+    {
+        "name": "Chaeyoung",
+        "group": "TWICE",
+        "image": "cards/TWICE/chaeyoung.JPG"
+    },
+    {
+        "name": "Dahyun",
+        "group": "TWICE",
+        "image": "cards/TWICE/dahyun.JPG"
+    },
+    {
+        "name": "Jeongyeon",
+        "group": "TWICE",
+        "image": "cards/TWICE/jeongyeon.JPG"
+    },
+    {
+        "name": "Jihyo",
+        "group": "TWICE",
+        "image": "cards/TWICE/jihyo.JPG"
+    },
+    {
+        "name": "Mina",
+        "group": "TWICE",
+        "image": "cards/TWICE/mina.JPG"
+    },
+    {
+        "name": "Momo",
+        "group": "TWICE",
+        "image": "cards/TWICE/momo.JPG"
+    },
+    {
+        "name": "Nayeon",
+        "group": "TWICE",
+        "image": "cards/TWICE/nayeon.JPG"
+    },
+    {
+        "name": "Sana",
+        "group": "TWICE",
+        "image": "cards/TWICE/sana.JPG"
+    },
+    {
+        "name": "Tzuyu",
+        "group": "TWICE",
+        "image": "cards/TWICE/tzuyu.JPG"
+    },
+    {
+        "name": "IU",
+        "group": "Soloist",
+        "image": "cards/SOLOIST/iu.JPG"
     }
 ]
