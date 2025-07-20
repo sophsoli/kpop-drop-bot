@@ -80,6 +80,17 @@
             "edition": 1,
             "uid": "CHAE0401",
             "id": "cf7c2734-4a57-4085-b3e7-c94bc3b4981c"
+        },
+        {
+            "name": "Winter",
+            "group": "aespa",
+            "image": "cards/winter.JPG",
+            "rarity": "Common",
+            "color": 11184810,
+            "short_id": 5,
+            "edition": 1,
+            "uid": "WINT0501",
+            "id": "09aaad7f-abec-4dce-820c-aa6efb14ce37"
         }
     ],
     "106626132903788544": [
@@ -192,6 +203,19 @@
             "edition": 2,
             "uid": "CHAE0402",
             "id": "26edef17-78f2-4f41-8125-8dd9ed4e4ae6"
+        }
+    ],
+    "378791110795067406": [
+        {
+            "name": "DK",
+            "group": "SEVENTEEN",
+            "image": "cards/dk.JPG",
+            "rarity": "Epic",
+            "color": 10181046,
+            "short_id": 1,
+            "edition": 1,
+            "uid": "DK0101",
+            "id": "d1f5e750-b713-4d1c-b871-202946c71a2a"
         }
     ]
 }

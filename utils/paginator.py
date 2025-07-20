@@ -25,7 +25,7 @@ class CollectionView(View):
         start = self.current_page * CARDS_PER_PAGE
         end = start + CARDS_PER_PAGE
         embed = discord.Embed(
-            title=f"{self.target_user.display_name}'s Collection (Page {self.current_page + 1})",
+            title=f"📸 {self.target_user.display_name}'s Collection (Page {self.current_page + 1})",
             color=discord.Color.blue()
         )
         for card in self.cards[start:end]:
