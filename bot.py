@@ -38,7 +38,7 @@ RARITY_TIERS = {
 user_cooldowns = {}
 drop_cooldowns = {}
 
-COOLDOWN_DURATION = 120
+COOLDOWN_DURATION = 3600
 DROP_COOLDOWN_DURATION = 7200 # 2 hours
 
 def assign_rarity():
@@ -172,10 +172,10 @@ async def drop(ctx):
                     await ctx.send(f"⏳ {user.mention} you're still on cooldown!! Remaining: **{hours}h {minutes}m {seconds}s ⏳**")
                     continue
 
-            # already claimed
-            if user.id in already_claimed_users:
-                await ctx.send(f"{user.mention}, you've already claimed a card!")
-                continue
+            # # already claimed
+            # if user.id in already_claimed_users:
+            #     await ctx.send(f"{user.mention}, you've already claimed a card!")
+            #     continue
 
             if emoji in claimed:
                 await ctx.send(f"⚠️ Sorry {user.mention} that card is out of stock.")
