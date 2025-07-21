@@ -243,7 +243,7 @@ async def drop(ctx):
                 await conn.execute("""
                     INSERT INTO user_cards(user_id, card_uid, short_id, date_obtained)
                     VALUES($1, $2, $3, CURRENT_TIMESTAMP)
-                """, user.id, card['uid'])
+                """, user.id, card['uid'], card['short_id'])
 
 
             challengers = [cid for cid in claim_challengers[emoji] if cid != user.id]
@@ -281,7 +281,7 @@ async def drop(ctx):
 @bot.command()
 async def collection(ctx):
     user_id = str(ctx.author.id)
-    
+
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT uc.id AS short_id, c.member_name, c.group_name, c.rarity, c.edition, c.image_path, uc.date_obtained
