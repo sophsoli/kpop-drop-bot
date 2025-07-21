@@ -241,8 +241,8 @@ async def drop(ctx):
 
             # Claimed card into user_cards table
                 await conn.execute("""
-                    INSERT INTO user_cards(user_id, card_uid, date_obtained)
-                    VALUES($1, $2, CURRENT_TIMESTAMP)
+                    INSERT INTO user_cards(user_id, card_uid, short_id, date_obtained)
+                    VALUES($1, $2, $3, CURRENT_TIMESTAMP)
                 """, user.id, card['uid'])
 
 
@@ -281,31 +281,38 @@ async def drop(ctx):
 @bot.command()
 async def collection(ctx):
     user_id = str(ctx.author.id)
+    
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
-            SELECT short_id, edition, group, name, rarity, date_obtained
-            FROM user_cards
-            WHERE user_id = $1
-            ORDER BY date_obtained DESC
+            SELECT uc.id AS short_id, c.member_name, c.group_name, c.rarity, c.edition, c.image_path, uc.date_obtained
+            FROM user_cards uc
+            JOIN cards c ON uc.card_uid = c.card_uid
+            WHERE uc.user_id = $1
+            ORDER BY uc.date_obtained DESC;
         """, user_id)
     
     if not rows:
         await ctx.send(f"{ctx.author.display_name} doesn't have any photocards yet. 😢")
+        return
 
-    collection_message = f"📸 {ctx.author.display_name}'s Photocard Collection 📚\n\n"
+    # EMBED to show collection
+    embed = discord.Embed(
+        title=f"📸 {ctx.author.display_name}'s Photocard Collection 📚\n\n",
+        color=discord.Color.blue(),
+        inline=False
+    )
 
-    for row in rows:
-        collection_message += (
-            f"🔹 `{row['short_id']}` | {row['rarity']}-Tier **{row['name']}** (Edition #{row['edition']})\n"
-        )
-    await ctx.send(collection_message)
-    
     emoji = user_emojis.get(user_id, "🔥")
+
+    for row in rows[:5]:
+        embed.add_field(
+            name=f"{row['member_name']} ({row['rarity']})",
+            value=f"ID: `{row['short_id']}` • Edition: {row['edition']}\nObtained: {row['date_obtained'].strftime('%Y-%m-%d')}",
+            inline=False
+        )
+
+    await ctx.send(embed=embed)
     
-    # # embed = discord.Embed(
-    # #     title=f"📸 {user.display_name}'s Collection",
-    # #     color=discord.Color.blue()
-    # # )
 
     # view = CollectionView(ctx, user, cards, emoji)
 
