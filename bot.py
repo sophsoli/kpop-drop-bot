@@ -210,26 +210,7 @@ async def drop(ctx):
             card = og_card.copy()
             card.pop("reaction", None)
 
-            # DATABASE
-            async with db_pool.acquire() as conn:
-                rows = await conn.fetch("""
-                    SELECT COUNT(*) FROM user_cards
-                    WHERE user_id = $1 AND card_uid = $2
-                """, user.id, card['card_uid'])
-                count = rows[0]['count'] if rows else 0
-                edition = count + 1
-
-
-            # Claimed card into user_cards table
-                await conn.execute("""
-                    INSERT INTO user_cards(user_id, card_uid, date_obtained)
-                    VALUES($1, $2, CURRENT_TIMESTAMP)
-                """, user.id, card['card_uid'])
-
-
-
-
-
+            # Assign unique identifiers before DB Query
             user_id_str = str(user.id)
             user_cards = user_collections[user_id_str]
 
@@ -247,6 +228,23 @@ async def drop(ctx):
             card["short_id"] = short_id
             card["edition"] = edition
             card["uid"] = generate_card_uid(card["name"], short_id, edition)
+
+            # DATABASE -- AFTER UID IS SET
+            async with db_pool.acquire() as conn:
+                rows = await conn.fetch("""
+                    SELECT COUNT(*) FROM user_cards
+                    WHERE user_id = $1 AND card_uid = $2
+                """, user.id, card['uid'])
+                count = rows[0]['count'] if rows else 0
+                edition = count + 1
+
+
+            # Claimed card into user_cards table
+                await conn.execute("""
+                    INSERT INTO user_cards(user_id, card_uid, date_obtained)
+                    VALUES($1, $2, CURRENT_TIMESTAMP)
+                """, user.id, card['uid'])
+
 
             challengers = [cid for cid in claim_challengers[emoji] if cid != user.id]
             if challengers:
