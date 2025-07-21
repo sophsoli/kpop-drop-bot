@@ -10,6 +10,7 @@ import asyncio
 import time
 from collections import defaultdict
 from utils.paginator import CollectionView
+import asyncpg
 
 
 FRAME_PATH = "./images/frame.png"
@@ -41,6 +42,17 @@ drop_cooldowns = {}
 COOLDOWN_DURATION = 3600
 DROP_COOLDOWN_DURATION = 7200 # 2 hours
 
+db_pool = None
+
+async def get_db_pool():
+    return await asyncpg.create_pool(
+        host=os.getenv("DB_HOST"),
+        port=int(os.getenv("DB_PORT")),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME")
+    )
+
 def assign_rarity():
     roll = random.randint(1, 100)
     total = 0
@@ -60,15 +72,28 @@ def generate_card_uid(name, short_id, edition):
     name_code = ''.join(filter(str.isalpha, name.upper()))[:4]
     return f"{name_code}{short_id:02}{edition:02}"
 
+# @bot.event
+# async def on_ready():
+#     # start up message
+#     print(f"Yo! Mingyu bot ({bot.user}) has logged in.")
+#     channel = bot.get_channel(CHANNEL_ID)
+#     # send message to channel
+#     await channel.send(f"Yo, Mingyu is here! Let's party!!")
+
 @bot.event
 async def on_ready():
-    # start up message
-    print(f"Yo! Mingyu bot ({bot.user}) has logged in.")
-    channel = bot.get_channel(CHANNEL_ID)
-    # send message to channel
-    await channel.send(f"Yo, Mingyu is here! Let's party!!")
+    global db_pool
+    if db_pool is None:
+        db_pool = await asyncpg.create_pool(
+            host=os.getenv("DB_HOST"),
+            port=int(os.getenv("DB_PORT")),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME")
+        )
+    print(f"Mingyu Bot ready and connected to DB!")
 
-# drop command
+# drop command !drop
 @bot.command()
 async def drop(ctx):
     user_id = ctx.author.id
@@ -185,6 +210,26 @@ async def drop(ctx):
             card = og_card.copy()
             card.pop("reaction", None)
 
+            # DATABASE
+            async with db_pool.acquire() as conn:
+                rows = await conn.fetch("""
+                    SELECT COUNT(*) FROM user_cards
+                    WHERE user_id = $1 AND card_uid = $2
+                """, user.id, card['card_uid'])
+                count = rows[0]['count'] if rows else 0
+                edition = count + 1
+
+
+            # Claimed card into user_cards table
+                await conn.execute("""
+                    INSERT INTO user_cards(user_id, card_uid, date_obtained)
+                    VALUES($1, $2, CURRENT_TIMESTAMP)
+                """, user.id, card['card_uid'])
+
+
+
+
+
             user_id_str = str(user.id)
             user_cards = user_collections[user_id_str]
 
@@ -210,8 +255,8 @@ async def drop(ctx):
             else:
                 await ctx.send(f"{user.mention} gained a {card['rarity']}-Tier **{card['name']}** photocard! 🤩")
 
-            user_cards.append(card)
-            save_collections(user_collections)
+            # user_cards.append(card)
+            # save_collections(user_collections)
 
             claimed[emoji] = user.id
             already_claimed_users.add(user.id)
