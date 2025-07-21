@@ -243,7 +243,7 @@ async def drop(ctx):
                 await conn.execute("""
                     INSERT INTO user_cards(user_id, card_uid, short_id, date_obtained)
                     VALUES($1, $2, $3, CURRENT_TIMESTAMP)
-                """, user.id, card['uid'], str(card['short_id']))
+                """, int(user.id), card['uid'], str(card['short_id']))
 
 
             challengers = [cid for cid in claim_challengers[emoji] if cid != user.id]
