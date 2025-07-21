@@ -304,6 +304,8 @@ async def collection(ctx):
 
     emoji = user_emojis.get(user_id, "🔥")
 
+    print(f"Rows fetched for user {user_id}: {rows}")
+
     for row in rows[:5]:
         embed.add_field(
             name=f"{row['member_name']} ({row['rarity']})",
