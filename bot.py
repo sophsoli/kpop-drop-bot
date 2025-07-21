@@ -241,9 +241,10 @@ async def drop(ctx):
 
             # Claimed card into user_cards table
                 await conn.execute("""
-                    INSERT INTO user_cards(user_id, card_uid, short_id, date_obtained)
-                    VALUES($1, $2, $3, CURRENT_TIMESTAMP)
-                """, int(user.id), card['uid'], str(card['short_id']))
+                    INSERT INTO user_cards(user_id, card_uid, short_id, date_obtained, rarity, edition, member_name, group_name)
+                    VALUES($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, $6, $7)
+                """, int(user.id), card['uid'], str(card['short_id']),
+                    card['rarity'], edition, card['name'], card['group'])
 
 
             challengers = [cid for cid in claim_challengers[emoji] if cid != user.id]
@@ -284,11 +285,9 @@ async def collection(ctx):
 
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
-            SELECT c.*, uc.date_obtained, uc.short_id
-            FROM user_cards uc
-            JOIN cards c ON uc.card_uid = c.card_uid
-            WHERE uc.user_id = $1
-            ORDER BY uc.date_obtained DESC;
+            SELECT * FROM user_cards
+            WHERE user_id = $1
+            ORDER BY date_obtained DESC;
         """, int(user_id))
     
     if not rows:
