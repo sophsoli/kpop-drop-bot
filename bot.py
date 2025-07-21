@@ -298,7 +298,6 @@ async def collection(ctx):
     embed = discord.Embed(
         title=f"📸 {ctx.author.display_name}'s Photocard Collection 📚\n\n",
         color=discord.Color.blue(),
-        inline=False
     )
 
     emoji = user_emojis.get(user_id, "🔥")
