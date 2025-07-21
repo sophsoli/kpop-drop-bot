@@ -264,48 +264,70 @@ async def drop(ctx):
             break
 
 # COLLECTION COMMAND !collection        
+# @bot.command()
+# async def collection(ctx, member: discord.Member = None):
+#     # If no member is specified, default to the command author
+#     user = member or ctx.author
+#     user_id = str(user.id)
+
+#     # reload the latest collections from file, ensuring IDs
+#     all_collections = defaultdict(list, ensure_card_ids(load_collections()))
+#     cards = all_collections.get(user_id, [])
+
+#     if not cards:
+#         await ctx.send(f"{user.display_name} doesn't have any photocards yet. 😢")
+#         return
+
 @bot.command()
-async def collection(ctx, member: discord.Member = None):
-    # If no member is specified, default to the command author
-    user = member or ctx.author
-    user_id = str(user.id)
+async def collection(ctx):
+    user_id = str(ctx.author.id)
+    async with db_pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT short_id, edition, group, name, rarity, date_obtained
+            FROM user_cards
+            WHERE user_id = $1
+            ORDER BY date_obtained DESC
+        """, user_id)
+    
+    if not rows:
+        await ctx.send(f"{ctx.author.display_name} doesn't have any photocards yet. 😢")
 
-    # reload the latest collections from file, ensuring IDs
-    all_collections = defaultdict(list, ensure_card_ids(load_collections()))
-    cards = all_collections.get(user_id, [])
+    collection_message = f"📸 {ctx.author.display_name}'s Photocard Collection 📚\n\n"
 
-    if not cards:
-        await ctx.send(f"{user.display_name} doesn't have any photocards yet. 😢")
-        return
+    for row in rows:
+        collection_message += (
+            f"🔹 `{row['short_id']}` | {row['rarity']}-Tier **{row['name']}** (Edition #{row['edition']})\n"
+        )
+    await ctx.send(collection_message)
     
     emoji = user_emojis.get(user_id, "🔥")
     
-    # embed = discord.Embed(
-    #     title=f"📸 {user.display_name}'s Collection",
-    #     color=discord.Color.blue()
-    # )
+    # # embed = discord.Embed(
+    # #     title=f"📸 {user.display_name}'s Collection",
+    # #     color=discord.Color.blue()
+    # # )
 
-    view = CollectionView(ctx, user, cards, emoji)
+    # view = CollectionView(ctx, user, cards, emoji)
 
-    # for card in cards:
-    #     short_id = card.get("short_id", 0)
-    #     edition = card.get("edition", 1)
-    #     name = card.get("name", "Unknown")
-    #     group = card.get("group", "Unknown")
-    #     rarity = card.get("rarity", "Unknown")
+    # # for card in cards:
+    # #     short_id = card.get("short_id", 0)
+    # #     edition = card.get("edition", 1)
+    # #     name = card.get("name", "Unknown")
+    # #     group = card.get("group", "Unknown")
+    # #     rarity = card.get("rarity", "Unknown")
 
-    #     uid = card.get("uid")
-    #     if not uid:
-    #         name_code = ''.join(filter(str.isalpha, name.upper()))[:4]
-    #         uid = f"{name_code}{short_id:02}{edition:02}"
+    # #     uid = card.get("uid")
+    # #     if not uid:
+    # #         name_code = ''.join(filter(str.isalpha, name.upper()))[:4]
+    # #         uid = f"{name_code}{short_id:02}{edition:02}"
 
-        # embed.add_field(
-        #     name="",
-        #     value=f"{emoji} {card['group']} • {card['name']} • {card['rarity']} • Edition {edition}",
-        #     inline=False
-        # )
+    #     # embed.add_field(
+    #     #     name="",
+    #     #     value=f"{emoji} {card['group']} • {card['name']} • {card['rarity']} • Edition {edition}",
+    #     #     inline=False
+    #     # )
 
-    await view.send()
+    # await view.send()
 
 pending_trades = {}
 
