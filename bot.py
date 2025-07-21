@@ -280,11 +280,11 @@ async def drop(ctx):
 
 @bot.command()
 async def collection(ctx):
-    user_id = str(ctx.author.id)
+    user_id = ctx.author.id
 
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
-            SELECT uc.short_id, c.member_name, c.group_name, c.rarity, uc.date_obtained, c.edition, c.image_path
+            SELECT c.*, uc.date_obtained, uc.short_id
             FROM user_cards uc
             JOIN cards c ON uc.card_uid = c.card_uid
             WHERE uc.user_id = $1
