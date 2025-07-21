@@ -86,7 +86,7 @@ async def on_ready():
     if db_pool is None:
         db_pool = await asyncpg.create_pool(
             host=os.getenv("DB_HOST"),
-            port=int(os.getenv("DB_PORT")),
+            port = int(os.getenv("DB_PORT", 5432)),
             user=os.getenv("DB_USER"),
             password=os.getenv("DB_PASSWORD"),
             database=os.getenv("DB_NAME")
