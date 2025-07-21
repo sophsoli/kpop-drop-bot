@@ -273,5 +273,35 @@
         "name": "IU",
         "group": "Soloist",
         "image": "cards/SOLOIST/iu.JPG"
+    },
+    {
+        "name": "Bae",
+        "group": "NMIXX",
+        "image": "cards/NMIXX/bae.JPG"
+    },
+    {
+        "name": "Haewon",
+        "group": "NMIXX",
+        "image": "cards/NMIXX/haewon.JPG"
+    },
+    {
+        "name": "Jiwoo",
+        "group": "NMIXX",
+        "image": "cards/NMIXX/jiwoo.JPG"
+    },
+    {
+        "name": "Kyujin",
+        "group": "NMIXX",
+        "image": "cards/NMIXX/kyujin.JPG"
+    },
+    {
+        "name": "Lily",
+        "group": "NMIXX",
+        "image": "cards/NMIXX/lily.JPG"
+    },
+    {
+        "name": "Sullyoon",
+        "group": "NMIXX",
+        "image": "cards/NMIXX/sullyoon.JPG"
     }
 ]
