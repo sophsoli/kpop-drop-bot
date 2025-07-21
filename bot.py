@@ -306,8 +306,8 @@ async def collection(ctx):
 
     for row in rows[:5]:
         embed.add_field(
-            name=f"{row['member_name']} ({row['rarity']})",
-            value=f"ID: `{row['short_id']}` • Edition: {row['edition']}\nObtained: {row['date_obtained'].strftime('%Y-%m-%d')}",
+            name=f"{emoji} {row['group_name']} • {row['member_name']} • {row['rarity']} • Edition {row['edition']}",
+            value="",
             inline=False
         )
 
