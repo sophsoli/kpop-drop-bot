@@ -289,7 +289,7 @@ async def collection(ctx):
             JOIN cards c ON uc.card_uid = c.card_uid
             WHERE uc.user_id = $1
             ORDER BY uc.date_obtained DESC;
-        """, user_id)
+        """, int(user_id))
     
     if not rows:
         await ctx.send(f"{ctx.author.display_name} doesn't have any photocards yet. 😢")
