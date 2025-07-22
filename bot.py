@@ -358,25 +358,27 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
             await ctx.send("❌ You don't own a card with that UID.")
             return
         
-        # card details
-        card_info = await conn.fetchrow("""
-            SELECT member_name, rarity FROM cards
-            WHERE card_uid = $1    
-        """, card_uid)
+        # # card details
+        # card_info = await conn.fetchrow("""
+        #     SELECT member_name, rarity FROM cards
+        #     WHERE card_uid = $1    
+        # """, card_uid)
 
-        if not card_info:
-            await ctx.send("❌ Card info not found.")
-            return
+        # if not card_info:
+        #     await ctx.send("❌ Card info not found.")
+        #     return
         
         # SAVE PENDING TRADE to memory
         pending_trades[sender_id] = {
             "recipient_id": recipient_id,
             "card_uid": card_uid,
+            "member_name": card['member_name'],
+            "rarity": card['rarity'],
             "message_id": None
         }
 
         # confirmation message
-        message = await ctx.send(f"{partner.mention}! {ctx.author.display_name} wants to give you their [**{card_info['rarity']}**] **{card_info['member_name']}** photocard. Accept?")
+        message = await ctx.send(f"{partner.mention}! {ctx.author.display_name} wants to give you their [**{card['rarity']}**] **{card['member_name']}** photocard. Accept?")
 
         await message.add_reaction("🤝")
         await message.add_reaction("❌")
@@ -411,10 +413,11 @@ async def on_reaction_add(reaction, user):
 
         if emoji == "🤝":
             async with db_pool.acquire() as conn:
-                    # get card info
-                    card_info = await conn.fetchrow("""
-                        SELECT member_name, rarity FROM cards WHERE card_uid = $1
-                    """, card_uid)
+                    # # get card info
+                    # card_info = await conn.fetchrow("""
+                    #     SELECT member_name, rarity FROM cards WHERE card_uid = $1
+                    # """, card_uid)
+
 
                     # transfer ownership
                     await conn.execute("""
@@ -423,7 +426,7 @@ async def on_reaction_add(reaction, user):
                         WHERE card_uid = $2
                     """, user.id, card_uid)
 
-                    await message.channel.send(f"✅ Trade successful! [**{card_info['rarity']}**] **{card_info['member_name']}** photocard is now added to your collection!")
+                    await message.channel.send(f"✅ Trade successful! [**{trade['rarity']}**] **{trade['member_name']}** photocard is now added to your collection!")
                     del pending_trades[sender_id]
                     
         elif emoji == "❌":
