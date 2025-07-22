@@ -92,6 +92,7 @@ async def on_ready():
             password=os.getenv("DB_PASSWORD"),
             database=os.getenv("DB_NAME")
         )
+    await bot.change_presence(activity=discord.Game(name="!drop to play"))
     print(f"Mingyu Bot ready and connected to DB!")
 
 # drop command !drop
@@ -376,7 +377,7 @@ async def on_reaction_add(reaction, user):
                         UPDATE user_cards 
                         SET user_id = $1, date_obtained = $2 
                         WHERE card_uid = $3
-                    """, user.id, current_time, card_uid)
+                    """, user.id, datetime.now(timezone.utc), card_uid)
 
                     await message.channel.send(f"✅ Trade successful! [**{trade['rarity']}**] **{trade['member_name']}** photocard is now added to your collection!")
                     del pending_trades[sender_id]

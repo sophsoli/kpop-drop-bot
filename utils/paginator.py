@@ -11,6 +11,7 @@ class CollectionView(View):
         self.target = target  # discord.Member
         self.current_page = 0
         self.message = None
+        self.author = ctx.author
 
         # Buttons
         self.prev_button = Button(label="👈", style=discord.ButtonStyle.secondary)
