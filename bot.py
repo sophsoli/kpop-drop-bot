@@ -26,8 +26,6 @@ cards = card_collection()
 
 user_collections = defaultdict(list, ensure_card_ids(load_collections()))
 
-user_emojis = defaultdict(lambda: "🔥", load_user_emojis())  # Default to fire emoji
-
 
 RARITY_TIERS = {
     "Common": {"color": 0xAAAAAA, "chance": 60},
@@ -452,45 +450,43 @@ async def tag(ctx, emoji):
 
     
 
-@bot.command()
-async def mycards(ctx, *, card_name: str):
-    user_id = int(ctx.author.id)
-    card_name = card_name.title()
-    cards = user_collections.get(user_id, [])
+# @bot.command()
+# async def mycards(ctx, *, card_name: str):
+#     user_id = int(ctx.author.id)
+#     card_name = card_name.title()
+#     cards = user_collections.get(user_id, [])
 
-    matching_cards = [
-        card for card in cards
-        if card_name.lower() in card["name"].lower()
-    ]
+#     matching_cards = [
+#         card for card in cards
+#         if card_name.lower() in card["name"].lower()
+#     ]
 
-    if not matching_cards:
-        await ctx.send(f'No cards matching "{card_name}" found in your collection.')
-        return
-    
+#     if not matching_cards:
+#         await ctx.send(f'No cards matching "{card_name}" found in your collection.')
+#         return
 
-    emoji = user_emojis.get(user_id, "🔥")
 
-    embed = discord.Embed(
-        title=f'📸 Your Cards Matching "{card_name}":',
-        description=f"{len(matching_cards)} card(s)",
-        color=discord.Color.blue()
-    )
+#     embed = discord.Embed(
+#         title=f'📸 Your Cards Matching "{card_name}":',
+#         description=f"{len(matching_cards)} card(s)",
+#         color=discord.Color.blue()
+#     )
 
-    for i, card in enumerate(matching_cards, 1):
-        uid = card.get("uid", "N/A")
-        name = card.get("name", "Unknown")
-        group = card.get("group", "Unknown")
-        rarity = card.get("rarity", "Unknown")
+#     for i, card in enumerate(matching_cards, 1):
+#         uid = card.get("uid", "N/A")
+#         name = card.get("name", "Unknown")
+#         group = card.get("group", "Unknown")
+#         rarity = card.get("rarity", "Unknown")
 
-        embed.add_field(
-            name=f"{i}. {emoji} {group} • {name} • ({rarity}) • #{uid}",
-            value="",
-            inline=False
-        )
+#         embed.add_field(
+#             name=f"{i}. {emoji} {group} • {name} • ({rarity}) • #{uid}",
+#             value="",
+#             inline=False
+#         )
 
-    embed.set_footer(text='Use "!trade @user <name> <uid>" to trade a specific card.')
+#     embed.set_footer(text='Use "!trade @user <name> <uid>" to trade a specific card.')
 
-    await ctx.send(embed=embed)
+#     await ctx.send(embed=embed)
 
 
 bot.run(TOKEN)
