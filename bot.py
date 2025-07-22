@@ -232,18 +232,18 @@ async def drop(ctx):
                     FROM user_cards
                     WHERE user_id = $1
                 """, user.id)
-            short_id = (row['max_short_id'] or 0) + 1
+                short_id = (row['max_short_id'] or 0) + 1
 
-            edition_row = await conn.fetchrow("""
-                SELECT COUNT(*) AS count
-                FROM user_cards
-                WHERE user_id = $1 AND member_name = $2 AND rarity = $3
-            """, user.id, card['name'], card['rarity'])
-            edition = edition_row['count'] + 1
+                edition_row = await conn.fetchrow("""
+                    SELECT COUNT(*) AS count
+                    FROM user_cards
+                    WHERE user_id = $1 AND member_name = $2 AND rarity = $3
+                """, user.id, card['name'], card['rarity'])
+                edition = edition_row['count'] + 1
 
-            card["short_id"] = short_id
-            card["edition"] = edition
-            card["uid"] = generate_card_uid(card["name"], short_id, edition)
+                card["short_id"] = short_id
+                card["edition"] = edition
+                card["uid"] = generate_card_uid(card["name"], short_id, edition)
 
             # # DATABASE -- AFTER UID IS SET
             # async with db_pool.acquire() as conn:
@@ -256,11 +256,11 @@ async def drop(ctx):
 
 
             # Claimed card into user_cards table
-            await conn.execute("""
-                INSERT INTO user_cards(user_id, card_uid, short_id, date_obtained, rarity, edition, member_name, group_name)
-                VALUES($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, $6, $7)
-            """, int(user.id), card['uid'], str(card['short_id']),
-                card['rarity'], edition, card['name'], card['group'])
+                await conn.execute("""
+                    INSERT INTO user_cards(user_id, card_uid, short_id, date_obtained, rarity, edition, member_name, group_name)
+                    VALUES($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, $6, $7)
+                """, int(user.id), card['uid'], str(card['short_id']),
+                    card['rarity'], edition, card['name'], card['group'])
 
 
             challengers = [cid for cid in claim_challengers[emoji] if cid != user.id]
