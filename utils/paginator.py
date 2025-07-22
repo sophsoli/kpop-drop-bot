@@ -1,62 +1,52 @@
-from discord.ui import View, Button
 import discord
-
-CARDS_PER_PAGE = 5
+from discord.ui import View, Button
+from discord import Interaction, Embed
 
 class CollectionView(View):
-    def __init__(self, ctx, target_user, cards, emoji):
+    def __init__(self, ctx, pages, emoji, target):
         super().__init__(timeout=60)
         self.ctx = ctx
-        self.target_user = target_user
-        self.cards = cards
+        self.pages = pages
         self.emoji = emoji
+        self.target = target
         self.current_page = 0
         self.message = None
 
-        self.previous_button.disabled = True
-        if len(cards) <= CARDS_PER_PAGE:
-            self.next_button.disabled = True
-        
-    async def send(self):
-        embed = self.create_embed()
-        self.message = await self.ctx.send(embed=embed, view=self)
-
-    def create_embed(self):
-        start = self.current_page * CARDS_PER_PAGE
-        end = start + CARDS_PER_PAGE
-        embed = discord.Embed(
-            title=f"📸 {self.target_user.display_name}'s Collection (Page {self.current_page + 1})",
+    def generate_embed(self):
+        embed = Embed(
+            title=f"📸 {self.target.display_name}'s Photocard Collection 📚",
+            description=f"Page {self.current_page + 1} of {len(self.pages)}",
             color=discord.Color.blue()
         )
-        for card in self.cards[start:end]:
-            name = card.get("name", "Unknown")
-            group = card.get("group", "Unknown")
-            rarity = card.get("rarity", "Unknown")
-            edition = card.get("edition", "N/A")
-            uid = card.get("uid", "❓")
+        for row in self.pages[self.current_page]:
             embed.add_field(
-                name="",
-                value=f"{self.emoji} {group} • {name} • {rarity} • Edition {edition}",
+                name=f"{self.emoji} {row['group_name']} • {row['member_name']} • {row['rarity']} • Edition {row['edition']}",
+                value="",
                 inline=False
             )
         return embed
-    @discord.ui.button(label="Previous", style=discord.ButtonStyle.gray, disabled=True)
-    async def previous_button(self, interaction: discord.Interaction, button: Button):
-        if interaction.user != self.ctx.author:
-            return await interaction.response.send_message("You're not allowed to interact with this.", ephemeral=True)
-        
-        self.current_page -= 1
-        self.next_button.disabled = False
-        self.previous_button.disabled = self.current_page == 0
-        await interaction.response.edit_message(embed=self.create_embed(), view=self)
 
-    @discord.ui.button(label="Next", style=discord.ButtonStyle.gray)
-    async def next_button(self, interaction: discord.Interaction, button: Button):
-        if interaction.user != self.ctx.author:
-            return await interaction.response.send_message("You're not allowed to interact with this.", ephemeral=True)
+    async def update_message(self, interaction: Interaction):
+        await interaction.response.edit_message(embed=self.generate_embed(), view=self)
 
-        self.current_page += 1
-        max_page = (len(self.cards) - 1) // CARDS_PER_PAGE
-        self.previous_button.disabled = False
-        self.next_button.disabled = self.current_page == max_page
-        await interaction.response.edit_message(embed=self.create_embed(), view=self)
+    @Button(label="⬅️", style=discord.ButtonStyle.secondary)
+    async def previous(self, interaction: Interaction, button: Button):
+        if interaction.user != self.ctx.author:
+            await interaction.response.send_message("You can't control this menu!", ephemeral=True)
+            return
+        self.current_page = (self.current_page - 1) % len(self.pages)
+        await self.update_message(interaction)
+
+    @Button(label="➡️", style=discord.ButtonStyle.secondary)
+    async def next(self, interaction: Interaction, button: Button):
+        if interaction.user != self.ctx.author:
+            await interaction.response.send_message("You can't control this menu!", ephemeral=True)
+            return
+        self.current_page = (self.current_page + 1) % len(self.pages)
+        await self.update_message(interaction)
+
+    async def on_timeout(self):
+        for child in self.children:
+            child.disabled = True
+        if self.message:
+            await self.message.edit(view=self)

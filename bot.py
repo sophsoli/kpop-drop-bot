@@ -287,47 +287,9 @@ async def collection(ctx, member: discord.Member = None):
     # PAGINATION SETUP
     page_size = 5
     pages = [rows[i:i + page_size] for i in range(0, len(rows), page_size)]
-    total_pages = len(pages)
-    current_page = 0
-
-    def create_embed(page_index):
-        embed = discord.Embed(
-            title=f"📸 {target.display_name}'s Photocard Collection 📚\n\n",
-            description=f"Page {page_index + 1} of {total_pages}",
-            color=discord.Color.blue(),
-        )
-
-        for row in pages[page_index]:
-            embed.add_field(
-                name=f"{emoji} {row['group_name']} • {row['member_name']} • {row['rarity']} • Edition {row['edition']}",
-                value="",
-                inline=False
-            )
-        return embed
-    
-    message = await ctx.send(embed=create_embed(current_page))
-    await message.add_reaction("⬅️")
-    await message.add_reaction("➡️")
-
-    def check(reaction, user):
-        return (
-            user == ctx.author and
-            str(reaction.emoji) in ["⬅️", "➡️"] and
-            reaction.message.id == message.id
-        )
-    while True:
-        try:
-            reaction, user = await bot.wait_for("reaction_add", timeout=60.0, check=check)
-            if str(reaction.emoji) == "➡️":
-                current_page = (current_page + 1) % total_pages
-            elif str(reaction.emoji) == "⬅️":
-                current_page = (current_page - 1) % total_pages
-
-            await message.edit(embed=create_embed(current_page))
-            await message.remove_reaction(reaction, user)
-        except asyncio.TimeoutError:
-            break
-    await message.clear_reactions()
+    view = CollectionView(ctx, pages, emoji, target)
+    embed = view.generate_embed()
+    view.message = await ctx.send(embed=embed, view=view)
 
     # # EMBED to show collection
     # embed = discord.Embed(
