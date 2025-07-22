@@ -31,7 +31,7 @@ class CollectionView(View):
         for row in self.pages[self.current_page]:
             embed.add_field(
                 name=f"{self.emoji} {row['group_name']} • {row['member_name']} • {row['rarity']} • Edition {row['edition']}",
-                value="UID: `" + row['card_uid'] + "`",
+                value="",
                 inline=False
             )
         return embed
