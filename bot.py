@@ -349,7 +349,9 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
 
     async with db_pool.acquire() as conn:
         card = await conn.fetchrow("""
-            SELECT * FROM user_cards
+            SELECT * c.member_name, c.rarity
+            FROM user_cards uc
+            JOIN cards c ON uc.card_id = c.id
             WHERE user_id = $1 AND card_uid = $2
         """, sender_id, card_uid)
 
@@ -361,7 +363,7 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
         # card details
         card_info = await conn.fetchrow("""
             SELECT member_name, rarity FROM cards
-            WHERE uid = $1    
+            WHERE card_uid = $1    
         """, card_uid)
 
         if not card_info:
