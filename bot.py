@@ -378,7 +378,7 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
         }
 
         # confirmation message
-        message = await ctx.send(f"{partner.mention}! {ctx.author.display_name} wants to give you their [**{card_info['rarity']}**] **{card_info['name']}** photocard. Accept?")
+        message = await ctx.send(f"{partner.mention}! {ctx.author.display_name} wants to give you their [**{card_info['rarity']}**] **{card_info['member_name']}** photocard. Accept?")
 
         await message.add_reaction("🤝")
         await message.add_reaction("❌")
@@ -425,7 +425,7 @@ async def on_reaction_add(reaction, user):
                         WHERE card_uid = $2
                     """, user.id, card_uid)
 
-                    await message.channel.send(f"✅ Trade successful! [**{card_info['rarity']}**] **{card_info['name']}** photocard is now added to your collection!")
+                    await message.channel.send(f"✅ Trade successful! [**{card_info['rarity']}**] **{card_info['member_name']}** photocard is now added to your collection!")
                     del pending_trades[sender_id]
                     
         elif emoji == "❌":
