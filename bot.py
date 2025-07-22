@@ -283,6 +283,12 @@ async def drop(ctx):
 async def collection(ctx):
     user_id = ctx.author.id
 
+    # get user's tag emoji from postgressql
+    async with db_pool.acquire() as conn:
+        row = await conn.fetchrow("SELECT emoji FROM users WHERE user_id = $1", user_id)
+        emoji = row["emoji"] if row and row["emoji"] else "📸"
+
+    # Get user's card
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT * FROM user_cards
@@ -299,8 +305,6 @@ async def collection(ctx):
         title=f"📸 {ctx.author.display_name}'s Photocard Collection 📚\n\n",
         color=discord.Color.blue(),
     )
-
-    emoji = user_emojis.get(user_id, "🔥")
 
     print(f"Rows fetched for user {user_id}: {rows}")
 
@@ -340,98 +344,117 @@ pending_trades = {}
 
 # COMMAND TRADE !trade
 @bot.command()
-async def trade(ctx, member: discord.Member, uid: str):
-    sender_id = str(ctx.author.id)
-    recipient_id = str(member.id)
+async def trade(ctx, partner: discord.Member, card_uid: str):
 
-    # Reload Collection
-    user_collections = defaultdict(list, ensure_card_ids(load_collections()))
+    sender_id = ctx.author.id
+    recipient_id = partner.id
 
-    # Get Sender's Cards
-    sender_cards = user_collections.get(sender_id, [])
+    async with db_pool.acquire() as conn:
+        card = await conn.fetchrow("""
+            SELECT * FROM user_cards
+            WHERE user_id = $1 AND card_uid = $2
+        """, sender_id, card_uid)
 
-    if sender_id not in user_collections:
-        await ctx.send("You don't have any cards to trade.")
-        return
-    
-    card = next((c for c in sender_cards if c.get("uid") == uid), None)
-    if not card:
-        await ctx.send(f"❌ You don't have a card with UID `{uid}` in your collection.")
-        return
-    
-    if sender_id not in pending_trades:
-        pending_trades[sender_id] = {}
 
-    pending_trades[sender_id][recipient_id] = {
-        "uid": uid,
-        "status": "pending"
-    }
+        if not card:
+            await ctx.send("❌ You don't own a card with that UID.")
+            return
+        
+        # card details
+        card_info = await conn.fetchrow("""
+            SELECT name, rarity FROM cards
+            WHERE uid = $1    
+        """, card_uid)
 
-    message = await ctx.send(f"{member.mention}, {ctx.author.display_name} wants to trade you a [**{card['rarity']}**] **{card['name']}** photocard. Accept?")
-    await message.add_reaction("🤝")
-    await message.add_reaction("❌")
+        if not card_info:
+            await ctx.send("❌ Card info not found.")
+            return
+        
+        # SAVE PENDING TRADE to memory
+        pending_trades[sender_id] = {
+            "recipient_id": recipient_id,
+            "card_uid": card_uid,
+            "message_id": None
+        }
 
-    pending_trades[sender_id][recipient_id]["message_id"] = message.id
+        # confirmation message
+        message = await ctx.send(f"{partner.mention}! {ctx.author.display_name} wants to give you their [**{card_info['rarity']}**] **{card_info['name']}** photocard. Accept?")
+
+        await message.add_reaction("🤝")
+        await message.add_reaction("❌")
+
+        pending_trades[sender_id]["message_id"] = message.id
+
+        # timeout auto-cancel (5 minutes)
+        async def auto_cancel():
+            await asyncio.sleep(300)
+            if sender_id in pending_trades and pending_trades[sender_id]["message_id"] == message.id:
+                del pending_trades[sender_id]
+                try:
+                    await message.channel.send("⌛ Trade request timed out.")
+                except discord.HTTPException:
+                    pass
+        
+        asyncio.create_task(auto_cancel())
 
 @bot.event
 async def on_reaction_add(reaction, user):
     message = reaction.message
     emoji = str(reaction.emoji)
 
-    for sender_id in list(pending_trades):
-        for recipient_id in list(pending_trades[sender_id]):
-            trade = pending_trades[sender_id][recipient_id]
+    for sender_id, trade in list(pending_trades.items()):
+        if trade["message_id"] != message.id:
+            continue
 
-            if trade.get("message_id") == message.id and str(user.id) == recipient_id:
-                # get card by ID
-                uid = trade["uid"]
+        if user.id != trade["recipient_id"]:
+            continue # only allows recipient to respond
 
-                if emoji == "🤝":
-                    user_collections = defaultdict(list, ensure_card_ids(load_collections()))
+        card_uid = trade["card_uid"]
+
+        if emoji == "🤝":
+            async with db_pool.acquire() as conn:
+                    # get card info
+                    card_info = await conn.fetchrow("""
+                        SELECT name, rarity FROM cards WHERE uid = $1
+                    """, card_uid)
+
+                    # transfer ownership
+                    await conn.execute("""
+                        UPDATE user_cards 
+                        SET user_id = $1 
+                        WHERE card_uid = $2
+                    """, user.id, card_uid)
+
+                    await message.channel.send(f"✅ Trade successful! [**{card_info['rarity']}**] **{card_info['name']}** photocard is now added to your collection!")
+                    del pending_trades[sender_id]
                     
-                    sender_cards = user_collections.get(sender_id, [])
-                    card = next((c for c in sender_cards if c.get("uid") == uid), None)
-                    if not card:
-                        await message.channel.send("Trade failed. Card no longer exists.")
-                        return
-                    
-                    # remove from sender
-                    user_collections[sender_id] = [c for c in sender_cards if c.get("uid") != uid]
+        elif emoji == "❌":
+            await message.channel.send(f"❌ Trade was declined.")
+            del pending_trades[sender_id]
 
-                    # add card to recipient
-                    user_collections[recipient_id].append(card)
-
-                    save_collections(user_collections)
-                    await message.channel.send(f"✅ Trade accepted! **{card['name']}** photocard is now added to your collection!")
-
-                    del pending_trades[sender_id][recipient_id]
-                    if not pending_trades[sender_id]:
-                        del pending_trades[sender_id]
-
-                elif emoji == "❌":
-                    await message.channel.send(f"❌ Trade was declined.")
-
-                    # clean up trade
-                    del pending_trades[sender_id][recipient_id]
-                    if not pending_trades[sender_id]:
-                        del pending_trades[sender_id]
-                    return
 # TAG COMMAND !tag                
 @bot.command()
 async def tag(ctx, emoji):
-    user_id = str(ctx.author.id)
+    user_id = ctx.author.id
 
-    if len(emoji) > 2:
-        await ctx.send("Invalid!")
+    if not emoji.startswith("<") and len(emoji) > 2:
+        await ctx.send("❌ Please use a valid emoji or Discord emote!")
         return
 
-    user_emojis[user_id] = emoji
-    save_user_emojis(user_emojis)
-    await ctx.send(f"Tagged your collection as {emoji}!")
+    async with db_pool.acquire() as conn:
+        await conn.execute("""
+            INSERT INTO users (user_id, emoji)
+            VALUES ($1, $2)
+            ON CONFLICT (user_id) DO UPDATE SET emoji = EXCLUDED.emoji
+        """, user_id, emoji)
+
+    await ctx.send(f"✅ Your collection is now tagged with {emoji}!")
+
+    
 
 @bot.command()
 async def mycards(ctx, *, card_name: str):
-    user_id = str(ctx.author.id)
+    user_id = int(ctx.author.id)
     card_name = card_name.title()
     cards = user_collections.get(user_id, [])
 
