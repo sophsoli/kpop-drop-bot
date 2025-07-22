@@ -243,7 +243,7 @@ async def drop(ctx):
 
                 card["short_id"] = short_id
                 card["edition"] = edition
-                card["uid"] = generate_card_uid(card["name"], short_id, edition)
+                card["card_uid"] = generate_card_uid(card["name"], short_id, edition)
 
             # # DATABASE -- AFTER UID IS SET
             # async with db_pool.acquire() as conn:
@@ -259,7 +259,7 @@ async def drop(ctx):
                 await conn.execute("""
                     INSERT INTO user_cards(user_id, card_uid, short_id, date_obtained, rarity, edition, member_name, group_name)
                     VALUES($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, $6, $7)
-                """, int(user.id), card['uid'], str(card['short_id']),
+                """, int(user.id), card['card_uid'], str(card['short_id']),
                     card['rarity'], edition, card['name'], card['group'])
 
 
