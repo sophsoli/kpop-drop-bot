@@ -255,30 +255,12 @@ async def drop(ctx):
             else:
                 await ctx.send(f"{user.mention} gained a {card['rarity']}-Tier **{card['name']}** photocard! 🤩")
 
-            # user_cards.append(card)
-            # save_collections(user_collections)
-
             claimed[emoji] = user.id
             already_claimed_users.add(user.id)
             user_cooldowns[user.id] = now
 
         except asyncio.TimeoutError:
             break
-
-# COLLECTION COMMAND !collection        
-# @bot.command()
-# async def collection(ctx, member: discord.Member = None):
-#     # If no member is specified, default to the command author
-#     user = member or ctx.author
-#     user_id = str(user.id)
-
-#     # reload the latest collections from file, ensuring IDs
-#     all_collections = defaultdict(list, ensure_card_ids(load_collections()))
-#     cards = all_collections.get(user_id, [])
-
-#     if not cards:
-#         await ctx.send(f"{user.display_name} doesn't have any photocards yet. 😢")
-#         return
 
 @bot.command()
 async def collection(ctx, member: discord.Member = None):
@@ -301,46 +283,65 @@ async def collection(ctx, member: discord.Member = None):
     if not rows:
         await ctx.send(f"{target.display_name} doesn't have any photocards yet. 😢")
         return
+    
+    # PAGINATION SETUP
+    page_size = 5
+    pages = [rows[i:i + page_size] for i in range(0, len(rows), page_size)]
+    total_pages = len(pages)
+    current_page = 0
 
-    # EMBED to show collection
-    embed = discord.Embed(
-        title=f"📸 {target.display_name}'s Photocard Collection 📚\n\n",
-        color=discord.Color.blue(),
-    )
-
-    print(f"Rows fetched for user {user_id}: {rows}")
-
-    for row in rows[:5]:
-        embed.add_field(
-            name=f"{emoji} {row['group_name']} • {row['member_name']} • {row['rarity']} • Edition {row['edition']}",
-            value="",
-            inline=False
+    def create_embed(page_index):
+        embed = discord.Embed(
+            title=f"📸 {target.display_name}'s Photocard Collection 📚\n\n",
+            description=f"Page {page_index + 1} of {total_pages}",
+            color=discord.Color.blue(),
         )
 
-    await ctx.send(embed=embed)
+        for row in pages[page_index]:
+            embed.add_field(
+                name=f"{emoji} {row['group_name']} • {row['member_name']} • {row['rarity']} • Edition {row['edition']}",
+                value="",
+                inline=False
+            )
+        return embed
     
+    message = await ctx.send(embed=create_embed(current_page))
+    await message.add_reaction("⬅️")
+    await message.add_reaction("➡️")
 
-    # view = CollectionView(ctx, user, cards, emoji)
+    def check(reaction, user):
+        return (
+            user == ctx.author and
+            str(reaction.emoji) in ["⬅️", "➡️"] and
+            reaction.message.id == message.id
+        )
+    while True:
+        try:
+            reaction, user = await bot.wait_for("reaction_add", timeout=60.0, check=check)
+            if str(reaction.emoji) == "➡️":
+                current_page = (current_page + 1) % total_pages
+            elif str(reaction.emoji) == "⬅️":
+                current_page = (current_page - 1) % total_pages
 
-    # # for card in cards:
-    # #     short_id = card.get("short_id", 0)
-    # #     edition = card.get("edition", 1)
-    # #     name = card.get("name", "Unknown")
-    # #     group = card.get("group", "Unknown")
-    # #     rarity = card.get("rarity", "Unknown")
+            await message.edit(embed=create_embed(current_page))
+            await message.remove_reaction(reaction, user)
+        except asyncio.TimeoutError:
+            break
+    await message.clear_reactions()
 
-    # #     uid = card.get("uid")
-    # #     if not uid:
-    # #         name_code = ''.join(filter(str.isalpha, name.upper()))[:4]
-    # #         uid = f"{name_code}{short_id:02}{edition:02}"
+    # # EMBED to show collection
+    # embed = discord.Embed(
+    #     title=f"📸 {target.display_name}'s Photocard Collection 📚\n\n",
+    #     color=discord.Color.blue(),
+    # )
 
-    #     # embed.add_field(
-    #     #     name="",
-    #     #     value=f"{emoji} {card['group']} • {card['name']} • {card['rarity']} • Edition {edition}",
-    #     #     inline=False
-    #     # )
 
-    # await view.send()
+    # for row in rows[:5]:
+    #     embed.add_field(
+    #         name=f"{emoji} {row['group_name']} • {row['member_name']} • {row['rarity']} • Edition {row['edition']}",
+    #         value="",
+    #         inline=False
+    #     )
 
 pending_trades = {}
 
@@ -361,16 +362,6 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
         if not card:
             await ctx.send("❌ You don't own a card with that UID.")
             return
-        
-        # # card details
-        # card_info = await conn.fetchrow("""
-        #     SELECT member_name, rarity FROM cards
-        #     WHERE card_uid = $1    
-        # """, card_uid)
-
-        # if not card_info:
-        #     await ctx.send("❌ Card info not found.")
-        #     return
         
         # SAVE PENDING TRADE to memory
         pending_trades[sender_id] = {
@@ -455,7 +446,7 @@ async def tag(ctx, emoji):
 @bot.command()
 async def mycards(ctx, *, card_name: str):
     user_id = ctx.author.id
-    card_name = card_name.title()
+    card_name = card_name.upper()
 
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
@@ -477,8 +468,8 @@ async def mycards(ctx, *, card_name: str):
 
     emoji_map = {
         "Common": "🟩",
-        "Uncommon": "🟦",
-        "Rare": "🟪",
+        "Rare": "🟦",
+        "Epic": "🟪",
         "Ultra Rare": "🟥",
         "Legendary": "🌟"
     }
