@@ -92,7 +92,7 @@ async def on_ready():
             password=os.getenv("DB_PASSWORD"),
             database=os.getenv("DB_NAME")
         )
-    await bot.change_presence(activity=discord.Game(name="!drop to play"))
+        await bot.change_presence(activity=discord.Game(name="!drop to play"))
     print(f"Mingyu Bot ready and connected to DB!")
 
 # drop command !drop
@@ -212,20 +212,27 @@ async def drop(ctx):
             card = og_card.copy()
             card.pop("reaction", None)
 
-            # Assign unique identifiers before DB Query
-            user_id_str = str(user.id)
-            user_cards = user_collections[user_id_str]
+            # # Assign unique identifiers before DB Query
+            # user_id_str = str(user.id)
+            # user_cards = user_collections[user_id_str]
 
-            def get_next_short_id(collection):
-                if not collection:
-                        return 1
-                else:
-                    max_id = max((c.get("short_id", 0) for c in collection), default=0)
-                    return max_id + 1
-            short_id = get_next_short_id(user_cards)
+            # def get_next_short_id(collection):
+            #     if not collection:
+            #             return 1
+            #     else:
+            #         max_id = max((c.get("short_id", 0) for c in collection), default=0)
+            #         return max_id + 1
+            # short_id = get_next_short_id(user_cards)
 
-            same_cards = [c for c in user_cards if c["name"] == card["name"] and c["rarity"] == card["rarity"]]
-            edition = len(same_cards) + 1
+            # same_cards = [c for c in user_cards if c["name"] == card["name"] and c["rarity"] == card["rarity"]]
+            # edition = len(same_cards) + 1
+            async with db_pool.acquire() as conn:
+                row = await conn.fetchrow("""
+                    SELECT MAX(short_id::int) AS max_short_id
+                    FROM user_cards
+                    WHERE user_id = $1
+                """, user.id)
+            short_id = (row['max_short_id'] or 0) + 1
 
             card["short_id"] = short_id
             card["edition"] = edition
