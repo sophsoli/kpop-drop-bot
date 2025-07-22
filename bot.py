@@ -413,7 +413,7 @@ async def on_reaction_add(reaction, user):
             async with db_pool.acquire() as conn:
                     # get card info
                     card_info = await conn.fetchrow("""
-                        SELECT name, rarity FROM cards WHERE uid = $1
+                        SELECT member_name, rarity FROM cards WHERE card_uid = $1
                     """, card_uid)
 
                     # transfer ownership
