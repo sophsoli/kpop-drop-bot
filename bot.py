@@ -11,9 +11,9 @@ import time
 from collections import defaultdict
 from utils.paginator import CollectionView
 import asyncpg
-from datetime import datetime
+from datetime import datetime, timezone
 
-current_time = datetime.utcnow()
+current_time = datetime.now(timezone.utc)
 
 
 FRAME_PATH = "./images/frame.png"
