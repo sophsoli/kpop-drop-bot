@@ -362,7 +362,7 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
         
         # card details
         card_info = await conn.fetchrow("""
-            SELECT name, rarity FROM cards
+            SELECT member_name, rarity FROM cards
             WHERE uid = $1    
         """, card_uid)
 
