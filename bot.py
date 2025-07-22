@@ -11,6 +11,9 @@ import time
 from collections import defaultdict
 from utils.paginator import CollectionView
 import asyncpg
+from datetime import datetime
+
+current_time = datetime.utcnow()
 
 
 FRAME_PATH = "./images/frame.png"
@@ -278,8 +281,9 @@ async def drop(ctx):
 #         return
 
 @bot.command()
-async def collection(ctx):
-    user_id = ctx.author.id
+async def collection(ctx, member: discord.Member = None):
+    target = member or ctx.author
+    user_id = target.id
 
     # get user's tag emoji from postgressql
     async with db_pool.acquire() as conn:
@@ -295,12 +299,12 @@ async def collection(ctx):
         """, int(user_id))
     
     if not rows:
-        await ctx.send(f"{ctx.author.display_name} doesn't have any photocards yet. 😢")
+        await ctx.send(f"{target.display_name} doesn't have any photocards yet. 😢")
         return
 
     # EMBED to show collection
     embed = discord.Embed(
-        title=f"📸 {ctx.author.display_name}'s Photocard Collection 📚\n\n",
+        title=f"📸 {target.display_name}'s Photocard Collection 📚\n\n",
         color=discord.Color.blue(),
     )
 
@@ -422,9 +426,9 @@ async def on_reaction_add(reaction, user):
                     # transfer ownership
                     await conn.execute("""
                         UPDATE user_cards 
-                        SET user_id = $1 
-                        WHERE card_uid = $2
-                    """, user.id, card_uid)
+                        SET user_id = $1, date_obtained = $2 
+                        WHERE card_uid = $3
+                    """, user.id, current_time, card_uid)
 
                     await message.channel.send(f"✅ Trade successful! [**{trade['rarity']}**] **{trade['member_name']}** photocard is now added to your collection!")
                     del pending_trades[sender_id]
