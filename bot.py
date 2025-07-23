@@ -40,8 +40,8 @@ RARITY_TIERS = {
 user_cooldowns = {}
 drop_cooldowns = {}
 
-COOLDOWN_DURATION = 3600
-DROP_COOLDOWN_DURATION = 7200 # 2 hours
+COOLDOWN_DURATION = 1800 # 30mins
+DROP_COOLDOWN_DURATION = 3600 # 2 hours = 7200 1 hour = 3600
 
 db_pool = None
 
