@@ -20,7 +20,7 @@ FRAME_PATH = "./images/frame.png"
 
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = 1336418461240528931
+CHANNEL_ID = 1397431382741090314
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
