@@ -303,5 +303,25 @@
         "name": "Sullyoon",
         "group": "NMIXX",
         "image": "cards/NMIXX/sullyoon.JPG"
+    },
+    {
+        "name": "Daesung",
+        "group": "BIGBANG",
+        "image": "cards/BIGBANG/daesung.JPG"
+    },
+    {
+        "name": "G-DRAGON",
+        "group": "BIGBANG",
+        "image": "cards/BIGBANG/gdragon.JPG"
+    },
+    {
+        "name": "Taeyang",
+        "group": "BIGBANG",
+        "image": "cards/BIGBANG/taeyang.JPG"
+    },
+    {
+        "name": "T.O.P",
+        "group": "BIGBANG",
+        "image": "cards/BIGBANG/top.JPG"
     }
 ]

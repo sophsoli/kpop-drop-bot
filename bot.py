@@ -501,6 +501,18 @@ async def botcomms(ctx):
         inline=False
     )
 
+    embed.add_field(
+        name="📷 Tag",
+        value="`!tag <emoji>` — Change the tag of your collection! -*More tag variants to come*-",
+        inline=False
+    )
+
+    embed.add_field(
+        name="🤓",
+        value="`!another command` — -*MORE FEATURES AND COMMANDS COMING!!*-",
+        inline=False
+    )
+
     await ctx.send(embed=embed)
 
 bot.run(TOKEN)
