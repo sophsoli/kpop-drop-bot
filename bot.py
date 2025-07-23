@@ -469,7 +469,7 @@ async def mycards(ctx, *, card_name: str):
     await ctx.send(embed=embed)
 
 @bot.command()
-async def help(ctx):
+async def botcomms(ctx):
     # EMBED FOR HELP COMMAND
     embed = discord.Embed(
         title="✨ COMMANDS YOU CAN USE! ✨",
