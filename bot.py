@@ -468,5 +468,39 @@ async def mycards(ctx, *, card_name: str):
 
     await ctx.send(embed=embed)
 
+@bot.command()
+async def help(ctx):
+    # EMBED FOR HELP COMMAND
+    embed = discord.Embed(
+        title="✨ COMMANDS YOU CAN USE! ✨",
+        description=f"{ctx.author.mention}, here are the commands you can use:",
+        color=discord.Color.blue()
+    )
+
+    embed.add_field(
+        name="🃏 Drop Cards",
+        value="`!drop` — Drop a set of cards that anyone can claim.",
+        inline=False
+    )
+
+    embed.add_field(
+        name="📁 View Collection",
+        value="`!collection` — View your collection of claimed cards. You can also view someone else's collection @user",
+        inline=False
+    )
+
+    embed.add_field(
+        name="🔁 Trade Cards",
+        value="`!trade @user #<card_uid>` — Propose a trade with someone!",
+        inline=False
+    )
+
+    embed.add_field(
+        name="🎴 My Cards",
+        value="`!mycards <name>` — See a list of the cards you currently own.",
+        inline=False
+    )
+
+    await ctx.send(embed=embed)
 
 bot.run(TOKEN)
