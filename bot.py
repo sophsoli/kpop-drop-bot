@@ -480,6 +480,29 @@ async def mycards(ctx, *, card_name: str):
     await ctx.send(embed=embed)
 
 @bot.command()
+async def cooldowns(ctx):
+    user_id = ctx.author.id
+    now = time.time()
+
+    # get timestamp
+    last_drop = drop_cooldowns.get(user_id)
+    last_claim = user_cooldowns.get(user_id)
+
+    drop_remaining = max(0, int(DROP_COOLDOWN_DURATION - (now - last_drop))) if last_drop else 0
+    claim_remaining = max(0, int(COOLDOWN_DURATION - (now - last_claim))) if last_claim else 0
+
+    def format_time(seconds):
+        minutes, sec = divmod(seconds, 60)
+        return f"{minutes}m {sec}s" if seconds > 0 else "Ready ✅"
+    
+    embed = discord.Embed(title="⏳ Your Cooldowns", color=discord.Color.orange())
+    embed.add_field(name="Drop Cooldown", value=format_time(drop_remaining), inline=False)
+    embed.add_field(name="Claim Cooldown", value=format_time(claim_remaining), inline=False)
+
+    await ctx.send(embed=embed)
+    
+
+@bot.command()
 async def bothelp(ctx):
     # EMBED FOR HELP COMMAND
     embed = discord.Embed(
