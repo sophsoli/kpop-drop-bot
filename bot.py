@@ -171,12 +171,12 @@ async def drop(ctx):
     #     embed.add_field(name=f"{card['name']}")
 
     # Message before sending the image
-    await ctx.send("✨ React with one of the emojis to claim a card below!")
+    # await ctx.send("✨ React with one of the emojis to claim a card below!")
 
     embed.set_image(url="attachment://drop.png")
     message = await ctx.send(file=file, embed=embed)
 
-    # Add reactions
+    # Add reactions to drop message
     for card in dropped_cards:
         await message.add_reaction(card['reaction'])
 
