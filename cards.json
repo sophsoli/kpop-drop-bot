@@ -177,7 +177,7 @@
         "name": "Yujin",
         "group": "IVE",
         "concept": "Base",
-        "image": "cards/IVE/Yujin.JPG"
+        "image": "cards/IVE/yujin.JPG"
     },
     {
         "name": "Chaewon",
@@ -208,6 +208,36 @@
         "group": "LE SSERAFIM",
         "concept": "Base",
         "image": "cards/LESSERAFIM/yunjin.JPG"
+    },
+    {
+        "name": "Chaewon",
+        "group": "LE SSERAFIM",
+        "concept": "Perfect Night",
+        "image": "cards/LESSERAFIM/perfect_night/chaewon2.JPG"
+    },
+    {
+        "name": "Eunchae",
+        "group": "LE SSERAFIM",
+        "concept": "Perfect Night",
+        "image": "cards/LESSERAFIM/perfect_night/eunchae2.JPG"
+    },
+    {
+        "name": "Kazuha",
+        "group": "LE SSERAFIM",
+        "concept": "Perfect Night",
+        "image": "cards/LESSERAFIM/perfect_night/kazuha2.JPG"
+    },
+    {
+        "name": "Sakura",
+        "group": "LE SSERAFIM",
+        "concept": "Perfect Night",
+        "image": "cards/LESSERAFIM/perfect_night/sakura2.JPG"
+    },
+    {
+        "name": "Yunjin",
+        "group": "LE SSERAFIM",
+        "concept": "Perfect Night",
+        "image": "cards/LESSERAFIM/perfect_night/yunjin2.JPG"
     },
     {
         "name": "Dino",
@@ -286,6 +316,84 @@
         "group": "SEVENTEEN",
         "concept": "Base",
         "image": "cards/SEVENTEEN/woozi.JPG"
+    },
+    {
+        "name": "Dino",
+        "group": "SEVENTEEN",
+        "concept": "Face the Sun",
+        "image": "cards/SEVENTEEN/face_the_sun/dino2.JPG"
+    },
+    {
+        "name": "DK",
+        "group": "SEVENTEEN",
+        "concept": "Face the Sun",
+        "image": "cards/SEVENTEEN/face_the_sun/dk2.JPG"
+    },
+    {
+        "name": "Hoshi",
+        "group": "SEVENTEEN",
+        "concept": "Face the Sun",
+        "image": "cards/SEVENTEEN/face_the_sun/hoshi2.JPG"
+    },
+    {
+        "name": "Jeonghan",
+        "group": "SEVENTEEN",
+        "concept": "Face the Sun",
+        "image": "cards/SEVENTEEN/face_the_sun/jeonghan2.JPG"
+    },
+    {
+        "name": "Joshua",
+        "group": "SEVENTEEN",
+        "concept": "Face the Sun",
+        "image": "cards/SEVENTEEN/face_the_sun/joshua2.JPG"
+    },
+    {
+        "name": "Jun",
+        "group": "SEVENTEEN",
+        "concept": "Face the Sun",
+        "image": "cards/SEVENTEEN/face_the_sun/jun2.JPG"
+    },
+    {
+        "name": "Mingyu",
+        "group": "SEVENTEEN",
+        "concept": "Face the Sun",
+        "image": "cards/SEVENTEEN/face_the_sun/mingyu2.JPG"
+    },
+    {
+        "name": "S.Coups",
+        "group": "SEVENTEEN",
+        "concept": "Face the Sun",
+        "image": "cards/SEVENTEEN/face_the_sun/scoups.JPG"
+    },
+    {
+        "name": "Seungkwan",
+        "group": "SEVENTEEN",
+        "concept": "Face the Sun",
+        "image": "cards/SEVENTEEN/face_the_sun/seungkwan.JPG"
+    },
+    {
+        "name": "The8",
+        "group": "SEVENTEEN",
+        "concept": "Face the Sun",
+        "image": "cards/SEVENTEEN/face_the_sun/the82.JPG"
+    },
+    {
+        "name": "Vernon",
+        "group": "SEVENTEEN",
+        "concept": "Face the Sun",
+        "image": "cards/SEVENTEEN/face_the_sun/vernon2.JPG"
+    },
+    {
+        "name": "Wonwoo",
+        "group": "SEVENTEEN",
+        "concept": "Face the Sun",
+        "image": "cards/SEVENTEEN/face_the_sun/wonwoo2.JPG"
+    },
+    {
+        "name": "Woozi",
+        "group": "SEVENTEEN",
+        "concept": "Face the Sun",
+        "image": "cards/SEVENTEEN/face_the_sun/woozi2.JPG"
     },
     {
         "name": "Hanbin",
@@ -442,5 +550,35 @@
         "group": "i-dle",
         "concept": "Base",
         "image": "cards/i-dle/yuqi.JPG"
+    },
+    {
+        "name": "Irene",
+        "group": "Red Velvet",
+        "concept": "Base",
+        "image": "cards/RedVelvet/irene.JPG"
+    },
+    {
+        "name": "Joy",
+        "group": "Red Velvet",
+        "concept": "Base",
+        "image": "cards/RedVelvet/joy.JPG"
+    },
+    {
+        "name": "Seulgi",
+        "group": "Red Velvet",
+        "concept": "Base",
+        "image": "cards/RedVelvet/seulgi.JPG"
+    },
+    {
+        "name": "Wendy",
+        "group": "Red Velvet",
+        "concept": "Base",
+        "image": "cards/RedVelvet/wendy.JPG"
+    },
+    {
+        "name": "Yeri",
+        "group": "Red Velvet",
+        "concept": "Base",
+        "image": "cards/RedVelvet/yeri.JPG"
     }
 ]
