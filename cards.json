@@ -2,326 +2,445 @@
     {
         "name": "Giselle",
         "group": "aespa",
+        "concept": "Base",
         "image": "cards/aespa/giselle.JPG"
     },
     {
         "name": "Karina",
         "group": "aespa",
+        "concept": "Base",
         "image": "cards/aespa/karina.JPG"
     },
     {
         "name": "Ningning",
         "group": "aespa",
+        "concept": "Base",
         "image": "cards/aespa/ningning.JPG"
     },
     {
         "name": "Winter",
         "group": "aespa",
+        "concept": "Base",
         "image": "cards/aespa/winter.JPG"
     },
     {
         "name": "Jennie",
         "group": "BLACKPINK",
+        "concept": "Base",
         "image": "cards/BLACKPINK/jennie.JPG"
     },
     {
         "name": "Jisoo",
         "group": "BLACKPINK",
+        "concept": "Base",
         "image": "cards/BLACKPINK/jisoo.JPG"
     },
     {
         "name": "Lisa",
         "group": "BLACKPINK",
+        "concept": "Base",
         "image": "cards/BLACKPINK/lisa.JPG"
     },
     {
         "name": "Rosé",
         "group": "BLACKPINK",
+        "concept": "Base",
         "image": "cards/BLACKPINK/rose.JPG"
+    },
+    {
+        "name": "Jennie",
+        "group": "BLACKPINK",
+        "concept": "DEADLINE",
+        "image": "cards/BLACKPINK/deadline/jennie2.JPG"
+    },
+    {
+        "name": "Jisoo",
+        "group": "BLACKPINK",
+        "concept": "Base",
+        "image": "cards/BLACKPINK/deadline/jisoo2.JPG"
+    },
+    {
+        "name": "Lisa",
+        "group": "BLACKPINK",
+        "concept": "DEADLINE",
+        "image": "cards/BLACKPINK/deadline/lisa2.JPG"
+    },
+    {
+        "name": "Rosé",
+        "group": "BLACKPINK",
+        "concept": "DEADLINE",
+        "image": "cards/BLACKPINK/deadline/rose2.JPG"
     },
     {
         "name": "J-Hope",
         "group": "BTS",
+        "concept": "Base",
         "image": "cards/BTS/jhope.JPG"
     },
     {
         "name": "Jimin",
         "group": "BTS",
+        "concept": "Base",
         "image": "cards/BTS/jimin.JPG"
     },
     {
         "name": "Jin",
         "group": "BTS",
+        "concept": "Base",
         "image": "cards/BTS/jin.JPG"
     },
     {
         "name": "Jungkook",
         "group": "BTS",
+        "concept": "Base",
         "image": "cards/BTS/jungkook.JPG"
     },
     {
         "name": "RM",
         "group": "BTS",
+        "concept": "Base",
         "image": "cards/BTS/rm.JPG"
     },
     {
         "name": "SUGA",
         "group": "BTS",
+        "concept": "Base",
         "image": "cards/BTS/suga.JPG"
     },
     {
         "name": "V",
         "group": "BTS",
+        "concept": "Base",
         "image": "cards/BTS/v.JPG"
     },
     {
         "name": "Chaeryeong",
         "group": "ITZY",
+        "concept": "Base",
         "image": "cards/ITZY/chaeryeong.JPG"
     },
     {
         "name": "Lia",
         "group": "ITZY",
+        "concept": "Base",
         "image": "cards/ITZY/lia.JPG"
     },
     {
         "name": "Ryujin",
         "group": "ITZY",
+        "concept": "Base",
         "image": "cards/ITZY/ryujin.JPG"
     },
     {
         "name": "Yeji",
         "group": "ITZY",
+        "concept": "Base",
         "image": "cards/ITZY/yeji.JPG"
     },
     {
         "name": "Yuna",
         "group": "ITZY",
+        "concept": "Base",
         "image": "cards/ITZY/yuna.JPG"
     },
     {
         "name": "Gaeul",
         "group": "IVE",
+        "concept": "Base",
         "image": "cards/IVE/gaeul.JPG"
     },
     {
         "name": "Leeseo",
         "group": "IVE",
+        "concept": "Base",
         "image": "cards/IVE/leeseo.JPG"
     },
     {
         "name": "Liz",
         "group": "IVE",
+        "concept": "Base",
         "image": "cards/IVE/liz.JPG"
     },
     {
         "name": "Rei",
         "group": "IVE",
+        "concept": "Base",
         "image": "cards/IVE/rei.JPG"
     },
     {
         "name": "Wonyoung",
         "group": "IVE",
+        "concept": "Base",
         "image": "cards/IVE/wonyoung.JPG"
     },
     {
         "name": "Yujin",
         "group": "IVE",
+        "concept": "Base",
         "image": "cards/IVE/Yujin.JPG"
     },
     {
         "name": "Chaewon",
         "group": "LE SSERAFIM",
+        "concept": "Base",
         "image": "cards/LESSERAFIM/chaewon.JPG"
     },
     {
         "name": "Eunchae",
         "group": "LE SSERAFIM",
+        "concept": "Base",
         "image": "cards/LESSERAFIM/eunchae.JPG"
     },
     {
         "name": "Kazuha",
         "group": "LE SSERAFIM",
+        "concept": "Base",
         "image": "cards/LESSERAFIM/kazuha.JPG"
     },
     {
         "name": "Sakura",
         "group": "LE SSERAFIM",
+        "concept": "Base",
         "image": "cards/LESSERAFIM/sakura.JPG"
     },
     {
         "name": "Yunjin",
         "group": "LE SSERAFIM",
+        "concept": "Base",
         "image": "cards/LESSERAFIM/yunjin.JPG"
     },
     {
         "name": "Dino",
         "group": "SEVENTEEN",
+        "concept": "Base",
         "image": "cards/SEVENTEEN/dino.JPG"
     },
     {
         "name": "DK",
         "group": "SEVENTEEN",
+        "concept": "Base",
         "image": "cards/SEVENTEEN/dk.JPG"
     },
     {
         "name": "Hoshi",
         "group": "SEVENTEEN",
+        "concept": "Base",
         "image": "cards/SEVENTEEN/hoshi.JPG"
     },
     {
         "name": "Jeonghan",
         "group": "SEVENTEEN",
+        "concept": "Base",
         "image": "cards/SEVENTEEN/jeonghan.JPG"
     },
     {
         "name": "Joshua",
         "group": "SEVENTEEN",
+        "concept": "Base",
         "image": "cards/SEVENTEEN/joshua.JPG"
     },
     {
         "name": "Jun",
         "group": "SEVENTEEN",
+        "concept": "Base",
         "image": "cards/SEVENTEEN/jun.JPG"
     },
     {
         "name": "The8",
         "group": "SEVENTEEN",
+        "concept": "Base",
         "image": "cards/SEVENTEEN/minghao.JPG"
     },
     {
         "name": "Mingyu",
         "group": "SEVENTEEN",
+        "concept": "Base",
         "image": "cards/SEVENTEEN/mingyu.JPG"
     },
     {
         "name": "S.Coups",
         "group": "SEVENTEEN",
+        "concept": "Base",
         "image": "cards/SEVENTEEN/scoups.JPG"
     },
     {
         "name": "Seungkwan",
         "group": "SEVENTEEN",
+        "concept": "Base",
         "image": "cards/SEVENTEEN/seungkwan.JPG"
     },
     {
         "name": "Vernon",
         "group": "SEVENTEEN",
+        "concept": "Base",
         "image": "cards/SEVENTEEN/vernon.JPG"
     },
     {
         "name": "Wonwoo",
         "group": "SEVENTEEN",
+        "concept": "Base",
         "image": "cards/SEVENTEEN/wonwoo.JPG"
     },
     {
         "name": "Woozi",
         "group": "SEVENTEEN",
+        "concept": "Base",
         "image": "cards/SEVENTEEN/woozi.JPG"
     },
     {
         "name": "Hanbin",
         "group": "Soloist",
+        "concept": "Base",
         "image": "cards/SOLOIST/hanbin.JPG"
     },
     {
         "name": "Chaeyoung",
         "group": "TWICE",
+        "concept": "Base",
         "image": "cards/TWICE/chaeyoung.JPG"
     },
     {
         "name": "Dahyun",
         "group": "TWICE",
+        "concept": "Base",
         "image": "cards/TWICE/dahyun.JPG"
     },
     {
         "name": "Jeongyeon",
         "group": "TWICE",
+        "concept": "Base",
         "image": "cards/TWICE/jeongyeon.JPG"
     },
     {
         "name": "Jihyo",
         "group": "TWICE",
+        "concept": "Base",
         "image": "cards/TWICE/jihyo.JPG"
     },
     {
         "name": "Mina",
         "group": "TWICE",
+        "concept": "Base",
         "image": "cards/TWICE/mina.JPG"
     },
     {
         "name": "Momo",
         "group": "TWICE",
+        "concept": "Base",
         "image": "cards/TWICE/momo.JPG"
     },
     {
         "name": "Nayeon",
         "group": "TWICE",
+        "concept": "Base",
         "image": "cards/TWICE/nayeon.JPG"
     },
     {
         "name": "Sana",
         "group": "TWICE",
+        "concept": "Base",
         "image": "cards/TWICE/sana.JPG"
     },
     {
         "name": "Tzuyu",
         "group": "TWICE",
+        "concept": "Base",
         "image": "cards/TWICE/tzuyu.JPG"
     },
     {
         "name": "IU",
         "group": "Soloist",
+        "concept": "Base",
         "image": "cards/SOLOIST/iu.JPG"
     },
     {
         "name": "Bae",
         "group": "NMIXX",
+        "concept": "Base",
         "image": "cards/NMIXX/bae.JPG"
     },
     {
         "name": "Haewon",
         "group": "NMIXX",
+        "concept": "Base",
         "image": "cards/NMIXX/haewon.JPG"
     },
     {
         "name": "Jiwoo",
         "group": "NMIXX",
+        "concept": "Base",
         "image": "cards/NMIXX/jiwoo.JPG"
     },
     {
         "name": "Kyujin",
         "group": "NMIXX",
+        "concept": "Base",
         "image": "cards/NMIXX/kyujin.JPG"
     },
     {
         "name": "Lily",
         "group": "NMIXX",
+        "concept": "Base",
         "image": "cards/NMIXX/lily.JPG"
     },
     {
         "name": "Sullyoon",
         "group": "NMIXX",
+        "concept": "Base",
         "image": "cards/NMIXX/sullyoon.JPG"
     },
     {
         "name": "Daesung",
         "group": "BIGBANG",
+        "concept": "Base",
         "image": "cards/BIGBANG/daesung.JPG"
     },
     {
         "name": "G-DRAGON",
         "group": "BIGBANG",
+        "concept": "Base",
         "image": "cards/BIGBANG/gdragon.JPG"
     },
     {
         "name": "Taeyang",
         "group": "BIGBANG",
+        "concept": "Base",
         "image": "cards/BIGBANG/taeyang.JPG"
     },
     {
         "name": "T.O.P",
         "group": "BIGBANG",
+        "concept": "Base",
         "image": "cards/BIGBANG/top.JPG"
+    },
+    {
+        "name": "Minnie",
+        "group": "i-dle",
+        "concept": "Base",
+        "image": "cards/i-dle/minnie.JPG"
+    },
+    {
+        "name": "Miyeon",
+        "group": "i-dle",
+        "concept": "Base",
+        "image": "cards/i-dle/miyeon.JPG"
+    },
+    {
+        "name": "Shuhua",
+        "group": "i-dle",
+        "concept": "Base",
+        "image": "cards/i-dle/shuhua.JPG"
+    },
+    {
+        "name": "Soyeon",
+        "group": "i-dle",
+        "concept": "Base",
+        "image": "cards/i-dle/soyeon.JPG"
+    },
+    {
+        "name": "Yuqi",
+        "group": "i-dle",
+        "concept": "Base",
+        "image": "cards/i-dle/yuqi.JPG"
     }
 ]

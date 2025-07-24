@@ -248,8 +248,8 @@ async def drop(ctx):
                 edition_row = await conn.fetchrow("""
                     SELECT COUNT(*) AS count
                     FROM user_cards
-                    WHERE user_id = $1 AND member_name = $2 AND rarity = $3
-                """, user.id, card['name'], card['rarity'])
+                    WHERE user_id = $1 AND member_name = $2 AND rarity = $3 AND concept = $4
+                """, user.id, card['name'], card['rarity'], card.get('concept', 'Base'))
                 edition = edition_row['count'] + 1
 
                 card["short_id"] = short_id
@@ -268,10 +268,10 @@ async def drop(ctx):
 
             # Claimed card into user_cards table
                 await conn.execute("""
-                    INSERT INTO user_cards(user_id, card_uid, short_id, date_obtained, rarity, edition, member_name, group_name)
-                    VALUES($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, $6, $7)
+                    INSERT INTO user_cards(user_id, card_uid, short_id, date_obtained, rarity, edition, member_name, group_name, concept)
+                    VALUES($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, $6, $7, $8)
                 """, int(user.id), card['card_uid'], card['short_id'],
-                    card['rarity'], edition, card['name'], card['group'])
+                    card['rarity'], edition, card['name'], card['group'], card.get('concept', 'Base'))
 
 
             challengers = [cid for cid in claim_challengers[emoji] if cid != user.id]
@@ -467,10 +467,11 @@ async def mycards(ctx, *, card_name: str):
         group = row["group_name"] or "Unknown"
         name = row["member_name"] or "Unknown"
         rarity = row["rarity"] or "Unknown"
+        concept = row["concept"] or "Idol"
         emoji = emoji_map.get(rarity, "🎴")
 
         embed.add_field(
-            name=f"{i}. {emoji} {group} • {name} • ({rarity}) • #{uid}",
+            name=f"{i}. {emoji} {group} • {name} • {concept} • ({rarity}) • #{uid}",
             value="",
             inline=False
         )
