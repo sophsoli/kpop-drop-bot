@@ -1,9 +1,12 @@
 import json
 import os
 import uuid
+from datetime import datetime
 
 COLLECTIONS_FILE = "collections.json"
 EMOJI_FILE = "user_emojis.json"
+SUGGESTIONS_FILE = 'suggestions.json'
+BUGFIXES_FILE = 'bugfixes.json'
 
 def card_collection():
     # Load cards from the JSON file at startup
@@ -46,3 +49,9 @@ def load_user_emojis():
 def save_user_emojis(data):
     with open(EMOJI_FILE, "w") as f:
         json.dump(data, f, indent=4)
+
+def read_entries(file):
+    if os.path.exists(file):
+        with open(file, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return []

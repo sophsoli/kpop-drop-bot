@@ -12,6 +12,11 @@ from collections import defaultdict
 from utils.paginator import CollectionView
 import asyncpg
 from datetime import datetime, timezone
+from data_helpers import add_entry, read_entries
+import json
+
+SUGGESTIONS_FILE = "suggestions.json"
+BUGFIXES_FILE = "bugfixes.json"
 
 current_time = datetime.now(timezone.utc)
 
@@ -165,11 +170,13 @@ async def drop(ctx):
     # for card in dropped_cards:
     #     embed.add_field(name=f"{card['name']}")
 
+    # Message before sending the image
+    await ctx.send("✨ React with one of the emojis to claim a card below!")
 
     embed.set_image(url="attachment://drop.png")
     message = await ctx.send(file=file, embed=embed)
 
-
+    # Add reactions
     for card in dropped_cards:
         await message.add_reaction(card['reaction'])
 
@@ -211,9 +218,9 @@ async def drop(ctx):
                     continue
 
             # # already claimed
-            # if user.id in already_claimed_users:
-            #     await ctx.send(f"{user.mention}, you've already claimed a card!")
-            #     continue
+            if user.id in already_claimed_users:
+                await ctx.send(f"{user.mention}, you've already claimed a card!")
+                continue
 
             if emoji in claimed:
                 await ctx.send(f"⚠️ Sorry {user.mention} that card is out of stock.")
@@ -547,6 +554,65 @@ async def bothelp(ctx):
         value="`!another command` — -*MORE FEATURES AND COMMANDS COMING!!*-",
         inline=False
     )
+
+    await ctx.send(embed=embed)
+
+@bot.command()
+async def suggestion(ctx, *, message):
+    entry = {
+        "user": str(ctx.author),
+        "suggestion": message,
+        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    add_entry(SUGGESTIONS_FILE, entry)
+    await ctx.send("✅ Suggestion recorded!")
+
+@bot.command()
+async def bugfix(ctx, *, message):
+    entry = {
+        "user": str(ctx.author),
+        "bug": message,
+        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    add_entry(BUGFIXES_FILE, entry)
+    await ctx.send("🛠️ Bug report recorded!")
+
+@bot.command()
+async def viewsuggestions(ctx):
+    with open(SUGGESTIONS_FILE, "r") as f:
+        data = json.load(f)
+
+    if not data:
+        await ctx.send("📭 No suggestions yet!")
+        return
+
+    embed = discord.Embed(title="📢 Suggestions", color=discord.Color.green())
+    for entry in data[:5]:  # show latest 5
+        embed.add_field(
+            name=f"{entry['user']} ({entry['timestamp']})",
+            value=entry["suggestion"],
+            inline=False
+        )
+    await ctx.send(embed=embed)
+
+@bot.command()
+async def viewbugs(ctx):
+    from json_data_helpers import read_entries  # Or wherever it's stored
+
+    bug_reports = read_entries(BUGFIXES_FILE)
+
+    if not bug_reports:
+        await ctx.send("🛠️ No bug reports yet!")
+        return
+
+    embed = discord.Embed(title="Bug Reports", color=discord.Color.red())
+
+    for entry in bug_reports[:5]:  # Show most recent 5
+        embed.add_field(
+            name=f"{entry['user']} ({entry['timestamp']})",
+            value=entry["bug"],
+            inline=False
+        )
 
     await ctx.send(embed=embed)
 
