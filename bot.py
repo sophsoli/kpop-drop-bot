@@ -29,19 +29,23 @@ cards = card_collection()
 
 user_collections = defaultdict(list, ensure_card_ids(load_collections()))
 
+PRIORITY_WINDOW = 10  # Seconds only the dropper can claim
+
 
 RARITY_TIERS = {
-    "Common": {"color": 0xAAAAAA, "chance": 60},
+    "Common": {"color": 0xAAAAAA, "chance": 54},
     "Rare": {"color": 0x3498DB, "chance": 25},
-    "Epic": {"color": 0x9B59B6, "chance": 10},
+    "Epic": {"color": 0x9B59B6, "chance": 15},
     "Legendary": {"color": 0xFFD700, "chance": 5},
+    "Mythic": {"color": 0xFFD700, "chance": 1}
 }
 
 user_cooldowns = {}
 drop_cooldowns = {}
 
 COOLDOWN_DURATION = 1800 # 30mins
-DROP_COOLDOWN_DURATION = 3600 # 2 hours = 7200 1 hour = 3600
+DROP_COOLDOWN_DURATION = 1800 # 2 hours = 7200 1 hour = 3600
+
 
 db_pool = None
 
@@ -121,6 +125,9 @@ async def drop(ctx):
     drop_message = await channel.send(f"🚨 {ctx.author.mention} came to drop some photocards! 🚨")
     print("Cards available for dropping: ", cards)
 
+    dropper_id = ctx.author.id
+    drop_time = time.time()
+
     dropped_cards = []
     reactions = ["🫰", "🫶", "🥰"]
     # Randomly select 3 cards from database
@@ -181,11 +188,15 @@ async def drop(ctx):
     
     while len(claimed) < 3:
         try:
-            reaction, user = await bot.wait_for("reaction_add", timeout=30.0, check=check)
+            reaction, user = await bot.wait_for("reaction_add", timeout=120.0, check=check)
+            now = time.time()
             emoji = str(reaction.emoji)
 
             # cooldown check
             now = time.time()
+
+            if user.id != dropper_id and (now - drop_time) < PRIORITY_WINDOW:
+                continue
 
             if user.id not in claim_challengers[emoji]:
                 claim_challengers[emoji].append(user.id)
@@ -447,8 +458,8 @@ async def mycards(ctx, *, card_name: str):
         "Common": "🟩",
         "Rare": "🟦",
         "Epic": "🟪",
-        "Ultra Rare": "🟥",
-        "Legendary": "🌟"
+        "Legendary": "🟥",
+        "Mythic": "🌟"
     }
 
     for i, row in enumerate(rows, 1):
@@ -485,13 +496,13 @@ async def bothelp(ctx):
 
     embed.add_field(
         name="📁 View Collection",
-        value="`!collection` — View your collection of claimed cards. You can also view someone else's collection @user",
+        value="`!collection` — View your collection of claimed cards. You can also view someone else's collection @user.",
         inline=False
     )
 
     embed.add_field(
         name="🔁 Trade Cards",
-        value="`!trade @user #<card_uid>` — Propose a trade with someone!",
+        value="`!trade @user <card_uid>` — Propose a trade with someone!",
         inline=False
     )
 
