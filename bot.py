@@ -517,7 +517,7 @@ async def sort(ctx, criterion: str = 'group'):
         await ctx.send(f"❌ Invalid sort option. Choose one of: {', '.join(valid_criteria)}")
         return
 
-    user_id = str(ctx.author.id)
+    user_id = int(ctx.author.id)
 
     # 🔍 Fetch cards from PostgreSQL
     async with db_pool.acquire() as conn:
