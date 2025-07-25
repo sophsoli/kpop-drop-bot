@@ -580,5 +580,59 @@
         "group": "Red Velvet",
         "concept": "Base",
         "image": "cards/RedVelvet/yeri.JPG"
+    },
+    {
+        "name": "Chaeyoung",
+        "group": "TWICE",
+        "concept": "STRATEGY",
+        "image": "cards/TWICE/STRATEGY/chaeyoung2.JPG"
+    },
+    {
+        "name": "Dahyun",
+        "group": "TWICE",
+        "concept": "STRATEGY",
+        "image": "cards/TWICE/STRATEGY/dahyun2.JPG"
+    },
+    {
+        "name": "Jeongyeon",
+        "group": "TWICE",
+        "concept": "STRATEGY",
+        "image": "cards/TWICE/STRATEGY/jeongyeon2.JPG"
+    },
+    {
+        "name": "Jihyo",
+        "group": "TWICE",
+        "concept": "STRATEGY",
+        "image": "cards/TWICE/STRATEGY/jihyo2.JPG"
+    },
+    {
+        "name": "Mina",
+        "group": "TWICE",
+        "concept": "STRATEGY",
+        "image": "cards/TWICE/STRATEGY/mina2.JPG"
+    },
+    {
+        "name": "Momo",
+        "group": "TWICE",
+        "concept": "STRATEGY",
+        "image": "cards/TWICE/STRATEGY/momo2.JPG"
+    },
+    {
+        "name": "Nayeon",
+        "group": "TWICE",
+        "concept": "STRATEGY",
+        "image": "cards/TWICE/STRATEGY/nayeon2.JPG"
+    },
+    {
+        "name": "Sana",
+        "group": "TWICE",
+        "concept": "STRATEGY",
+        "image": "cards/TWICE/STRATEGY/sana2.JPG"
+    },
+    {
+        "name": "Tzuyu",
+        "group": "TWICE",
+        "concept": "STRATEGY",
+        "image": "cards/TWICE/STRATEGY/tzuyu2.JPG"
     }
 ]
