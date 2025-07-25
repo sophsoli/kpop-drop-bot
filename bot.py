@@ -522,9 +522,8 @@ async def sort(ctx, criterion: str = 'group'):
     # 🔍 Fetch cards from PostgreSQL
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
-            SELECT uc.card_uid, c.group_name, c.member_name, c.rarity, c.edition
+            SELECT uc.card_uid, uc.user_id
             FROM user_cards uc
-            JOIN cards c ON uc.card_uid = c.card_uid
             WHERE uc.user_id = $1
         """, user_id)
 
