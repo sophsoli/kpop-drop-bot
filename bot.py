@@ -27,7 +27,7 @@ load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = 1397431382741090314
 
-bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), case_insensitive=True)
 
 # Load cards database at startup
 cards = card_collection()
@@ -512,6 +512,7 @@ async def cooldowns(ctx):
 # SORT !sort
 @bot.command()
 async def sort(ctx, criterion: str = 'group'):
+    criterion = criterion.lower()
     valid_criteria = ['group', 'member', 'rarity', 'edition']
     if criterion not in valid_criteria:
         await ctx.send(f"❌ Invalid sort option. Choose one of: {', '.join(valid_criteria)}")
@@ -522,8 +523,9 @@ async def sort(ctx, criterion: str = 'group'):
     # 🔍 Fetch cards from PostgreSQL
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
-            SELECT uc.card_uid, uc.user_id
+            SELECT uc.card_uid, uc.user_id, c.group_name, c.member_name, c.rarity, c.edition
             FROM user_cards uc
+            JOIN cards c ON uc.card_uid = c.card_uid
             WHERE uc.user_id = $1
         """, user_id)
 
