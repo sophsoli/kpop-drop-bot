@@ -562,7 +562,7 @@ async def recycle(ctx, card_uid: str):
     async with db_pool.acquire() as conn:
         # Check if card exists and belongs to user
         card = await conn.fetchrow("""
-            SELECT uc.card_uid, c.rarity
+            SELECT uc.card_uid, c.rarity, c.member_name
             FROM user_cards uc
             JOIN cards c ON uc.card_uid = c.card_uid
             WHERE uc.user_id = $1 AND uc.card_uid = $2
