@@ -563,7 +563,7 @@ async def recycle(ctx, card_uid: str):
     async with db_pool.acquire() as conn:
         # Step 1: Check if user owns the card
         owned_card = await conn.fetchrow("""
-            SELECT card_uid, short_id
+            SELECT card_uid
             FROM user_cards
             WHERE user_id = $1 AND card_uid = $2
         """, user_id, card_uid)
@@ -572,17 +572,15 @@ async def recycle(ctx, card_uid: str):
             await ctx.send(f"❌ You don't own the card `{card_uid}`.")
             return
 
-        short_id = owned_card["short_id"]
-
-        # Step 2: Get card rarity + member name from `cards` table using short_id
+        # Step 2: Get rarity + member name using card_uid from master cards table
         card_info = await conn.fetchrow("""
             SELECT rarity, member_name
             FROM cards
-            WHERE short_id = $1
-        """, short_id)
+            WHERE card_uid = $1
+        """, card_uid)
 
         if not card_info:
-            await ctx.send("⚠️ Card found in your inventory but not in master card list.")
+            await ctx.send("⚠️ You own the card, but it's missing from the main card list.")
             return
 
         rarity = card_info["rarity"]
