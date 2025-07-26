@@ -554,6 +554,62 @@ async def sort(ctx, criterion: str = 'group'):
     view = CollectionView(ctx, pages, emoji="📸", target=ctx.author)
     embed = view.generate_embed()
     view.message = await ctx.send(embed=embed, view=view)
+
+@bot.command()
+async def recycle(ctx, card_uid: str):
+    user_id = int(ctx.author.id)
+
+    async with db_pool.acquire() as conn:
+        # Check if card exists and belongs to user
+        card = await conn.fetchrow("""
+            SELECT uc.card_uid, c.rarity
+            FROM user_cards uc
+            JOIN cards c ON uc.card_uid = c.card_uid
+            WHERE uc.user_id = $1 AND uc.card_uid = $2
+        """, user_id, card_uid)
+
+        if not card:
+            await ctx.send("❌ You don't own this card.")
+            return
+
+        rarity = card['rarity']
+        coin_rewards = {
+            "Common": 5,
+            "Rare": 10,
+            "Epic": 20,
+            "Legendary": 50,
+            "Mythic": 150
+        }
+
+        member = card['member_name']
+
+        coins_earned = coin_rewards.get(rarity, 0)
+
+        # Delete the card from user_cards and add coins
+        async with conn.transaction():
+            await conn.execute("""
+                DELETE FROM user_cards
+                WHERE user_id = $1 AND card_uid = $2
+            """, user_id, card_uid)
+
+            await conn.execute("""
+                UPDATE users
+                SET coins = coins + $1
+                WHERE user_id = $2
+            """, coins_earned, user_id)
+
+        await ctx.send(f"♻️ You recycled #`{card_uid}` [{rarity}] {member} and earned 💰 **{coins_earned} coins**!")
+
+@bot.command()
+async def coins(ctx):
+    user_id = int(ctx.author.id)
+
+    async with db_pool.acquire() as conn:
+        coins = await conn.fetchval("""
+            SELECT coins FROM users WHERE user_id = $1
+        """, user_id)
+
+    await ctx.send(f"💰 You have **{coins or 0} coins**.")
     
 @bot.command()
 async def bothelp(ctx):
