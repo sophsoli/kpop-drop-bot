@@ -658,5 +658,35 @@
         "group": "aespa",
         "concept": "Whiplash",
         "image": "cards/aespa/Whiplash/winter2.JPG"
+    },
+    {
+        "name": "Chaeryeong",
+        "group": "ITZY",
+        "concept": "CHESIRE",
+        "image": "cards/ITZY/CHESIRE/chaeryeong2.JPG"
+    },
+    {
+        "name": "Lia",
+        "group": "ITZY",
+        "concept": "CHESIRE",
+        "image": "cards/ITZY/CHESIRE/lia2.JPG"
+    },
+    {
+        "name": "Ryujin",
+        "group": "ITZY",
+        "concept": "CHESIRE",
+        "image": "cards/ITZY/CHESIRE/ryujin2.JPG"
+    },
+    {
+        "name": "Yeji",
+        "group": "ITZY",
+        "concept": "CHESIRE",
+        "image": "cards/ITZY/CHESIRE/yeji2.JPG"
+    },
+    {
+        "name": "Yuna",
+        "group": "ITZY",
+        "concept": "CHESIRE",
+        "image": "cards/ITZY/CHESIRE/chaeryeong2.JPG"
     }
 ]
