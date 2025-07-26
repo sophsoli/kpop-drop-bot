@@ -598,6 +598,29 @@ async def coins(ctx):
         """, user_id)
 
     await ctx.send(f"💰 You have **{coins or 0} coins**.")
+
+@bot.command()
+async def shop(ctx):
+    # EMBED FOR !shop COMMAND
+    embed = discord.Embed(
+        title="✨ SHOP COMING SOON!!!! ✨",
+        description=f"{ctx.author.mention}, the shop will be opening soon. Please wait!",
+        color=discord.Color.blue()
+    )
+
+    embed.add_field(
+        name="COMING SOON",
+        value="`BUY ANOTHER CLAIM` Buy another claim that you can use.",
+        inline=False
+    )
+
+    embed.add_field(
+        name="COMING SOON",
+        value="`BUY A REROLL` Buy another drop.",
+        inline=False
+    )
+
+    await ctx.send(embed=embed)
     
 @bot.command()
 async def bothelp(ctx):
