@@ -558,34 +558,30 @@ async def sort(ctx, criterion: str = 'group'):
 @bot.command()
 async def recycle(ctx, card_uid: str):
     user_id = int(ctx.author.id)
-    card_uid = card_uid.strip().upper()
+    card_uid = card_uid.strip().upper()  # Normalize input
 
     async with db_pool.acquire() as conn:
-        # Step 1: Check if user owns the card
-        owned_card = await conn.fetchrow("""
-            SELECT card_uid
-            FROM user_cards
-            WHERE user_id = $1 AND card_uid = $2
+        # Step 1: Check if the user owns this card
+        card = await conn.fetchrow("""
+            SELECT uc.card_uid, c.rarity, c.member_name
+            FROM user_cards uc
+            LEFT JOIN cards c ON uc.card_uid = c.card_uid
+            WHERE uc.user_id = $1 AND uc.card_uid = $2
         """, user_id, card_uid)
 
-        if not owned_card:
+        if not card:
             await ctx.send(f"❌ You don't own the card `{card_uid}`.")
             return
 
-        # Step 2: Get rarity + member name using card_uid from master cards table
-        card_info = await conn.fetchrow("""
-            SELECT rarity, member_name
-            FROM cards
-            WHERE card_uid = $1
-        """, card_uid)
-
-        if not card_info:
-            await ctx.send("⚠️ You own the card, but it's missing from the main card list.")
+        # Step 2: Handle missing info from cards table
+        if card["rarity"] is None or card["member_name"] is None:
+            await ctx.send(f"⚠️ You own the card, but it's missing from the main card list.")
             return
 
-        rarity = card_info["rarity"]
-        member = card_info["member_name"]
+        rarity = card['rarity']
+        member = card['member_name']
 
+        # Step 3: Set coin reward values
         coin_rewards = {
             "Common": 5,
             "Rare": 10,
@@ -593,9 +589,10 @@ async def recycle(ctx, card_uid: str):
             "Legendary": 50,
             "Mythic": 150
         }
+
         coins_earned = coin_rewards.get(rarity, 0)
 
-        # Step 3: Recycle the card and reward coins
+        # Step 4: Remove the card and reward coins
         async with conn.transaction():
             await conn.execute("""
                 DELETE FROM user_cards
@@ -608,7 +605,7 @@ async def recycle(ctx, card_uid: str):
                 WHERE user_id = $2
             """, coins_earned, user_id)
 
-        await ctx.send(f"♻️ You recycled #`{card_uid}` [{rarity}] {member} and earned 💰 **{coins_earned} coins**!")
+        await ctx.send(f"♻️ You recycled `#{card_uid}` [{rarity}] {member} and earned 💰 **{coins_earned} coins**!")
 
 @bot.command()
 async def coins(ctx):
