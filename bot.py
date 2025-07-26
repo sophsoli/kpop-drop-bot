@@ -324,20 +324,6 @@ async def collection(ctx, member: discord.Member = None):
     embed = view.generate_embed()
     view.message = await ctx.send(embed=embed, view=view)
 
-    # # EMBED to show collection
-    # embed = discord.Embed(
-    #     title=f"📸 {target.display_name}'s Photocard Collection 📚\n\n",
-    #     color=discord.Color.blue(),
-    # )
-
-
-    # for row in rows[:5]:
-    #     embed.add_field(
-    #         name=f"{emoji} {row['group_name']} • {row['member_name']} • {row['rarity']} • Edition {row['edition']}",
-    #         value="",
-    #         inline=False
-    #     )
-
 pending_trades = {}
 
 # COMMAND TRADE !trade
@@ -559,53 +545,63 @@ async def sort(ctx, criterion: str = 'group'):
 async def recycle(ctx, card_uid: str):
     user_id = int(ctx.author.id)
     card_uid = card_uid.strip().upper()  # Normalize input
+    
+    print(f"[DEBUG] Recycle called by user_id={user_id} for card_uid={card_uid}")
 
-    async with db_pool.acquire() as conn:
-        # Step 1: Check if the user owns this card
-        card = await conn.fetchrow("""
-            SELECT uc.card_uid, c.rarity, c.member_name
-            FROM user_cards uc
-            LEFT JOIN cards c ON uc.card_uid = c.card_uid
-            WHERE uc.user_id = $1 AND uc.card_uid = $2
-        """, user_id, card_uid)
-
-        if not card:
-            await ctx.send(f"❌ You don't own the card `{card_uid}`.")
-            return
-
-        # Step 2: Handle missing info from cards table
-        if card["rarity"] is None or card["member_name"] is None:
-            await ctx.send(f"⚠️ You own the card, but it's missing from the main card list.")
-            return
-
-        rarity = card['rarity']
-        member = card['member_name']
-
-        # Step 3: Set coin reward values
-        coin_rewards = {
-            "Common": 5,
-            "Rare": 10,
-            "Epic": 20,
-            "Legendary": 50,
-            "Mythic": 150
-        }
-
-        coins_earned = coin_rewards.get(rarity, 0)
-
-        # Step 4: Remove the card and reward coins
-        async with conn.transaction():
-            await conn.execute("""
-                DELETE FROM user_cards
-                WHERE user_id = $1 AND card_uid = $2
+    try:
+        async with db_pool.acquire() as conn:
+            # Step 1: Check if the user owns this card
+            card = await conn.fetchrow("""
+                SELECT uc.card_uid, c.rarity, c.member_name
+                FROM user_cards uc
+                LEFT JOIN cards c ON uc.card_uid = c.card_uid
+                WHERE uc.user_id = $1 AND uc.card_uid = $2
             """, user_id, card_uid)
+            
+            if not card:
+                print(f"[DEBUG] No card found for user_id={user_id} with card_uid={card_uid}")
+                await ctx.send(f"❌ You don't own the card `{card_uid}`.")
+                return
 
-            await conn.execute("""
-                UPDATE users
-                SET coins = coins + $1
-                WHERE user_id = $2
-            """, coins_earned, user_id)
+            # Step 2: Handle missing info from cards table
+            if card["rarity"] is None or card["member_name"] is None:
+                print(f"[DEBUG] Card info missing rarity or member_name for card_uid={card_uid}")
+                await ctx.send(f"⚠️ You own the card, but it's missing from the main card list.")
+                return
 
-        await ctx.send(f"♻️ You recycled `#{card_uid}` [{rarity}] {member} and earned 💰 **{coins_earned} coins**!")
+            rarity = card['rarity']
+            member = card['member_name']
+
+            # Step 3: Set coin reward values
+            coin_rewards = {
+                "Common": 5,
+                "Rare": 10,
+                "Epic": 20,
+                "Legendary": 50,
+                "Mythic": 150
+            }
+
+            coins_earned = coin_rewards.get(rarity, 0)
+
+            # Step 4: Remove the card and reward coins
+            async with conn.transaction():
+                await conn.execute("""
+                    DELETE FROM user_cards
+                    WHERE user_id = $1 AND card_uid = $2
+                """, user_id, card_uid)
+
+                await conn.execute("""
+                    UPDATE users
+                    SET coins = coins + $1
+                    WHERE user_id = $2
+                """, coins_earned, user_id)
+
+            print(f"[DEBUG] User {user_id} recycled card {card_uid} for {coins_earned} coins.")
+            await ctx.send(f"♻️ You recycled `#{card_uid}` [{rarity}] {member} and earned 💰 **{coins_earned} coins**!")
+
+    except Exception as e:
+        print(f"[ERROR] Exception in recycle command: {e}")
+        await ctx.send("⚠️ Something went wrong while recycling your card. Please try again later.")
 
 @bot.command()
 async def coins(ctx):
