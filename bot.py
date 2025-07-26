@@ -544,7 +544,7 @@ async def sort(ctx, criterion: str = 'group'):
 @bot.command()
 async def recycle(ctx, card_uid: str):
     user_id = int(ctx.author.id)
-    card_uid = card_uid.upper().strip()  # 🔑 Ensure casing and spacing is clean
+    card_uid = card_uid.upper().strip()
 
     async with db_pool.acquire() as conn:
         row = await conn.fetchrow(
@@ -554,18 +554,39 @@ async def recycle(ctx, card_uid: str):
         )
 
         if not row:
-            print("[DEBUG] No row found for user/card. Check casing or ownership.")
-            await ctx.send(f"❌ You don’t own a card with ID {card_uid}.")
+            await ctx.send(f"❌ You don’t own a card with ID `{card_uid}`.")
             return
 
-        # Example delete + reward logic
-        await conn.execute(
-            "DELETE FROM user_cards WHERE user_id = $1 AND card_uid = $2",
-            user_id,
-            card_uid
-        )
+        rarity = row['rarity']
+        member_name = row['member_name']
 
-        await ctx.send(f"♻️ You recycled `{card_uid}` for coins!")
+        rarity_coin_values = {
+            'Common': 5,
+            'Rare': 10,
+            'Epic': 20,
+            'Legendary': 50,
+            'Mythic': 150
+        }
+        coins_earned = rarity_coin_values.get(rarity, 1)
+
+        async with conn.transaction():
+            # Delete the card
+            await conn.execute("""
+                DELETE FROM user_cards 
+                WHERE user_id = $1 AND card_uid = $2
+            """, user_id, card_uid)
+
+            # Add coins (insert if new, else update)
+            await conn.execute("""
+                INSERT INTO users (user_id, coins)
+                VALUES ($1, $2)
+                ON CONFLICT (user_id)
+                DO UPDATE SET coins = users.coins + $2
+            """, user_id, coins_earned)
+
+        await ctx.send(
+            f"♻️ You recycled a **{rarity} {member_name}** card (`{card_uid}`) for **{coins_earned}** coins!"
+        )
 
 @bot.command()
 async def coins(ctx):
