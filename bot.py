@@ -445,7 +445,7 @@ async def mycards(ctx, *, card_name: str):
 
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
-            SELECT card_uid, group_name, member_name, rarity
+            SELECT card_uid, group_name, member_name, rarity, concept
             FROM user_cards
             WHERE user_id = $1 AND member_name ILIKE $2
             ORDER BY date_obtained DESC        
