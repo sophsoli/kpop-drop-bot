@@ -688,5 +688,35 @@
         "group": "ITZY",
         "concept": "CHESIRE",
         "image": "cards/ITZY/CHESIRE/chaeryeong2.JPG"
+    },
+    {
+        "name": "Chaewon",
+        "group": "LE SSERAFIM",
+        "concept": "ANTIFRAGILE",
+        "image": "cards/LESSERAFIM/ANTIFRAGILE/chaewon3.JPG"
+    },
+    {
+        "name": "Eunchae",
+        "group": "LE SSERAFIM",
+        "concept": "ANTIFRAGILE",
+        "image": "cards/LESSERAFIM/ANTIFRAGILE/eunchae3.JPG"
+    },
+    {
+        "name": "Kazuha",
+        "group": "LE SSERAFIM",
+        "concept": "ANTIFRAGILE",
+        "image": "cards/LESSERAFIM/ANTIFRAGILE/kazuha3.JPG"
+    },
+    {
+        "name": "Sakura",
+        "group": "LE SSERAFIM",
+        "concept": "ANTIFRAGILE",
+        "image": "cards/LESSERAFIM/ANTIFRAGILE/sakura3.JPG"
+    },
+    {
+        "name": "Yunjin",
+        "group": "LE SSERAFIM",
+        "concept": "ANTIFRAGILE",
+        "image": "cards/LESSERAFIM/ANTIFRAGILE/yunjin3.JPG"
     }
 ]
