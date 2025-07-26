@@ -544,64 +544,51 @@ async def sort(ctx, criterion: str = 'group'):
 @bot.command()
 async def recycle(ctx, card_uid: str):
     user_id = int(ctx.author.id)
-    card_uid = card_uid.strip().upper()  # Normalize input
-    
-    print(f"[DEBUG] Recycle called by user_id={user_id} for card_uid={card_uid}")
+    card_uid = card_uid.upper()
 
-    try:
-        async with db_pool.acquire() as conn:
-            # Step 1: Check if the user owns this card
-            card = await conn.fetchrow("""
-                SELECT uc.card_uid, c.rarity, c.member_name
-                FROM user_cards uc
-                LEFT JOIN cards c ON uc.card_uid = c.card_uid
-                WHERE uc.user_id = $1 AND uc.card_uid = $2
-            """, user_id, card_uid)
-            
-            if not card:
-                print(f"[DEBUG] No card found for user_id={user_id} with card_uid={card_uid}")
-                await ctx.send(f"❌ You don't own the card `{card_uid}`.")
-                return
+    async with db_pool.acquire() as conn:
+        # 🔍 Check if user owns the card and join card info
+        card = await conn.fetchrow("""
+            SELECT uc.card_uid, c.member_name, c.group_name, c.rarity
+            FROM user_cards uc
+            JOIN cards c ON uc.card_uid = c.card_uid
+            WHERE uc.user_id = $1 AND uc.card_uid = $2
+        """, user_id, card_uid)
 
-            # Step 2: Handle missing info from cards table
-            if card["rarity"] is None or card["member_name"] is None:
-                print(f"[DEBUG] Card info missing rarity or member_name for card_uid={card_uid}")
-                await ctx.send(f"⚠️ You own the card, but it's missing from the main card list.")
-                return
+        # ❌ User doesn't own the card
+        if not card:
+            await ctx.send(f"❌ You don’t own a card with ID `{card_uid}`.")
+            return
 
-            rarity = card['rarity']
-            member = card['member_name']
+        # ❌ Missing info
+        if not card["rarity"] or not card["member_name"]:
+            await ctx.send(f"⚠️ Card info for `{card_uid}` is incomplete.")
+            return
 
-            # Step 3: Set coin reward values
-            coin_rewards = {
-                "Common": 5,
-                "Rare": 10,
-                "Epic": 20,
-                "Legendary": 50,
-                "Mythic": 150
-            }
+        # 💰 Define coin values by rarity
+        rarity_values = {
+            'Common': 5,
+            'Rare': 10,
+            'Epic': 25,
+            'Legendary': 50
+        }
+        coins_earned = rarity_values.get(card["rarity"], 0)
 
-            coins_earned = coin_rewards.get(rarity, 0)
+        # 🗑️ Delete the card
+        await conn.execute("""
+            DELETE FROM user_cards
+            WHERE user_id = $1 AND card_uid = $2
+        """, user_id, card_uid)
 
-            # Step 4: Remove the card and reward coins
-            async with conn.transaction():
-                await conn.execute("""
-                    DELETE FROM user_cards
-                    WHERE user_id = $1 AND card_uid = $2
-                """, user_id, card_uid)
+        # 💰 Update balance
+        await conn.execute("""
+            INSERT INTO user_balance (user_id, coins)
+            VALUES ($1, $2)
+            ON CONFLICT (user_id)
+            DO UPDATE SET coins = user_balance.coins + $2
+        """, user_id, coins_earned)
 
-                await conn.execute("""
-                    UPDATE users
-                    SET coins = coins + $1
-                    WHERE user_id = $2
-                """, coins_earned, user_id)
-
-            print(f"[DEBUG] User {user_id} recycled card {card_uid} for {coins_earned} coins.")
-            await ctx.send(f"♻️ You recycled `#{card_uid}` [{rarity}] {member} and earned 💰 **{coins_earned} coins**!")
-
-    except Exception as e:
-        print(f"[ERROR] Exception in recycle command: {e}")
-        await ctx.send("⚠️ Something went wrong while recycling your card. Please try again later.")
+    await ctx.send(f"♻️ You recycled [{card['rarity']}] **{card['member_name']}** and earned **{coins_earned}** coins!")
 
 @bot.command()
 async def coins(ctx):
