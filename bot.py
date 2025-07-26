@@ -558,10 +558,13 @@ async def sort(ctx, criterion: str = 'group'):
 @bot.command()
 async def recycle(ctx, card_uid: str):
     user_id = int(ctx.author.id)
-    card_uid = card_uid.strip().upper()  # ✅ Normalize the input
+    card_uid = card_uid.strip().upper()  # ✅ Normalize input
 
     async with db_pool.acquire() as conn:
-        # Check if card exists and belongs to user
+        # Optional: Debug print or send
+        print(f"Trying to recycle {card_uid=} for {user_id=}")
+
+        # ✅ Check if card exists and belongs to the user
         card = await conn.fetchrow("""
             SELECT uc.card_uid, c.rarity, c.member_name
             FROM user_cards uc
@@ -570,10 +573,12 @@ async def recycle(ctx, card_uid: str):
         """, user_id, card_uid)
 
         if not card:
-            await ctx.send("❌ You don't own this card.")
+            await ctx.send(f"❌ You don't own the card `{card_uid}`.")
             return
 
         rarity = card['rarity']
+        member = card['member_name']
+
         coin_rewards = {
             "Common": 5,
             "Rare": 10,
@@ -581,11 +586,9 @@ async def recycle(ctx, card_uid: str):
             "Legendary": 50,
             "Mythic": 150
         }
-
-        member = card['member_name']
         coins_earned = coin_rewards.get(rarity, 0)
 
-        # Delete the card from user_cards and add coins
+        # ✅ Delete card + add coins in a transaction
         async with conn.transaction():
             await conn.execute("""
                 DELETE FROM user_cards
@@ -598,8 +601,10 @@ async def recycle(ctx, card_uid: str):
                 WHERE user_id = $2
             """, coins_earned, user_id)
 
-        await ctx.send(f"♻️ You recycled #`{card_uid}` [{rarity}] {member} and earned 💰 **{coins_earned} coins**!")
-
+        await ctx.send(
+            f"♻️ You recycled #`{card_uid}` [{rarity}] {member} and earned 💰 **{coins_earned} coins**!"
+        )
+        
 @bot.command()
 async def coins(ctx):
     user_id = int(ctx.author.id)
