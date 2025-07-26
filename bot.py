@@ -318,7 +318,7 @@ async def collection(ctx, member: discord.Member = None):
         return
     
     # PAGINATION SETUP
-    page_size = 5
+    page_size = 10
     pages = [rows[i:i + page_size] for i in range(0, len(rows), page_size)]
     view = CollectionView(ctx, pages, emoji, target)
     embed = view.generate_embed()
@@ -558,6 +558,7 @@ async def sort(ctx, criterion: str = 'group'):
 @bot.command()
 async def recycle(ctx, card_uid: str):
     user_id = int(ctx.author.id)
+    card_uid = card_uid.strip().upper()  # ✅ Normalize the input
 
     async with db_pool.acquire() as conn:
         # Check if card exists and belongs to user
@@ -582,7 +583,6 @@ async def recycle(ctx, card_uid: str):
         }
 
         member = card['member_name']
-
         coins_earned = coin_rewards.get(rarity, 0)
 
         # Delete the card from user_cards and add coins
