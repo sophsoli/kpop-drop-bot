@@ -748,5 +748,47 @@
         "group": "LE SSERAFIM",
         "concept": "EASY",
         "image": "cards/LESSERAFIM/EASY/yunjin4.JPG"
+    },
+    {
+        "name": "Eunha",
+        "group": "GFRIEND/VIVIZ",
+        "concept": "Base",
+        "image": "cards/GFRIEND/eunha.JPG"
+    },
+    {
+        "name": "SinB",
+        "group": "GFRIEND/VIVIZ",
+        "concept": "Base",
+        "image": "cards/GFRIEND/sinb.JPG"
+    },
+    {
+        "name": "Sowon",
+        "group": "GFRIEND",
+        "concept": "Base",
+        "image": "cards/GFRIEND/sowon.JPG"
+    },
+    {
+        "name": "Umji",
+        "group": "GFRIEND/VIVIZ",
+        "concept": "Base",
+        "image": "cards/GFRIEND/umji.JPG"
+    },
+    {
+        "name": "Yerin",
+        "group": "GFRIEND",
+        "concept": "Base",
+        "image": "cards/GFRIEND/yerin.JPG"
+    },
+    {
+        "name": "Yuju",
+        "group": "GFRIEND",
+        "concept": "Base",
+        "image": "cards/GFRIEND/yuju.JPG"
+    },
+    {
+        "name": "Chungha",
+        "group": "Soloist",
+        "concept": "Base",
+        "image": "cards/SOLOIST/chungha.JPG"
     }
 ]
