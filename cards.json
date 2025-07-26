@@ -634,5 +634,29 @@
         "group": "TWICE",
         "concept": "STRATEGY",
         "image": "cards/TWICE/STRATEGY/tzuyu2.JPG"
+    },
+    {
+        "name": "Giselle",
+        "group": "aespa",
+        "concept": "Whiplash",
+        "image": "cards/aespa/Whiplash/giselle2.JPG"
+    },
+    {
+        "name": "Karina",
+        "group": "aespa",
+        "concept": "Whiplash",
+        "image": "cards/aespa/Whiplash/karina2.JPG"
+    },
+    {
+        "name": "Ningning",
+        "group": "aespa",
+        "concept": "Whiplash",
+        "image": "cards/aespa/Whiplash/ningning2.JPG"
+    },
+    {
+        "name": "Winter",
+        "group": "aespa",
+        "concept": "Whiplash",
+        "image": "cards/aespa/Whiplash/winter2.JPG"
     }
 ]
