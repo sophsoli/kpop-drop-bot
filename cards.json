@@ -718,5 +718,35 @@
         "group": "LE SSERAFIM",
         "concept": "ANTIFRAGILE",
         "image": "cards/LESSERAFIM/ANTIFRAGILE/yunjin3.JPG"
+    },
+    {
+        "name": "Chaewon",
+        "group": "LE SSERAFIM",
+        "concept": "EASY",
+        "image": "cards/LESSERAFIM/EASY/chaewon4.JPG"
+    },
+    {
+        "name": "Eunchae",
+        "group": "LE SSERAFIM",
+        "concept": "EASY",
+        "image": "cards/LESSERAFIM/EASY/eunchae4.JPG"
+    },
+    {
+        "name": "Kazuha",
+        "group": "LE SSERAFIM",
+        "concept": "EASY",
+        "image": "cards/LESSERAFIM/EASY/kazuha4.JPG"
+    },
+    {
+        "name": "Sakura",
+        "group": "LE SSERAFIM",
+        "concept": "EASY",
+        "image": "cards/LESSERAFIM/EASY/sakura4.JPG"
+    },
+    {
+        "name": "Yunjin",
+        "group": "LE SSERAFIM",
+        "concept": "EASY",
+        "image": "cards/LESSERAFIM/EASY/yunjin4.JPG"
     }
 ]
