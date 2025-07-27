@@ -230,20 +230,6 @@ async def drop(ctx):
             card = og_card.copy()
             card.pop("reaction", None)
 
-            # # Assign unique identifiers before DB Query
-            # user_id_str = str(user.id)
-            # user_cards = user_collections[user_id_str]
-
-            # def get_next_short_id(collection):
-            #     if not collection:
-            #             return 1
-            #     else:
-            #         max_id = max((c.get("short_id", 0) for c in collection), default=0)
-            #         return max_id + 1
-            # short_id = get_next_short_id(user_cards)
-
-            # same_cards = [c for c in user_cards if c["name"] == card["name"] and c["rarity"] == card["rarity"]]
-            # edition = len(same_cards) + 1
             async with db_pool.acquire() as conn:
                 row = await conn.fetchrow("""
                     SELECT MAX(short_id::int) AS max_short_id
@@ -296,33 +282,47 @@ async def drop(ctx):
             break
 
 @bot.command()
-async def collection(ctx, member: discord.Member = None):
+async def collection(ctx, sort_by: str = "default", member: discord.Member = None):
     target = member or ctx.author
     user_id = target.id
 
-    # get user's tag emoji from postgressql
+    # get user's tag emoji from PostgreSQL
     async with db_pool.acquire() as conn:
         row = await conn.fetchrow("SELECT emoji FROM users WHERE user_id = $1", user_id)
         emoji = row["emoji"] if row and row["emoji"] else "📸"
 
-    # Get user's card
+    # Get user's cards
     async with db_pool.acquire() as conn:
-        rows = await conn.fetch("""
-            SELECT * FROM user_cards
-            WHERE user_id = $1
-            ORDER BY date_obtained DESC;
-        """, int(user_id))
-    
+        rows = await conn.fetch(
+            "SELECT * FROM user_cards WHERE user_id = $1",
+            int(user_id)
+        )
+
     if not rows:
         await ctx.send(f"{target.display_name} doesn't have any photocards yet. 😢")
         return
-    
+
+    # Convert to list of dicts
+    cards = [dict(row) for row in rows]
+
+    # ✅ Sort logic
+    if sort_by.lower() == "rarity":
+        rarity_order = ['Mythic', 'Legendary', 'Epic', 'Rare', 'Common']
+        rarity_index = {r: i for i, r in enumerate(rarity_order)}
+        cards.sort(key=lambda card: rarity_index.get(card['rarity'], 999))
+    elif sort_by.lower() == "name":
+        cards.sort(key=lambda card: card['member_name'].lower())
+    else:
+        # Default: sort by date_obtained (descending)
+        cards.sort(key=lambda card: card['date_obtained'], reverse=True)
+
     # PAGINATION SETUP
     page_size = 10
-    pages = [rows[i:i + page_size] for i in range(0, len(rows), page_size)]
+    pages = [cards[i:i + page_size] for i in range(0, len(cards), page_size)]
     view = CollectionView(ctx, pages, emoji, target)
     embed = view.generate_embed()
     view.message = await ctx.send(embed=embed, view=view)
+
 
 pending_trades = {}
 
