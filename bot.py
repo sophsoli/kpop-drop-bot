@@ -471,7 +471,7 @@ async def mycards(ctx, *, card_name: str):
     await ctx.send(embed=embed)
 
 @bot.command()
-async def cooldowns(ctx):
+async def cd(ctx):
     user_id = ctx.author.id
     now = time.time()
 
