@@ -630,9 +630,16 @@ async def view(ctx, card_uid: str):
         card = await conn.fetchrow("""
             SELECT uc.*, c.image_path
             FROM user_cards uc
-            JOIN cards c ON TRIM(UPPER(uc.card_uid)) = TRIM(UPPER(c.card_uid))
-            WHERE uc.user_id = $1 AND TRIM(UPPER(uc.card_uid)) = $2
+            JOIN cards c ON uc.card_uid = c.card_uid
+            WHERE uc.user_id = $1 AND uc.card_uid = $2
         """, user_id, card_uid)
+
+        print(f"DEBUG: card = {card}", file=sys.stderr)
+
+        rows = await conn.fetch("SELECT * FROM user_cards WHERE user_id = $1", user_id)
+        print(f"DEBUG: Total cards for user: {len(rows)}", file=sys.stderr)
+        uids = [r['card_uid'] for r in rows]
+        print(f"DEBUG: All UIDs: {uids}", file=sys.stderr)
 
         # Early return if not found
         if not card:
