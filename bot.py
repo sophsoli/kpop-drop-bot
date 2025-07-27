@@ -714,12 +714,12 @@ async def bothelp(ctx):
 
     embed.add_field(
         name="💰 Coins",
-        value="`!coins — See how much coins you have.",
+        value="`!coins` — See how much coins you have.",
     )
     
     embed.add_field(
         name="💰 Shop",
-        value="`!shop — SHOP COMING SOON!!",
+        value="`!shop` — SHOP COMING SOON!!",
     )
 
     embed.add_field(
