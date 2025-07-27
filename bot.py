@@ -621,46 +621,47 @@ async def shop(ctx):
 
 # !view command
 @bot.command()
-async def view(ctx, card_uid):
+async def view(ctx, card_uid: str):
     user_id = ctx.author.id
-    card_uid = card_uid.strip().upper()
+    card_uid = card_uid.upper()
 
     async with db_pool.acquire() as conn:
+        # Check if the card is in user's collection
         card = await conn.fetchrow("""
-            SELECT card_uid, edition, rarity, date_obtained,
-                   group_name, member_name, image_path
-            FROM user_cards
-            WHERE user_id = $1 AND card_uid = $2
+            SELECT uc.card_uid, uc.edition, uc.rarity, uc.group_name, uc.member_name,
+                   c.image_path
+            FROM user_cards uc
+            JOIN cards c ON uc.card_uid = c.card_uid
+            WHERE uc.user_id = $1 AND uc.card_uid = $2
         """, user_id, card_uid)
 
-    if not card:
-        await ctx.send("❌ Card not in your collection.")
-        return
+        if not card:
+            await ctx.send("❌ Card not in your collection.")
+            return
 
-    # Generate framed card image
-    image_path = card["image_path"]
-    rarity = card["rarity"]
+        # Load image and apply frame
+        image_path = card["image_path"]
+        full_path = os.path.join("card_images", image_path)
 
-    try:
-        framed_image = apply_frame(image_path, rarity)
-        resized_image = resize_image(framed_image, width=300)
-    except Exception as e:
-        await ctx.send(f"⚠️ Failed to load or frame the card: {e}")
-        return
+        if not os.path.exists(full_path):
+            await ctx.send("❌ Card image not found.")
+            return
 
-    image_bytes = io.BytesIO()
-    resized_image.save(image_bytes, format="PNG")
-    image_bytes.seek(0)
-    file = discord.File(image_bytes, filename="framed_card.png")
+        framed_image = apply_frame(full_path, card["rarity"])
+        image_bytes = io.BytesIO()
+        framed_image.save(image_bytes, format="PNG")
+        image_bytes.seek(0)
 
-    embed = discord.Embed(
-        title=f"{card['group_name']} • {card['member_name']}",
-        description=f"**Rarity:** {card['rarity']}\n**Edition:** {card['edition']}\n**UID:** `{card_uid}`",
-        color=discord.Color.gold() if rarity == "SSR" else discord.Color.blue()
-    )
-    embed.set_image(url="attachment://framed_card.png")
+        # Send embed with framed image
+        file = discord.File(fp=image_bytes, filename="card.png")
+        embed = discord.Embed(
+            title=f"{card['group_name']} {card['member_name']} [{card['rarity']}]",
+            description=f"Edition: {card['edition']}",
+            color=discord.Color.purple()
+        )
+        embed.set_image(url="attachment://card.png")
 
-    await ctx.send(embed=embed, file=file)
+        await ctx.send(file=file, embed=embed)
     
 @bot.command()
 async def bothelp(ctx):
