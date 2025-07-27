@@ -622,7 +622,7 @@ async def shop(ctx):
 # !view command
 @bot.command()
 async def view(ctx, card_uid: str):
-    user_id = str(ctx.author.id)
+    user_id = ctx.author.id
     card_uid = card_uid.upper()  # Normalize casing to match DB
 
     async with db_pool.acquire() as conn:
