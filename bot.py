@@ -622,22 +622,26 @@ async def shop(ctx):
 # !view command
 @bot.command()
 async def view(ctx, card_uid: str):
-    user_id = ctx.author.id
-    card_uid = card_uid.upper()
+    user_id = str(ctx.author.id)
+    card_uid = card_uid.upper()  # Normalize casing to match DB
 
     async with db_pool.acquire() as conn:
-        # Check if the card is in user's collection
         card = await conn.fetchrow("""
-            SELECT uc.card_uid, uc.edition, uc.rarity, uc.group_name, uc.member_name,
-                   c.image_path
+            SELECT uc.card_uid, uc.edition, uc.rarity, uc.group_name, uc.member_name, c.image_path
             FROM user_cards uc
             JOIN cards c ON uc.card_uid = c.card_uid
             WHERE uc.user_id = $1 AND uc.card_uid = $2
         """, user_id, card_uid)
 
+        # 🔍 DEBUG LINES
+        print(f"DEBUG: user_id = {user_id}")
+        print(f"DEBUG: card_uid = {card_uid}")
+        print(f"DEBUG: card = {card}")
+
         if not card:
             await ctx.send("❌ Card not in your collection.")
             return
+
 
         # Load image and apply frame
         image_path = card["image_path"]
