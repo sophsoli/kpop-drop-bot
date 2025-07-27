@@ -14,6 +14,7 @@ import asyncpg
 from datetime import datetime, timezone
 from data_helpers import add_entry, read_entries
 import json
+import sys
 
 SUGGESTIONS_FILE = "suggestions.json"
 BUGFIXES_FILE = "bugfixes.json"
@@ -25,7 +26,7 @@ FRAME_PATH = "./images/frame.png"
 
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = 1397431382741090314
+CHANNEL_ID = 1339716688748216392
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), case_insensitive=True)
 
@@ -634,9 +635,9 @@ async def view(ctx, card_uid: str):
         """, user_id, card_uid)
 
         # 🔍 DEBUG LINES
-        print(f"DEBUG: user_id = {user_id}")
-        print(f"DEBUG: card_uid = {card_uid}")
-        print(f"DEBUG: card = {card}")
+        print(f"DEBUG: user_id = {user_id}", file=sys.stderr)
+        print(f"DEBUG: card_uid = {card_uid}", file=sys.stderr)
+        print(f"DEBUG: card = {card}", file=sys.stderr)
 
         if not card:
             await ctx.send("❌ Card not in your collection.")
