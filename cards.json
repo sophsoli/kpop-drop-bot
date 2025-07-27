@@ -790,5 +790,83 @@
         "group": "Soloist",
         "concept": "Base",
         "image": "cards/SOLOIST/chungha.JPG"
+    },
+    {
+        "name": "S.Coups",
+        "group": "SEVENTEEN",
+        "concept": "Seventeenth Heaven",
+        "image": "cards/SEVENTEEN/seventeenth_heaven/scoups3.JPG"
+    },
+    {
+        "name": "Jeonghan",
+        "group": "SEVENTEEN",
+        "concept": "Seventeenth Heaven",
+        "image": "cards/SEVENTEEN/seventeenth_heaven/jeonghan3.JPG"
+    },
+    {
+        "name": "Hoshi",
+        "group": "SEVENTEEN",
+        "concept": "Seventeenth Heaven",
+        "image": "cards/SEVENTEEN/seventeenth_heaven/hoshi3.JPG"
+    },
+    {
+        "name": "DK",
+        "group": "SEVENTEEN",
+        "concept": "Seventeenth Heaven",
+        "image": "cards/SEVENTEEN/seventeenth_heaven/dk3.JPG"
+    },
+    {
+        "name": "Dino",
+        "group": "SEVENTEEN",
+        "concept": "Seventeenth Heaven",
+        "image": "cards/SEVENTEEN/seventeenth_heaven/dino3.JPG"
+    },
+    {
+        "name": "Joshua",
+        "group": "SEVENTEEN",
+        "concept": "Seventeenth Heaven",
+        "image": "cards/SEVENTEEN/seventeenth_heaven/joshua3.JPG"
+    },
+    {
+        "name": "Jun",
+        "group": "SEVENTEEN",
+        "concept": "Seventeenth Heaven",
+        "image": "cards/SEVENTEEN/seventeenth_heaven/jun3.JPG"
+    },
+    {
+        "name": "Mingyu",
+        "group": "SEVENTEEN",
+        "concept": "Seventeenth Heaven",
+        "image": "cards/SEVENTEEN/seventeenth_heaven/mingyu3.JPG"
+    },
+    {
+        "name": "Seungkwan",
+        "group": "SEVENTEEN",
+        "concept": "Seventeenth Heaven",
+        "image": "cards/SEVENTEEN/seventeenth_heaven/seungkwan3.JPG"
+    },
+    {
+        "name": "The8",
+        "group": "SEVENTEEN",
+        "concept": "Seventeenth Heaven",
+        "image": "cards/SEVENTEEN/seventeenth_heaven/the83.JPG"
+    },
+    {
+        "name": "Vernon",
+        "group": "SEVENTEEN",
+        "concept": "Seventeenth Heaven",
+        "image": "cards/SEVENTEEN/seventeenth_heaven/vernon3.JPG"
+    },
+    {
+        "name": "Wonwoo",
+        "group": "SEVENTEEN",
+        "concept": "Seventeenth Heaven",
+        "image": "cards/SEVENTEEN/seventeenth_heaven/wonwoo3.JPG"
+    },
+    {
+        "name": "Woozi",
+        "group": "SEVENTEEN",
+        "concept": "Seventeenth Heaven",
+        "image": "cards/SEVENTEEN/seventeenth_heaven/woozi3.JPG"
     }
 ]
