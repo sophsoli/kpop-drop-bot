@@ -3,7 +3,7 @@ from discord.ui import View, Button
 from discord import Interaction, Embed
 
 class CollectionView(View):
-    def __init__(self, ctx, pages, emoji, target):
+    def __init__(self, ctx, pages, emoji, target, sort_key="date_obtained"):
         super().__init__(timeout=60)
         self.ctx = ctx
         self.pages = pages  # A list of list-of-cards per page
@@ -12,6 +12,7 @@ class CollectionView(View):
         self.current_page = 0
         self.message = None
         self.author = ctx.author
+        self.sort_key = sort_key  # NEW
 
         # Buttons
         self.prev_button = Button(label="👈", style=discord.ButtonStyle.secondary)
@@ -26,15 +27,19 @@ class CollectionView(View):
     def generate_embed(self):
         embed = Embed(
             title=f"📸 {self.target.display_name}'s Photocard Collection 📚",
-            description=f"Page {self.current_page + 1} of {len(self.pages)}",
+            description=f"Page {self.current_page + 1} of {len(self.pages)} — Sorted by `{self.sort_key}`",
             color=discord.Color.blue()
         )
-        for row in self.pages[self.current_page]:
-            embed.add_field(
-                name=f"{self.emoji} {row['group_name']} • {row['member_name']} • {row['rarity']} • Edition {row['edition']}",
-                value="",
-                inline=False
-            )
+        for card in self.pages[self.current_page]:
+            if self.sort_key == "rarity":
+                line = f"**[{card['rarity']}]** {card['member_name']} ({card['group_name']}) — *Edition {card['edition']}* `({card['card_uid']})`"
+            elif self.sort_key == "member_name":
+                line = f"{card['member_name']} • {card['group_name']} • [{card['rarity']}] • Edition {card['edition']}"
+            elif self.sort_key == "group_name":
+                line = f"{card['group_name']} • {card['member_name']} • [{card['rarity']}] • Edition {card['edition']}"
+            else: # default (date_obtained)
+                line = f"{card['group_name']} • {card['member_name']} • [{card['rarity']}] • Edition {card['edition']}"
+            embed.add_field(name=f"{self.emoji} {line}", value="", inline=False)
         return embed
 
     async def prev_page(self, interaction: Interaction):

@@ -282,44 +282,41 @@ async def drop(ctx):
             break
 
 @bot.command()
-async def collection(ctx, sort_by: str = "default", member: discord.Member = None):
+async def collection(ctx, sort_key: str = "date_obtained", member: discord.Member = None):
     target = member or ctx.author
     user_id = target.id
 
-    # get user's tag emoji from PostgreSQL
+    # get user's tag emoji
     async with db_pool.acquire() as conn:
         row = await conn.fetchrow("SELECT emoji FROM users WHERE user_id = $1", user_id)
         emoji = row["emoji"] if row and row["emoji"] else "📸"
 
-    # Get user's cards
+    # Validate sort key
+    valid_sorts = {
+        "date_obtained": "date_obtained DESC",
+        "rarity": "rarity ASC",
+        "member_name": "member_name ASC",
+        "group_name": "group_name ASC"
+    }
+
+    order_by = valid_sorts.get(sort_key.lower(), "date_obtained DESC")
+
+    # Get cards
     async with db_pool.acquire() as conn:
-        rows = await conn.fetch(
-            "SELECT * FROM user_cards WHERE user_id = $1",
-            int(user_id)
-        )
+        rows = await conn.fetch(f"""
+            SELECT * FROM user_cards
+            WHERE user_id = $1
+            ORDER BY {order_by};
+        """, int(user_id))
 
     if not rows:
         await ctx.send(f"{target.display_name} doesn't have any photocards yet. 😢")
         return
 
-    # Convert to list of dicts
-    cards = [dict(row) for row in rows]
-
-    # ✅ Sort logic
-    if sort_by.lower() == "rarity":
-        rarity_order = ['Mythic', 'Legendary', 'Epic', 'Rare', 'Common']
-        rarity_index = {r: i for i, r in enumerate(rarity_order)}
-        cards.sort(key=lambda card: rarity_index.get(card['rarity'], 999))
-    elif sort_by.lower() == "name":
-        cards.sort(key=lambda card: card['member_name'].lower())
-    else:
-        # Default: sort by date_obtained (descending)
-        cards.sort(key=lambda card: card['date_obtained'], reverse=True)
-
-    # PAGINATION SETUP
+    # PAGINATION
     page_size = 10
-    pages = [cards[i:i + page_size] for i in range(0, len(cards), page_size)]
-    view = CollectionView(ctx, pages, emoji, target)
+    pages = [rows[i:i + page_size] for i in range(0, len(rows), page_size)]
+    view = CollectionView(ctx, pages, emoji, target, sort_key.lower())
     embed = view.generate_embed()
     view.message = await ctx.send(embed=embed, view=view)
 
