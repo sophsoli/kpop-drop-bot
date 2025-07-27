@@ -582,7 +582,7 @@ async def recycle(ctx, card_uid: str):
             """, user_id, coins_earned)
 
         await ctx.send(
-            f"♻️ You recycled a **{rarity} {member_name}** card (`{card_uid}`) for **{coins_earned}** coins!"
+            f"♻️ You recycled a [{rarity}] **{member_name}** card (`#{card_uid}`) for **{coins_earned}** coins!"
         )
 
 @bot.command()
@@ -692,7 +692,7 @@ async def bothelp(ctx):
 
     embed.add_field(
         name="🎴 My Cards",
-        value="`!mycards <name>` — See a list of the cards you currently own.",
+        value="`!mycards <name>` — See a list of the cards you currently own by name.",
         inline=False
     )
 
@@ -700,6 +700,21 @@ async def bothelp(ctx):
         name="📷 Tag",
         value="`!tag <emoji>` — Change the tag of your collection! -*More tag variants to come*-",
         inline=False
+    )
+
+    embed.add_field(
+        name="♻️ Recycle",
+        value="`!recycle <card_uid>` — Discard a card that you don't want for coins!",
+    )
+
+    embed.add_field(
+        name="💰 Coins",
+        value="`!coins — See how much coins you have.",
+    )
+    
+    embed.add_field(
+        name="💰 Shop",
+        value="`!shop — SHOP COMING SOON!!",
     )
 
     embed.add_field(
