@@ -620,8 +620,8 @@ async def shop(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
-async def viewcard(ctx, card_uid):
-    user_id = ctx.author.id
+async def view(ctx, card_uid):
+    user_id = int(ctx.author.id)  # Cast user_id to int
     card_uid = card_uid.strip().upper()
 
     async with db_pool.acquire() as conn:
@@ -634,7 +634,7 @@ async def viewcard(ctx, card_uid):
         """, user_id, card_uid)
 
     if not card:
-        await ctx.send("Card not in your collection.")
+        await ctx.send("❌ Card not in your collection.")
         return
 
     # Generate framed card image
@@ -645,7 +645,7 @@ async def viewcard(ctx, card_uid):
         framed_image = apply_frame(image_path, rarity)
         resized_image = resize_image(framed_image, width=300)
     except Exception as e:
-        await ctx.send(f"Failed to load or frame the card: {e}")
+        await ctx.send(f"⚠️ Failed to load or frame the card: {e}")
         return
 
     # Convert image to Discord file
@@ -663,6 +663,7 @@ async def viewcard(ctx, card_uid):
     embed.set_image(url="attachment://framed_card.png")
 
     await ctx.send(embed=embed, file=file)
+
     
 @bot.command()
 async def bothelp(ctx):
