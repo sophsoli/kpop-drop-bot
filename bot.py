@@ -631,7 +631,7 @@ async def view(ctx, card_uid: str):
             SELECT uc.card_uid, uc.edition, uc.rarity, uc.group_name, uc.member_name, c.image_path
             FROM user_cards uc
             JOIN cards c ON TRIM(uc.card_uid) = TRIM(c.card_uid)
-            WHERE uc.user_id = $1 AND TRIM(uc.card_uid) = $2
+            WHERE uc.user_id = $1 AND TRIM(UPPER(uc.card_uid)) = $2
         """, user_id, card_uid)
 
         # Early return if not found
