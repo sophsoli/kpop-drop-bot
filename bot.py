@@ -620,8 +620,9 @@ async def shop(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
-async def viewcard(ctx, card_uid: str):
-    user_id = ctx.author.id
+async def viewcard(ctx, card_uid):
+    user_id = str(ctx.author.id)
+    card_uid = card_uid.strip().upper()
 
     async with db_pool.acquire() as conn:
         card = await conn.fetchrow("""
@@ -633,7 +634,7 @@ async def viewcard(ctx, card_uid: str):
         """, user_id, card_uid)
 
     if not card:
-        await ctx.send("Card not found in your collection.")
+        await ctx.send("Card not in your collection.")
         return
 
     # Generate framed card image
@@ -680,7 +681,7 @@ async def bothelp(ctx):
 
     embed.add_field(
         name="📁 View Collection",
-        value="`!collection` — View your collection of claimed cards. You can also view someone else's collection @user.",
+        value="`!collection` — View your collection of claimed cards. You can also view someone else's collection @user. Can view your collection by rarity or member_name. !collection rarity, !collection member_name",
         inline=False
     )
 
