@@ -32,13 +32,13 @@ class CollectionView(View):
         )
         for card in self.pages[self.current_page]:
             if self.sort_key == "rarity":
-                line = f"**[{card['rarity']}]** {card['member_name']} ({card['group_name']}) — *Edition {card['edition']}* `({card['card_uid']})`"
+                line = f"**[{card['rarity']}]** {card['member_name']} ({card['group_name']}) — Edition {card['edition']}"
             elif self.sort_key == "member_name":
                 line = f"{card['member_name']} • {card['group_name']} • [{card['rarity']}] • Edition {card['edition']}"
             elif self.sort_key == "group_name":
                 line = f"{card['group_name']} • {card['member_name']} • [{card['rarity']}] • Edition {card['edition']}"
             else: # default (date_obtained)
-                line = f"{card['group_name']} • {card['member_name']} • [{card['rarity']}] • Edition {card['edition']}"
+                line = f"{card['group_name']} • {card['member_name']} • {card['rarity']} • Edition {card['edition']}"
             embed.add_field(name=f"{self.emoji} {line}", value="", inline=False)
         return embed
 
