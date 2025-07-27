@@ -621,7 +621,7 @@ async def shop(ctx):
 
 @bot.command()
 async def viewcard(ctx, card_uid):
-    user_id = str(ctx.author.id)
+    user_id = ctx.author.id
     card_uid = card_uid.strip().upper()
 
     async with db_pool.acquire() as conn:
