@@ -628,7 +628,7 @@ async def viewcard(ctx, card_uid: str):
             SELECT uc.card_uid, uc.edition, uc.rarity, uc.date_obtained,
                    c.group_name, c.member_name, c.image_path
             FROM user_cards uc
-            JOIN cards c ON uc.card_id = c.card_id
+            JOIN cards c ON uc.card_uid = c.card_uid
             WHERE uc.user_id = $1 AND uc.card_uid = $2
         """, user_id, card_uid)
 
