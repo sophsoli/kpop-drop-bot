@@ -624,28 +624,21 @@ async def shop(ctx):
 @bot.command()
 async def view(ctx, card_uid: str):
     user_id = ctx.author.id
-    card_uid = card_uid.upper()  # Normalize casing to match DB
+    card_uid = card_uid.upper()
 
     async with db_pool.acquire() as conn:
-
         card = await conn.fetchrow("""
             SELECT uc.card_uid, uc.edition, uc.rarity, uc.group_name, uc.member_name, c.image_path
             FROM user_cards uc
             JOIN cards c ON TRIM(uc.card_uid) = TRIM(c.card_uid)
             WHERE uc.user_id = $1 AND TRIM(uc.card_uid) = $2
-            """, user_id, card_uid)
+        """, user_id, card_uid)
 
-        # 🔍 DEBUG LINES
-        print(f"DEBUG: user_id = {user_id}", file=sys.stderr)
-        print(f"DEBUG: card_uid = {card_uid}", file=sys.stderr)
-        print(f"DEBUG: card = {card}", file=sys.stderr)
-
+        # Early return if not found
         if not card:
             await ctx.send("❌ Card not in your collection.")
             return
 
-
-        # Load image and apply frame
         image_path = card["image_path"]
         full_path = os.path.join("card_images", image_path)
 
@@ -658,7 +651,6 @@ async def view(ctx, card_uid: str):
         framed_image.save(image_bytes, format="PNG")
         image_bytes.seek(0)
 
-        # Send embed with framed image
         file = discord.File(fp=image_bytes, filename="card.png")
         embed = discord.Embed(
             title=f"{card['group_name']} {card['member_name']} [{card['rarity']}]",
