@@ -627,17 +627,13 @@ async def view(ctx, card_uid: str):
     card_uid = card_uid.upper()  # Normalize casing to match DB
 
     async with db_pool.acquire() as conn:
-        # card = await conn.fetchrow("""
-        #     SELECT uc.card_uid, uc.edition, uc.rarity, uc.group_name, uc.member_name, c.image_path
-        #     FROM user_cards uc
-        #     JOIN cards c ON uc.card_uid = c.card_uid
-        #     WHERE uc.user_id = $1 AND uc.card_uid = $2
-        # """, user_id, card_uid)
 
         card = await conn.fetchrow("""
-            SELECT * FROM user_cards
-            WHERE user_id = $1 AND card_uid = $2
-        """, user_id, card_uid)
+            SELECT uc.card_uid, uc.edition, uc.rarity, uc.group_name, uc.member_name, c.image_path
+            FROM user_cards uc
+            JOIN cards c ON TRIM(uc.card_uid) = TRIM(c.card_uid)
+            WHERE uc.user_id = $1 AND TRIM(uc.card_uid) = $2
+            """, user_id, card_uid)
 
         # 🔍 DEBUG LINES
         print(f"DEBUG: user_id = {user_id}", file=sys.stderr)
