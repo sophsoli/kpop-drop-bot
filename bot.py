@@ -619,10 +619,13 @@ async def shop(ctx):
 
     await ctx.send(embed=embed)
 
+# !view command
 @bot.command()
 async def view(ctx, card_uid):
-    user_id = int(ctx.author.id)  # Cast user_id to int
+    user_id = ctx.author.id  # no need for int() cast
     card_uid = card_uid.strip().upper()
+
+    print(f"🔍 Debug — user_id: {user_id}, card_uid: {card_uid}")  # ✅ Debug line 1
 
     async with db_pool.acquire() as conn:
         card = await conn.fetchrow("""
@@ -633,11 +636,13 @@ async def view(ctx, card_uid):
             WHERE uc.user_id = $1 AND uc.card_uid = $2
         """, user_id, card_uid)
 
+    print(f"🔍 Debug — Query result: {card}")  # ✅ Debug line 2
+
     if not card:
         await ctx.send("❌ Card not in your collection.")
         return
 
-    # Generate framed card image
+    # Image generation
     image_path = card["image_path"]
     rarity = card["rarity"]
 
@@ -648,13 +653,11 @@ async def view(ctx, card_uid):
         await ctx.send(f"⚠️ Failed to load or frame the card: {e}")
         return
 
-    # Convert image to Discord file
     image_bytes = io.BytesIO()
     resized_image.save(image_bytes, format="PNG")
     image_bytes.seek(0)
     file = discord.File(image_bytes, filename="framed_card.png")
 
-    # Build embed
     embed = discord.Embed(
         title=f"{card['group_name']} • {card['member_name']}",
         description=f"**Rarity:** {card['rarity']}\n**Edition:** {card['edition']}\n**UID:** `{card_uid}`",
