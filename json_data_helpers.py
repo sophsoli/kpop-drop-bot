@@ -4,7 +4,6 @@ import uuid
 from datetime import datetime
 
 COLLECTIONS_FILE = "collections.json"
-EMOJI_FILE = "user_emojis.json"
 SUGGESTIONS_FILE = 'suggestions.json'
 BUGFIXES_FILE = 'bugfixes.json'
 
@@ -39,16 +38,6 @@ def ensure_card_ids(collections):
     if changed:
         save_collections(collections)
     return collections
-
-def load_user_emojis():
-    if os.path.exists(EMOJI_FILE):
-        with open(EMOJI_FILE, "r") as f:
-            return json.load(f)
-    return {}
-
-def save_user_emojis(data):
-    with open(EMOJI_FILE, "w") as f:
-        json.dump(data, f, indent=4)
 
 def read_entries(file):
     if os.path.exists(file):

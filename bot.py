@@ -3,7 +3,7 @@ import discord
 import os
 import io
 from dotenv import load_dotenv
-from json_data_helpers import card_collection, load_collections, save_collections, ensure_card_ids, load_user_emojis, save_user_emojis
+from json_data_helpers import card_collection, load_collections, save_collections, ensure_card_ids
 import random
 from image_helpers import apply_frame, merge_cards_horizontally, resize_image
 import asyncio
@@ -429,7 +429,7 @@ async def mycards(ctx, *, card_name: str):
 
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
-            SELECT card_uid, group_name, member_name, rarity, concept
+            SELECT card_uid, group_name, member_name, rarity, concept, edition
             FROM user_cards
             WHERE user_id = $1 AND member_name ILIKE $2
             ORDER BY date_obtained DESC        
@@ -459,10 +459,11 @@ async def mycards(ctx, *, card_name: str):
         name = row["member_name"] or "Unknown"
         rarity = row["rarity"] or "Unknown"
         concept = row["concept"] or "Idol"
+        edition = row["edition"] or "Unknown"
         emoji = emoji_map.get(rarity, "🎴")
 
         embed.add_field(
-            name=f"{i}. {emoji} {group} • {name} • {concept} • ({rarity}) • #{uid}",
+            name=f"{i}. {emoji} {group} • {name} • {concept} • ({rarity}) • Edition {edition} #{uid}",
             value="",
             inline=False
         )
@@ -654,8 +655,8 @@ async def shop(ctx):
     view = ShopView(ctx.author.id, db_pool)  # Pass db_pool here!
 
     embed = discord.Embed(
-        title="🛒 Welcome to the Shop!",
-        description="What would you like to buy?",
+        title="🛒 Mingyu's Shop",
+        description="What are you buying?",
         color=discord.Color.blue()
     )
 
@@ -732,65 +733,6 @@ async def bothelp(ctx):
         value="`!another command` — -*MORE FEATURES AND COMMANDS COMING!!*-",
         inline=False
     )
-
-    await ctx.send(embed=embed)
-
-@bot.command()
-async def suggestion(ctx, *, message):
-    entry = {
-        "user": str(ctx.author),
-        "suggestion": message,
-        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-    }
-    add_entry(SUGGESTIONS_FILE, entry)
-    await ctx.send("✅ Suggestion recorded!")
-
-@bot.command()
-async def bugfix(ctx, *, message):
-    entry = {
-        "user": str(ctx.author),
-        "bug": message,
-        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-    }
-    add_entry(BUGFIXES_FILE, entry)
-    await ctx.send("🛠️ Bug report recorded!")
-
-@bot.command()
-async def viewsuggestions(ctx):
-    with open(SUGGESTIONS_FILE, "r") as f:
-        data = json.load(f)
-
-    if not data:
-        await ctx.send("📭 No suggestions yet!")
-        return
-
-    embed = discord.Embed(title="📢 Suggestions", color=discord.Color.green())
-    for entry in data[:5]:  # show latest 5
-        embed.add_field(
-            name=f"{entry['user']} ({entry['timestamp']})",
-            value=entry["suggestion"],
-            inline=False
-        )
-    await ctx.send(embed=embed)
-
-@bot.command()
-async def viewbugs(ctx):
-    from json_data_helpers import read_entries  # Or wherever it's stored
-
-    bug_reports = read_entries(BUGFIXES_FILE)
-
-    if not bug_reports:
-        await ctx.send("🛠️ No bug reports yet!")
-        return
-
-    embed = discord.Embed(title="Bug Reports", color=discord.Color.red())
-
-    for entry in bug_reports[:5]:  # Show most recent 5
-        embed.add_field(
-            name=f"{entry['user']} ({entry['timestamp']})",
-            value=entry["bug"],
-            inline=False
-        )
 
     await ctx.send(embed=embed)
 
