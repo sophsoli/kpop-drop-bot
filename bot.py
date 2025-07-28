@@ -33,7 +33,6 @@ bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), case_insen
 
 # Load cards database at startup
 cards = card_collection()
-card_metadata = {card["card_uid"]: card for card in cards}
 
 user_collections = defaultdict(list, ensure_card_ids(load_collections()))
 
@@ -547,25 +546,29 @@ async def view(ctx, card_uid: str):
     user_id = ctx.author.id
     card_uid = card_uid.upper()
 
-    # Get card metadata first (from JSON cache)
-    card_info = card_metadata.get(card_uid)
-    if not card_info:
-        await ctx.send("❌ Card metadata not found.")
-        return
-
-    # Check if user owns this card
     async with db_pool.acquire() as conn:
+        # Check if user owns this card
         card_row = await conn.fetchrow("""
             SELECT * FROM user_cards
             WHERE user_id = $1 AND card_uid = $2
         """, user_id, card_uid)
 
-    if not card_row:
-        await ctx.send("❌ You don't own this card.")
+        if not card_row:
+            await ctx.send("❌ You don't own this card.")
+            return
+
+        # Get card metadata from the cards table
+        card_info = await conn.fetchrow("""
+            SELECT * FROM cards
+            WHERE card_uid = $1
+        """, card_uid)
+
+    if not card_info:
+        await ctx.send("❌ Card metadata not found.")
         return
 
     # Build image path
-    image_path = os.path.join("cards", card_info.get("image", ""))
+    image_path = os.path.join("cards", card_info["image"])
     if not os.path.exists(image_path):
         await ctx.send("❌ Card image not found.")
         return
@@ -579,7 +582,7 @@ async def view(ctx, card_uid: str):
     # Build and send embed
     file = discord.File(image_bytes, filename="card.png")
     embed = discord.Embed(
-        title=f"{card_info.get('group', 'Unknown Group')} {card_info.get('name', 'Unknown')} [{card_row['rarity']}]",
+        title=f"{card_info['group']} {card_info['name']} [{card_row['rarity']}]",
         description=f"Edition: {card_row['edition']}",
         color=discord.Color.purple()
     )
