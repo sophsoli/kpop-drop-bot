@@ -580,29 +580,26 @@ async def daily(ctx):
         current_coins = row["coins"]
         last_daily = row["last_daily"]
 
-        if last_daily is None:
-            new_total = current_coins + reward
-            await conn.execute(
-                "UPDATE users SET coins = $1, last_daily = $2 WHERE user_id = $3",
-                new_total, now, user_id
-            )
-            await ctx.send(f"✅ You received your first {reward} coins today! You now have {new_total} coins.")
-            return
+        if last_daily is not None:
+            last_daily = last_daily.replace(tzinfo=timezone.utc)
+            next_claim_time = last_daily + timedelta(hours=24)
 
-        next_claim_time = last_daily + timedelta(hours=24)
-        if now < next_claim_time:
-            remaining = next_claim_time - now
-            hours, remainder = divmod(remaining.seconds, 3600)
-            minutes = remainder // 60
-            await ctx.send(f"🕒 You've already claimed your daily coins! Come back in {remaining.days * 24 + hours}h {minutes}m.")
-            return
+            if now < next_claim_time:
+                remaining = next_claim_time - now
+                hours, remainder = divmod(remaining.seconds, 3600)
+                minutes = remainder // 60
+                await ctx.send(f"🕒 You've already claimed your daily coins! Come back in {remaining.days * 24 + hours}h {minutes}m.")
+                return
 
         new_total = current_coins + reward
         await conn.execute(
             "UPDATE users SET coins = $1, last_daily = $2 WHERE user_id = $3",
             new_total, now, user_id
         )
-        await ctx.send(f"✅ You received {reward} coins for your daily check-in! You now have {new_total} coins.")
+        if last_daily is None:
+            await ctx.send(f"✅ You received your first {reward} coins today! You now have {new_total} coins.")
+        else:
+            await ctx.send(f"✅ You received {reward} coins for your daily check-in! You now have {new_total} coins.")
 
 
 @bot.command()
