@@ -12,7 +12,7 @@ from collections import defaultdict
 from utils.paginator import CollectionView
 from utils.shop import ShopView
 import asyncpg
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from data_helpers import add_entry, read_entries
 import json
 
@@ -561,6 +561,48 @@ async def view(ctx, card_uid: str):
     embed.set_image(url="attachment://card.png")
 
     await ctx.send(file=file, embed=embed)
+
+# !daily
+@bot.command()
+async def daily(ctx):
+    user_id = str(ctx.author.id)
+    now = datetime.utcnow()
+
+    async with bot.db.acquire() as conn:
+        # Check if user exists, if not, insert
+        await conn.execute("""
+            INSERT INTO users (user_id, coins, last_daily)
+            VALUES ($1, 0, NULL)
+            ON CONFLICT (user_id) DO NOTHING;
+        """, user_id)
+
+        user_data = await conn.fetchrow("SELECT coins, last_daily FROM users WHERE user_id = $1", user_id)
+
+        last_daily = user_data["last_daily"]
+        coins = user_data["coins"]
+
+        if last_daily is not None:
+            delta = now - last_daily
+            if delta < timedelta(hours=24):
+                remaining = timedelta(hours=24) - delta
+                hours, remainder = divmod(remaining.seconds, 3600)
+                minutes = remainder // 60
+                return await ctx.send(
+                    f"🕒 You've already claimed your daily coins!\nCome back in {remaining.days}d {hours}h {minutes}m."
+                )
+
+        # Grant reward and update timestamp
+        reward = random.randint(1, 10)  # change this to whatever amount
+        new_coins = coins + reward
+
+        await conn.execute("""
+            UPDATE users
+            SET coins = $1,
+                last_daily = $2
+            WHERE user_id = $3
+        """, new_coins, now, user_id)
+
+        await ctx.send(f"✅ Daily claimed! You received **{reward} coins**. You now have **{new_coins} coins**.")
 
 
 @bot.command()
