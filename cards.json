@@ -916,5 +916,29 @@
         "group": "SOLOIST",
         "concept": "LOVE U",
         "image": "cards/SOLOIST/chungha2.JPG"
+    },
+    {
+        "name": "Jennie",
+        "group": "BLACKPINK",
+        "concept": "The Album",
+        "image": "cards/BLACKPINK/the_album/jennie3.JPG"
+    },
+    {
+        "name": "Jisoo",
+        "group": "BLACKPINK",
+        "concept": "The Album",
+        "image": "cards/BLACKPINK/the_album/jisoo3.JPG"
+    },
+    {
+        "name": "Lisa",
+        "group": "BLACKPINK",
+        "concept": "The Album",
+        "image": "cards/BLACKPINK/the_album/lisa3.JPG"
+    },
+    {
+        "name": "Rosé",
+        "group": "BLACKPINK",
+        "concept": "The Album",
+        "image": "cards/BLACKPINK/the_album/rose3.JPG"
     }
 ]
