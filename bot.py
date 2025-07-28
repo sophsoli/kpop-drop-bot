@@ -33,6 +33,7 @@ bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), case_insen
 
 # Load cards database at startup
 cards = card_collection()
+card_metadata = {card["card_uid"]: card for card in cards}
 
 user_collections = defaultdict(list, ensure_card_ids(load_collections()))
 
@@ -544,58 +545,48 @@ async def sort(ctx, criterion: str = 'group'):
 @bot.command()
 async def view(ctx, card_uid: str):
     user_id = ctx.author.id
-    card_uid = unicodedata.normalize('NFC', card_uid.upper())
+    card_uid = card_uid.upper()
 
-    print(f"DEBUG: user_id = {user_id}", file=sys.stderr)
-    print(f"DEBUG: card_uid = {card_uid}", file=sys.stderr)
+    # Get card metadata first (from JSON cache)
+    card_info = card_metadata.get(card_uid)
+    if not card_info:
+        await ctx.send("❌ Card metadata not found.")
+        return
 
+    # Check if user owns this card
     async with db_pool.acquire() as conn:
-        card = await conn.fetchrow("""
+        card_row = await conn.fetchrow("""
             SELECT * FROM user_cards
             WHERE user_id = $1 AND card_uid = $2
         """, user_id, card_uid)
 
-        print(f"DEBUG: card = {card}", file=sys.stderr)
+    if not card_row:
+        await ctx.send("❌ You don't own this card.")
+        return
 
-        rows = await conn.fetch("SELECT * FROM user_cards WHERE user_id = $1", user_id)
-        print(f"DEBUG: Total cards for user: {len(rows)}", file=sys.stderr)
-        uids = [r['card_uid'] for r in rows]
-        print(f"DEBUG: All UIDs: {uids}", file=sys.stderr)
+    # Build image path
+    image_path = os.path.join("cards", card_info.get("image", ""))
+    if not os.path.exists(image_path):
+        await ctx.send("❌ Card image not found.")
+        return
 
-        # Early return if not found
-        if not card:
-            await ctx.send("❌ Card not in your collection.")
-            return
-        
-        image_row = await conn.fetchrow("""
-            SELECT image_path FROM cards WHERE card_uid = $1
-        """, card_uid)
+    # Apply frame and prepare image bytes
+    framed_image = apply_frame(image_path, FRAME_PATH)
+    image_bytes = io.BytesIO()
+    framed_image.save(image_bytes, format="PNG")
+    image_bytes.seek(0)
 
-        if not image_row:
-            await ctx.send("❌ Image not found in cards table.")
-            return
-        
-        image_path = image_row['image_path']
-        full_path = os.path.join("cards", image_path)
+    # Build and send embed
+    file = discord.File(image_bytes, filename="card.png")
+    embed = discord.Embed(
+        title=f"{card_info.get('group', 'Unknown Group')} {card_info.get('name', 'Unknown')} [{card_row['rarity']}]",
+        description=f"Edition: {card_row['edition']}",
+        color=discord.Color.purple()
+    )
+    embed.set_image(url="attachment://card.png")
 
-        if not os.path.exists(full_path):
-            await ctx.send("❌ Card image not found.")
-            return
+    await ctx.send(file=file, embed=embed)
 
-        framed_image = apply_frame(full_path, FRAME_PATH)
-        image_bytes = io.BytesIO()
-        framed_image.save(image_bytes, format="PNG")
-        image_bytes.seek(0)
-
-        file = discord.File(fp=image_bytes, filename="card.png")
-        embed = discord.Embed(
-            title=f"{card['group_name']} {card['member_name']} [{card['rarity']}]",
-            description=f"Edition: {card['edition']}",
-            color=discord.Color.purple()
-        )
-        embed.set_image(url="attachment://card.png")
-
-        await ctx.send(file=file, embed=embed)
 
 @bot.command()
 async def recycle(ctx, card_uid: str):
