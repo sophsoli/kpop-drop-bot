@@ -567,9 +567,10 @@ async def view(ctx, card_uid: str):
 async def daily(ctx):
     user_id = int(ctx.author.id)
     reward = random.randint(1, 10)
-    now = datetime.now(timezone.utc).replace(microsecond=0)
+    now = datetime.now(timezone.utc)  # always aware datetime
 
     async with db_pool.acquire() as conn:
+        # Ensure user row exists
         await conn.execute("""
             INSERT INTO users (user_id, coins, last_daily)
             VALUES ($1, 0, NULL)
@@ -580,20 +581,17 @@ async def daily(ctx):
         current_coins = row["coins"]
         last_daily = row["last_daily"]
 
+        # If last_daily is stored naive, make it aware by assuming UTC
+        if last_daily is not None and last_daily.tzinfo is None:
+            last_daily = last_daily.replace(tzinfo=timezone.utc)
+
         if last_daily is not None:
-            if last_daily.tzinfo is None:
-                last_daily = last_daily.replace(tzinfo=timezone.utc)
-            last_daily = last_daily.replace(microsecond=0)
-
             next_claim_time = last_daily + timedelta(hours=24)
-
             if now < next_claim_time:
                 remaining = next_claim_time - now
                 hours, remainder = divmod(remaining.seconds, 3600)
                 minutes = remainder // 60
-                await ctx.send(
-                    f"🕒 You've already claimed your daily coins! Come back in {remaining.days * 24 + hours}h {minutes}m."
-                )
+                await ctx.send(f"🕒 You've already claimed your daily coins! Come back in {remaining.days * 24 + hours}h {minutes}m.")
                 return
 
         new_total = current_coins + reward
