@@ -64,15 +64,17 @@ class CollectionView(View):
             if self.sort_key == "member_name":
                 cards = sorted(cards, key=lambda card: card['member_name'])
             elif self.sort_key == "date_obtained":
+                pass
+
+            for card in cards:
                 if self.sort_key == "rarity":
-                    cards = sorted(cards, key=lambda card: RARITY_ORDER.get(card['rarity'], 0))
                     line = f"**[{card['rarity']}]** {card['member_name']} ({card['group_name']}) — Edition {card['edition']}"
                 elif self.sort_key == "member_name":
                     line = f"{card['member_name']} • {card['group_name']} • [{card['rarity']}] • Edition {card['edition']}"
                 else: # default (date_obtained)
                     line = f"{card['group_name']} • {card['member_name']} • {card['rarity']} • Edition {card['edition']}"
                 embed.add_field(name=f"{self.emoji} {line}", value="", inline=False)
-            return embed
+        return embed
 
     async def prev_page(self, interaction: Interaction):
         if interaction.user != self.ctx.author:
