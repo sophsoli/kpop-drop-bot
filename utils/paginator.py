@@ -2,6 +2,15 @@ import discord
 from discord.ui import View, Button
 from discord import Interaction, Embed
 
+RARITY_ORDER = {
+    "Common": 1,
+    "Rare": 2,
+    "Epic": 3,
+    "Legendary": 4,
+    "Mythic": 5
+}
+
+
 class CollectionView(View):
     def __init__(self, ctx, pages, emoji, target, sort_key="date_obtained"):
         super().__init__(timeout=60)
@@ -32,6 +41,7 @@ class CollectionView(View):
         )
         for card in self.pages[self.current_page]:
             if self.sort_key == "rarity":
+                self.cards.sort(key=lambda card: RARITY_ORDER.get(card['rarity'], 0))
                 line = f"**[{card['rarity']}]** {card['member_name']} ({card['group_name']}) — Edition {card['edition']}"
             elif self.sort_key == "member_name":
                 line = f"{card['member_name']} • {card['group_name']} • [{card['rarity']}] • Edition {card['edition']}"

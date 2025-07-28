@@ -494,51 +494,6 @@ async def cd(ctx):
 
     await ctx.send(embed=embed)
 
-# SORT !sort
-@bot.command()
-async def sort(ctx, criterion: str = 'group'):
-    criterion = criterion.lower()
-    valid_criteria = ['group', 'member', 'rarity', 'edition']
-    if criterion not in valid_criteria:
-        await ctx.send(f"❌ Invalid sort option. Choose one of: {', '.join(valid_criteria)}")
-        return
-
-    user_id = int(ctx.author.id)
-
-    # 🔍 Fetch cards from PostgreSQL
-    async with db_pool.acquire() as conn:
-        rows = await conn.fetch("""
-            SELECT uc.card_uid, uc.user_id, c.group_name, c.member_name, c.rarity, c.edition
-            FROM user_cards uc
-            JOIN cards c ON uc.card_uid = c.card_uid
-            WHERE uc.user_id = $1
-        """, user_id)
-
-    if not rows:
-        await ctx.send("You don't have any cards yet.")
-        return
-
-    # 🧹 Convert rows into list of dicts
-    cards = [dict(row) for row in rows]
-
-    # 🔃 Sorting logic
-    if criterion == 'group':
-        cards.sort(key=lambda c: c['group_name'].lower())
-    elif criterion == 'member':
-        cards.sort(key=lambda c: c['member_name'].lower())
-    elif criterion == 'rarity':
-        rarity_order = {'Common': 1, 'Rare': 2, 'Epic': 3, 'Legendary': 4}
-        cards.sort(key=lambda c: rarity_order.get(c['rarity'], 0))
-    elif criterion == 'edition':
-        cards.sort(key=lambda c: int(c['edition']))
-
-    # 📄 Pagination
-    pages = [cards[i:i + 5] for i in range(0, len(cards), 5)]
-
-    # 📦 Load CollectionView
-    view = CollectionView(ctx, pages, emoji="📸", target=ctx.author)
-    embed = view.generate_embed()
-    view.message = await ctx.send(embed=embed, view=view)
 
 # !view command
 @bot.command()
