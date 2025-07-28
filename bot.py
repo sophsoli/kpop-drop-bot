@@ -10,12 +10,11 @@ import asyncio
 import time
 from collections import defaultdict
 from utils.paginator import CollectionView
+from utils.shop import ShopView
 import asyncpg
 from datetime import datetime, timezone
 from data_helpers import add_entry, read_entries
 import json
-import sys
-import unicodedata
 
 SUGGESTIONS_FILE = "suggestions.json"
 BUGFIXES_FILE = "bugfixes.json"
@@ -547,41 +546,43 @@ async def view(ctx, card_uid: str):
     card_uid = card_uid.upper()
 
     async with db_pool.acquire() as conn:
-        # 1. Check ownership
-        user_card = await conn.fetchrow("""
-            SELECT * FROM user_cards WHERE user_id = $1 AND card_uid = $2
+        # Check if user owns this card
+        card_row = await conn.fetchrow("""
+            SELECT * FROM user_cards
+            WHERE user_id = $1 AND card_uid = $2
         """, user_id, card_uid)
 
-        if not user_card:
+        if not card_row:
             await ctx.send("❌ You don't own this card.")
             return
 
-        # 2. Get card metadata (from cards table)
+        # Fetch full card metadata from the cards table
         card_info = await conn.fetchrow("""
-            SELECT * FROM cards WHERE card_uid = $1
+            SELECT * FROM cards
+            WHERE card_uid = $1
         """, card_uid)
 
         if not card_info:
-            await ctx.send("❌ Card metadata not found.")
+            await ctx.send("❌ Card metadata not found in the database.")
             return
 
-    # 3. Build image path from cards.image_path column
-    image_path = card_info['image_path']  # e.g. "cards/BTS/permission_to_dance_on_stage_live/v2.JPG"
+    # Build image path
+    image_path = card_info["image_path"]
     if not os.path.exists(image_path):
         await ctx.send("❌ Card image not found.")
         return
 
-    # 4. Apply frame and prepare image bytes
+    # Apply frame and prepare image bytes
     framed_image = apply_frame(image_path, FRAME_PATH)
     image_bytes = io.BytesIO()
     framed_image.save(image_bytes, format="PNG")
     image_bytes.seek(0)
 
-    # 5. Create embed and send
+    # Build and send embed
     file = discord.File(image_bytes, filename="card.png")
     embed = discord.Embed(
-        title=f"{card_info['group_name']} {card_info['member_name']} [{user_card['rarity']}]",
-        description=f"Edition: {user_card['edition']}",
+        title=f"{card_info['group_name']} {card_info['member_name']} [{card_row['rarity']}]",
+        description=f"Edition: {card_row['edition']}\nConcept: {card_info['concept']}",
         color=discord.Color.purple()
     )
     embed.set_image(url="attachment://card.png")
@@ -647,28 +648,30 @@ async def coins(ctx):
 
     await ctx.send(f"💰 You have **{coins or 0} coins**.")
 
+# !shop
 @bot.command()
 async def shop(ctx):
-    # EMBED FOR !shop COMMAND
+    view = ShopView(ctx.author.id, db_pool)  # Pass db_pool here!
+
     embed = discord.Embed(
-        title="✨ SHOP COMING SOON!!!! ✨",
-        description=f"{ctx.author.mention}, the shop will be opening soon. Please wait!",
+        title="🛒 Welcome to the Shop!",
+        description="What would you like to buy?",
         color=discord.Color.blue()
     )
 
     embed.add_field(
-        name="COMING SOON",
-        value="`BUY ANOTHER CLAIM` Buy another claim that you can use.",
+        name="🎴 Extra Drop — 100 coins",
+        value="Use this to drop a new set of cards.",
         inline=False
     )
 
     embed.add_field(
-        name="COMING SOON",
-        value="`BUY A REROLL` Buy another drop.",
+        name="📥 Extra Claim — 75 coins",
+        value="Use this to claim another card even after you've hit the limit.",
         inline=False
     )
 
-    await ctx.send(embed=embed)
+    await ctx.send(embed=embed, view=view)
     
 @bot.command()
 async def bothelp(ctx):
