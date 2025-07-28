@@ -566,44 +566,43 @@ async def view(ctx, card_uid: str):
 @bot.command()
 async def daily(ctx):
     user_id = int(ctx.author.id)
-    now = datetime.utcnow()
+    reward = random.randint(1, 10)
+    now = datetime.now(timezone.utc)
 
     async with db_pool.acquire() as conn:
-        # Check if user exists, if not, insert
+        # Ensure user exists or insert a new row
         await conn.execute("""
             INSERT INTO users (user_id, coins, last_daily)
-            VALUES ($1, 0, CURRENT_DATE)
+            VALUES ($1, 0, NULL)
             ON CONFLICT (user_id) DO NOTHING;
         """, user_id)
 
-        user_data = await conn.fetchrow("SELECT coins, last_daily FROM users WHERE user_id = $1", user_id)
+        # Fetch last_daily
+        row = await conn.fetchrow("SELECT coins, last_daily FROM users WHERE user_id = $1", user_id)
+        last_daily = row["last_daily"]
 
-        last_daily = user_data["last_daily"]
-        coins = user_data["coins"]
+        # First time claiming
+        if last_daily is None:
+            await conn.execute("""
+                UPDATE users SET coins = coins + $1, last_daily = $2 WHERE user_id = $3
+            """, reward, now, user_id)
+            await ctx.send(f"✅ You received your first {reward} coins today!")
+            return
 
-        if last_daily is not None:
-            delta = now - last_daily
-            if delta < timedelta(hours=24):
-                remaining = timedelta(hours=24) - delta
-                total_seconds = int(remaining.total_seconds())
-                hours, remainder = divmod(total_seconds, 3600)
-                minutes, _ = divmod(remainder, 60)
-                return await ctx.send(
-                    f"🕒 You've already claimed your daily coins!\nCome back in {hours}h {minutes}m."
-                )
+        # Time check
+        next_claim_time = last_daily + timedelta(hours=24)
+        if now < next_claim_time:
+            remaining = next_claim_time - now
+            hours, remainder = divmod(remaining.seconds, 3600)
+            minutes = remainder // 60
+            await ctx.send(f"🕒 You've already claimed your daily coins! Come back in {remaining.days*24 + hours}h {minutes}m.")
+            return
 
-        # Grant reward and update timestamp
-        reward = random.randint(1, 20)  # change this to whatever amount
-        new_coins = coins + reward
-
+        # Give coins
         await conn.execute("""
-            UPDATE users
-            SET coins = $1,
-                last_daily = $2
-            WHERE user_id = $3
-        """, new_coins, now, user_id)
-
-        await ctx.send(f"✅ Daily claimed! You received **{reward} coins**. You now have **{new_coins} coins**.")
+            UPDATE users SET coins = coins + $1, last_daily = $2 WHERE user_id = $3
+        """, reward, now, user_id)
+        await ctx.send(f"✅ You received {reward} coins for your daily check-in!")
 
 
 @bot.command()
