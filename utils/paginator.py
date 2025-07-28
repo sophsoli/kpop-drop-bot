@@ -45,18 +45,32 @@ class CollectionView(View):
         if self.sort_key == "rarity":
             cards = sorted(cards, key=lambda card: RARITY_ORDER.get(card['rarity'], 0))
 
-        for card in cards:
-            if self.sort_key == "rarity":
-                cards = sorted(cards, key=lambda card: RARITY_ORDER.get(card['rarity'], 0))
-                line = f"**[{card['rarity']}]** {card['member_name']} ({card['group_name']}) — Edition {card['edition']}"
-            elif self.sort_key == "member_name":
-                line = f"{card['member_name']} • {card['group_name']} • [{card['rarity']}] • Edition {card['edition']}"
-            elif self.sort_key == "group_name":
-                line = f"{card['group_name']} • {card['member_name']} • [{card['rarity']}] • Edition {card['edition']}"
-            else: # default (date_obtained)
-                line = f"{card['group_name']} • {card['member_name']} • {card['rarity']} • Edition {card['edition']}"
-            embed.add_field(name=f"{self.emoji} {line}", value="", inline=False)
-        return embed
+        if self.sort_key == "group_name":
+            grouped = {}
+
+            for card in cards:
+                grouped.setdefault(card['group_name'], []).append(card)
+            
+            for group_name, group_cards in grouped.items():
+                group_title = f"**{group_name}**"
+                member_lines = []
+                for card in group_cards:
+                    member_lines.append(f"- {card['member_name']} • [{card['rarity']}] • Edition {card['edition']}")
+                group_desc = "\n".join(member_lines)
+
+                embed.add_field(name=group_title, value=group_desc, inline=False)
+
+        else:
+            for card in cards:
+                if self.sort_key == "rarity":
+                    cards = sorted(cards, key=lambda card: RARITY_ORDER.get(card['rarity'], 0))
+                    line = f"**[{card['rarity']}]** {card['member_name']} ({card['group_name']}) — Edition {card['edition']}"
+                elif self.sort_key == "member_name":
+                    line = f"{card['member_name']} • {card['group_name']} • [{card['rarity']}] • Edition {card['edition']}"
+                else: # default (date_obtained)
+                    line = f"{card['group_name']} • {card['member_name']} • {card['rarity']} • Edition {card['edition']}"
+                embed.add_field(name=f"{self.emoji} {line}", value="", inline=False)
+            return embed
 
     async def prev_page(self, interaction: Interaction):
         if interaction.user != self.ctx.author:
