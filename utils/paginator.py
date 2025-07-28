@@ -47,7 +47,6 @@ class CollectionView(View):
 
         if self.sort_key == "group_name":
             grouped = {}
-
             for card in cards:
                 grouped.setdefault(card['group_name'], []).append(card)
             
@@ -61,7 +60,10 @@ class CollectionView(View):
                 embed.add_field(name=group_title, value=group_desc, inline=False)
 
         else:
-            for card in cards:
+            # Sort by member_name or date_obtained if needed
+            if self.sort_key == "member_name":
+                cards = sorted(cards, key=lambda card: card['member_name'])
+            elif self.sort_key == "date_obtained":
                 if self.sort_key == "rarity":
                     cards = sorted(cards, key=lambda card: RARITY_ORDER.get(card['rarity'], 0))
                     line = f"**[{card['rarity']}]** {card['member_name']} ({card['group_name']}) — Edition {card['edition']}"
