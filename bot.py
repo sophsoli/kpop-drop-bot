@@ -601,9 +601,9 @@ async def daily(ctx):
         )
 
         if last_daily is None:
-            await ctx.send(f"✅ You received your first {reward} coins today! You now have {new_total} coins.")
+            await ctx.send(f"✅ You received your first {reward} aura points today! You now have {new_total} aura.")
         else:
-            await ctx.send(f"✅ You received {reward} coins for your daily check-in! You now have {new_total} coins.")
+            await ctx.send(f"✅ You received {reward} aura points for your daily check-in! You now have {new_total} aura.")
 
 
 @bot.command()
@@ -650,7 +650,7 @@ async def recycle(ctx, card_uid: str):
             """, user_id, coins_earned)
 
         await ctx.send(
-            f"♻️ You recycled a [{rarity}] **{member_name}** card (`#{card_uid}`) for **{coins_earned}** coins!"
+            f"♻️ You recycled a [{rarity}] **{member_name}** card (`#{card_uid}`) for **{coins_earned}** aura!"
         )
 
 @bot.command()
@@ -662,7 +662,7 @@ async def coins(ctx):
             SELECT coins FROM users WHERE user_id = $1
         """, user_id)
 
-    await ctx.send(f"💰 You have **{coins or 0} coins**.")
+    await ctx.send(f"🌟 You have **{coins or 0} aura**.")
 
 # !shop
 @bot.command()
@@ -670,7 +670,7 @@ async def shop(ctx):
     view = ShopView(ctx.author.id, db_pool)  # Pass db_pool here!
 
     embed = discord.Embed(
-        title="🛒 Mingyu's Shop",
+        title="💎🌟 Mingyu's LOVE.MONEY.FAME Shop",
         description="What are you buying?",
         color=discord.Color.blue()
     )
