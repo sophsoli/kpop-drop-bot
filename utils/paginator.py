@@ -39,7 +39,13 @@ class CollectionView(View):
             description=f"Page {self.current_page + 1} of {len(self.pages)} — Sorted by `{self.sort_key}`",
             color=discord.Color.blue()
         )
-        for card in self.pages[self.current_page]:
+
+        cards = self.pages[self.current_page]
+
+        if self.sort_key == "rarity":
+            cards = sorted(cards, key=lambda card: RARITY_ORDER.get(card['rarity'], 0))
+
+        for card in cards:
             if self.sort_key == "rarity":
                 cards = sorted(cards, key=lambda card: RARITY_ORDER.get(card['rarity'], 0))
                 line = f"**[{card['rarity']}]** {card['member_name']} ({card['group_name']}) — Edition {card['edition']}"
