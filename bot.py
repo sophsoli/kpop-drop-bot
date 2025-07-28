@@ -592,8 +592,7 @@ async def daily(ctx):
                 hours, remainder = divmod(remaining.seconds, 3600)
                 minutes = remainder // 60
                 await ctx.send(
-                    f"🕒 You've already claimed your daily coins!\n"
-                    f"Come back in {remaining.days * 24 + hours}h {minutes}m."
+                    f"🕒 You've already claimed your daily coins! Come back in {remaining.days * 24 + hours}h {minutes}m."
                 )
                 return
 
