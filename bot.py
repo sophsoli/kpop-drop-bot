@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from data_helpers import add_entry, read_entries
 import json
 import sys
+import unicodedata
 
 SUGGESTIONS_FILE = "suggestions.json"
 BUGFIXES_FILE = "bugfixes.json"
@@ -543,7 +544,7 @@ async def sort(ctx, criterion: str = 'group'):
 @bot.command()
 async def view(ctx, card_uid: str):
     user_id = ctx.author.id
-    card_uid = card_uid.upper()
+    card_uid = unicodedata.normalize('NFC', card_uid.upper())
 
     print(f"DEBUG: user_id = {user_id}", file=sys.stderr)
     print(f"DEBUG: card_uid = {card_uid}", file=sys.stderr)
