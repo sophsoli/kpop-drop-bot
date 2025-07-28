@@ -545,12 +545,13 @@ async def view(ctx, card_uid: str):
     user_id = ctx.author.id
     card_uid = card_uid.upper()
 
+    print(f"DEBUG: user_id = {user_id}", file=sys.stderr)
+    print(f"DEBUG: card_uid = {card_uid}", file=sys.stderr)
+
     async with db_pool.acquire() as conn:
         card = await conn.fetchrow("""
-            SELECT uc.*, c.image_path
-            FROM user_cards uc
-            JOIN cards c ON uc.card_uid = c.card_uid
-            WHERE uc.user_id = $1 AND uc.card_uid = $2
+            SELECT * FROM user_cards
+            WHERE user_id = $1 AND card_uid = $2
         """, user_id, card_uid)
 
         print(f"DEBUG: card = {card}", file=sys.stderr)
@@ -564,8 +565,16 @@ async def view(ctx, card_uid: str):
         if not card:
             await ctx.send("❌ Card not in your collection.")
             return
+        
+        image_row = await conn.fetchrow("""
+            SELECT image_path FROM cards WHERE card_uid = $1
+        """, card_uid)
 
-        image_path = card["image_path"]
+        if not image_row:
+            await ctx.send("❌ Image not found in cards table.")
+            return
+        
+        image_path = image_row['image_path']
         full_path = os.path.join("cards", image_path)
 
         if not os.path.exists(full_path):
