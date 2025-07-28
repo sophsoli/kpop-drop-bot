@@ -570,39 +570,39 @@ async def daily(ctx):
     now = datetime.now(timezone.utc)
 
     async with db_pool.acquire() as conn:
-        # Ensure user exists or insert a new row
         await conn.execute("""
             INSERT INTO users (user_id, coins, last_daily)
             VALUES ($1, 0, NULL)
             ON CONFLICT (user_id) DO NOTHING;
         """, user_id)
 
-        # Fetch last_daily
         row = await conn.fetchrow("SELECT coins, last_daily FROM users WHERE user_id = $1", user_id)
+        current_coins = row["coins"]
         last_daily = row["last_daily"]
 
-        # First time claiming
         if last_daily is None:
-            await conn.execute("""
-                UPDATE users SET coins = coins + $1, last_daily = $2 WHERE user_id = $3
-            """, reward, now, user_id)
-            await ctx.send(f"✅ You received your first {reward} coins today!")
+            new_total = current_coins + reward
+            await conn.execute(
+                "UPDATE users SET coins = $1, last_daily = $2 WHERE user_id = $3",
+                new_total, now, user_id
+            )
+            await ctx.send(f"✅ You received your first {reward} coins today! You now have {new_total} coins.")
             return
 
-        # Time check
         next_claim_time = last_daily + timedelta(hours=24)
         if now < next_claim_time:
             remaining = next_claim_time - now
             hours, remainder = divmod(remaining.seconds, 3600)
             minutes = remainder // 60
-            await ctx.send(f"🕒 You've already claimed your daily coins! Come back in {remaining.days*24 + hours}h {minutes}m.")
+            await ctx.send(f"🕒 You've already claimed your daily coins! Come back in {remaining.days * 24 + hours}h {minutes}m.")
             return
 
-        # Give coins
-        await conn.execute("""
-            UPDATE users SET coins = coins + $1, last_daily = $2 WHERE user_id = $3
-        """, reward, now, user_id)
-        await ctx.send(f"✅ You received {reward} coins for your daily check-in!")
+        new_total = current_coins + reward
+        await conn.execute(
+            "UPDATE users SET coins = $1, last_daily = $2 WHERE user_id = $3",
+            new_total, now, user_id
+        )
+        await ctx.send(f"✅ You received {reward} coins for your daily check-in! You now have {new_total} coins.")
 
 
 @bot.command()
