@@ -868,5 +868,53 @@
         "group": "SEVENTEEN",
         "concept": "Seventeenth Heaven",
         "image": "cards/SEVENTEEN/seventeenth_heaven/woozi3.JPG"
+    },
+    {
+        "name": "J-Hope",
+        "group": "BTS",
+        "concept": "Permission to Dance On Stage - Live",
+        "image": "cards/BTS/permission_to_dance_on_stage_live/jhope2.JPG"
+    },
+    {
+        "name": "Jimin",
+        "group": "BTS",
+        "concept": "Permission to Dance On Stage - Live",
+        "image": "cards/BTS/permission_to_dance_on_stage_live/jimin2.JPG"
+    },
+    {
+        "name": "Jin",
+        "group": "BTS",
+        "concept": "Permission to Dance On Stage - Live",
+        "image": "cards/BTS/permission_to_dance_on_stage_live/jin2.JPG"
+    },
+    {
+        "name": "Jungkook",
+        "group": "BTS",
+        "concept": "Permission to Dance On Stage - Live",
+        "image": "cards/BTS/permission_to_dance_on_stage_live/jungkook2.JPG"
+    },
+    {
+        "name": "RM",
+        "group": "BTS",
+        "concept": "Permission to Dance On Stage - Live",
+        "image": "cards/BTS/permission_to_dance_on_stage_live/rm2.JPG"
+    },
+    {
+        "name": "Suga",
+        "group": "BTS",
+        "concept": "Permission to Dance On Stage - Live",
+        "image": "cards/BTS/permission_to_dance_on_stage_live/suga2.JPG"
+    },
+    {
+        "name": "V",
+        "group": "BTS",
+        "concept": "Permission to Dance On Stage - Live",
+        "image": "cards/BTS/permission_to_dance_on_stage_live/v2.JPG"
+    },
+    {
+        "name": "Chungha",
+        "group": "SOLOIST",
+        "concept": "LOVE U",
+        "image": "cards/SOLOIST/chungha2.JPG"
     }
 ]
