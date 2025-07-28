@@ -547,41 +547,40 @@ async def view(ctx, card_uid: str):
     card_uid = card_uid.upper()
 
     async with db_pool.acquire() as conn:
-        # Check if user owns the card
+        # 1. Check ownership
         user_card = await conn.fetchrow("""
-            SELECT * FROM user_cards
-            WHERE user_id = $1 AND card_uid = $2
+            SELECT * FROM user_cards WHERE user_id = $1 AND card_uid = $2
         """, user_id, card_uid)
 
         if not user_card:
             await ctx.send("❌ You don't own this card.")
             return
 
-        # Get card metadata from cards table
+        # 2. Get card metadata (from cards table)
         card_info = await conn.fetchrow("""
-            SELECT * FROM cards
-            WHERE card_uid = $1
+            SELECT * FROM cards WHERE card_uid = $1
         """, card_uid)
 
         if not card_info:
             await ctx.send("❌ Card metadata not found.")
             return
 
-    image_path = os.path.join("cards", card_info["image"])
+    # 3. Build image path from cards.image_path column
+    image_path = card_info['image_path']  # e.g. "cards/BTS/permission_to_dance_on_stage_live/v2.JPG"
     if not os.path.exists(image_path):
         await ctx.send("❌ Card image not found.")
         return
 
-    # Apply frame and prepare image bytes
+    # 4. Apply frame and prepare image bytes
     framed_image = apply_frame(image_path, FRAME_PATH)
     image_bytes = io.BytesIO()
     framed_image.save(image_bytes, format="PNG")
     image_bytes.seek(0)
 
-    # Build and send embed
+    # 5. Create embed and send
     file = discord.File(image_bytes, filename="card.png")
     embed = discord.Embed(
-        title=f"{card_info['group']} {card_info['name']} [{user_card['rarity']}]",
+        title=f"{card_info['group_name']} {card_info['member_name']} [{user_card['rarity']}]",
         description=f"Edition: {user_card['edition']}",
         color=discord.Color.purple()
     )
