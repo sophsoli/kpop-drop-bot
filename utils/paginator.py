@@ -54,7 +54,7 @@ class CollectionView(View):
                 group_title = f"**{group_name}**"
                 member_lines = []
                 for card in group_cards:
-                    member_lines.append(f"- {card['member_name']} • [{card['rarity']}] • Edition {card['edition']}")
+                    member_lines.append(f"{self.emoji} {card['member_name']} • [{card['rarity']}] • Edition {card['edition']}")
                 group_desc = "\n".join(member_lines)
 
                 embed.add_field(name=group_title, value=group_desc, inline=False)
