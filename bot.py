@@ -295,7 +295,16 @@ async def collection(ctx, sort_key: str = "date_obtained", member: discord.Membe
     # Validate sort key
     valid_sorts = {
         "date_obtained": "date_obtained DESC",
-        "rarity": "rarity ASC",
+        "rarity": """
+            CASE rarity
+                WHEN 'Common' THEN 1
+                WHEN 'Rare' THEN 2
+                WHEN 'Epic' THEN 3
+                WHEN 'Legendary' THEN 4
+                WHEN 'Mythic' THEN 5
+                ELSE 6
+            END
+        """,
         "member_name": "member_name ASC",
         "group_name": "group_name ASC"
     }
@@ -309,6 +318,14 @@ async def collection(ctx, sort_key: str = "date_obtained", member: discord.Membe
             WHERE user_id = $1
             ORDER BY {order_by};
         """, int(user_id))
+        # Custom rarity order
+        RARITY_ORDER = {
+            "Common": 0,
+            "Rare": 1,
+            "Epic": 2,
+            "Legendary": 3,
+            "Mythic": 4
+            }
 
     if not rows:
         await ctx.send(f"{target.display_name} doesn't have any photocards yet. 😢")

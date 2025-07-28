@@ -41,7 +41,7 @@ class CollectionView(View):
         )
         for card in self.pages[self.current_page]:
             if self.sort_key == "rarity":
-                self.cards.sort(key=lambda card: RARITY_ORDER.get(card['rarity'], 0))
+                cards = sorted(cards, key=lambda card: RARITY_ORDER.get(card['rarity'], 0))
                 line = f"**[{card['rarity']}]** {card['member_name']} ({card['group_name']}) — Edition {card['edition']}"
             elif self.sort_key == "member_name":
                 line = f"{card['member_name']} • {card['group_name']} • [{card['rarity']}] • Edition {card['edition']}"
