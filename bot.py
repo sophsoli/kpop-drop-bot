@@ -565,14 +565,14 @@ async def view(ctx, card_uid: str):
 # !daily
 @bot.command()
 async def daily(ctx):
-    user_id = str(ctx.author.id)
+    user_id = int(ctx.author.id)
     now = datetime.utcnow()
 
     async with db_pool.acquire() as conn:
         # Check if user exists, if not, insert
         await conn.execute("""
             INSERT INTO users (user_id, coins, last_daily)
-            VALUES ($1, 0, NULL)
+            VALUES ($1, 0, CURRENT_DATE)
             ON CONFLICT (user_id) DO NOTHING;
         """, user_id)
 
