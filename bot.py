@@ -568,7 +568,7 @@ async def daily(ctx):
     user_id = str(ctx.author.id)
     now = datetime.utcnow()
 
-    async with bot.db.acquire() as conn:
+    async with db_pool.acquire() as conn:
         # Check if user exists, if not, insert
         await conn.execute("""
             INSERT INTO users (user_id, coins, last_daily)
@@ -585,14 +585,15 @@ async def daily(ctx):
             delta = now - last_daily
             if delta < timedelta(hours=24):
                 remaining = timedelta(hours=24) - delta
-                hours, remainder = divmod(remaining.seconds, 3600)
-                minutes = remainder // 60
+                total_seconds = int(remaining.total_seconds())
+                hours, remainder = divmod(total_seconds, 3600)
+                minutes, _ = divmod(remainder, 60)
                 return await ctx.send(
-                    f"🕒 You've already claimed your daily coins!\nCome back in {remaining.days}d {hours}h {minutes}m."
+                    f"🕒 You've already claimed your daily coins!\nCome back in {hours}h {minutes}m."
                 )
 
         # Grant reward and update timestamp
-        reward = random.randint(1, 10)  # change this to whatever amount
+        reward = random.randint(1, 20)  # change this to whatever amount
         new_coins = coins + reward
 
         await conn.execute("""
