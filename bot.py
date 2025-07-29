@@ -512,51 +512,95 @@ async def cd(ctx):
     await ctx.send(embed=embed)
 
 
-# !view command
+# # !view command
+# @bot.command()
+# async def view(ctx, card_uid: str):
+#     user_id = ctx.author.id
+#     card_uid = card_uid.upper()
+
+#     async with db_pool.acquire() as conn:
+#         # Check if user owns this card
+#         card_row = await conn.fetchrow("""
+#             SELECT * FROM user_cards
+#             WHERE user_id = $1 AND card_uid = $2
+#         """, user_id, card_uid)
+
+#         if not card_row:
+#             await ctx.send("❌ You don't own this card.")
+#             return
+
+#         # Fetch full card metadata from the cards table
+#         card_info = await conn.fetchrow("""
+#             SELECT * FROM cards
+#             WHERE card_uid = $1
+#         """, card_uid)
+
+#         if not card_info:
+#             await ctx.send("❌ Card metadata not found in the database.")
+#             return
+
+#     # Build image path
+#     image_path = card_info["image_path"]
+#     if not os.path.exists(image_path):
+#         await ctx.send("❌ Card image not found.")
+#         return
+
+#     # Apply frame and prepare image bytes
+#     framed_image = apply_frame(image_path, FRAME_PATH)
+#     image_bytes = io.BytesIO()
+#     framed_image.save(image_bytes, format="PNG")
+#     image_bytes.seek(0)
+
+#     # Build and send embed
+#     file = discord.File(image_bytes, filename="card.png")
+#     embed = discord.Embed(
+#         title=f"{card_info['group_name']} {card_info['member_name']} [{card_row['rarity']}]",
+#         description=f"Edition: {card_row['edition']}\nConcept: {card_info['concept']}",
+#         color=discord.Color.purple()
+#     )
+#     embed.set_image(url="attachment://card.png")
+
+#     await ctx.send(file=file, embed=embed)
+
 @bot.command()
 async def view(ctx, card_uid: str):
+    """View a specific photocard by its unique card_uid."""
     user_id = ctx.author.id
-    card_uid = card_uid.upper()
 
     async with db_pool.acquire() as conn:
-        # Check if user owns this card
-        card_row = await conn.fetchrow("""
-            SELECT * FROM user_cards
+        card = await conn.fetchrow("""
+            SELECT *
+            FROM user_cards
             WHERE user_id = $1 AND card_uid = $2
-        """, user_id, card_uid)
+        """, int(user_id), card_uid.upper())  # Force uppercase for consistency
 
-        if not card_row:
-            await ctx.send("❌ You don't own this card.")
-            return
-
-        # Fetch full card metadata from the cards table
-        card_info = await conn.fetchrow("""
-            SELECT * FROM cards
-            WHERE card_uid = $1
-        """, card_uid)
-
-        if not card_info:
-            await ctx.send("❌ Card metadata not found in the database.")
-            return
-
-    # Build image path
-    image_path = card_info["image_path"]
-    if not os.path.exists(image_path):
-        await ctx.send("❌ Card image not found.")
+    if not card:
+        await ctx.send(f"⚠️ You don't own a card with UID `{card_uid}`.")
         return
 
-    # Apply frame and prepare image bytes
-    framed_image = apply_frame(image_path, FRAME_PATH)
-    image_bytes = io.BytesIO()
-    framed_image.save(image_bytes, format="PNG")
-    image_bytes.seek(0)
+    # Build framed image directly from the saved path
+    image_path = card["image_path"]
+    if not image_path or not os.path.exists(image_path):
+        await ctx.send("⚠️ The image file for this card couldn't be found.")
+        return
 
-    # Build and send embed
-    file = discord.File(image_bytes, filename="card.png")
+    framed = apply_frame(image_path, FRAME_PATH)
+    buffer = io.BytesIO()
+    framed.save(buffer, format="PNG")
+    buffer.seek(0)
+    file = discord.File(fp=buffer, filename="card.png")
+
+    # Embed card details
     embed = discord.Embed(
-        title=f"{card_info['group_name']} {card_info['member_name']} [{card_row['rarity']}]",
-        description=f"Edition: {card_row['edition']}\nConcept: {card_info['concept']}",
-        color=discord.Color.purple()
+        title=f"{card['member_name']} ({card['group_name']})",
+        description=(
+            f"🆔 **{card['card_uid']}**\n"
+            f"⭐ **Rarity:** {card['rarity']}\n"
+            f"📀 **Concept:** {card['concept']}\n"
+            f"🔢 **Edition:** #{card['edition']}\n"
+            f"📅 **Obtained:** {card['date_obtained'].strftime('%Y-%m-%d')}"
+        ),
+        color=discord.Color.blue()
     )
     embed.set_image(url="attachment://card.png")
 
