@@ -262,10 +262,10 @@ async def drop(ctx):
 
             # Claimed card into user_cards table
                 await conn.execute("""
-                    INSERT INTO user_cards(user_id, card_uid, short_id, date_obtained, rarity, edition, member_name, group_name, concept)
-                    VALUES($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, $6, $7, $8)
+                    INSERT INTO user_cards(user_id, card_uid, short_id, date_obtained, rarity, edition, member_name, group_name, concept, image_path)
+                    VALUES($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, $6, $7, $8, $9)
                 """, int(user.id), card['card_uid'], card['short_id'],
-                    card['rarity'], edition, card['name'], card['group'], card.get('concept', 'Base'))
+                    card['rarity'], edition, card['name'], card['group'], card.get('concept', 'Base'), card['image'])
 
 
             challengers = [cid for cid in claim_challengers[emoji] if cid != user.id]
