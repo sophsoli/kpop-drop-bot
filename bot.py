@@ -397,7 +397,7 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
                     pass
         
         asyncio.create_task(auto_cancel())
-        
+
 @bot.event
 async def on_reaction_add(reaction, user):
     message = reaction.message
@@ -616,9 +616,9 @@ async def daily(ctx):
         )
 
         if last_daily is None:
-            await ctx.send(f"✅ You received your first {reward} aura points today! You now have {new_total} aura.")
+            await ctx.send(f"✅ You received your first {reward} aura points 🌟 today! You now have 🌟 {new_total} aura.")
         else:
-            await ctx.send(f"✅ You received {reward} aura points for your daily check-in! You now have {new_total} aura.")
+            await ctx.send(f"✅ You received {reward} aura points 🌟 for your daily check-in! You now have 🌟 {new_total} aura.")
 
 
 @bot.command()
@@ -665,7 +665,7 @@ async def recycle(ctx, card_uid: str):
             """, user_id, coins_earned)
 
         await ctx.send(
-            f"♻️ You recycled a [{rarity}] **{member_name}** card (`#{card_uid}`) for **{coins_earned}** aura!"
+            f"♻️ You recycled a [{rarity}] **{member_name}** card (`#{card_uid}`) for **{coins_earned}** aura 🌟!"
         )
 
 @bot.command()
@@ -703,6 +703,40 @@ async def shop(ctx):
     )
 
     await ctx.send(embed=embed, view=view)
+
+# !reroll
+@bot.command()
+async def reroll(ctx):
+    user_id = ctx.author.id
+    reroll_cost = 50  # cost of reroll in coins
+
+    async with db_pool.acquire() as conn:
+        # Check if user exists
+        user = await conn.fetchrow("SELECT coins FROM users WHERE user_id = $1", user_id)
+        if not user:
+            await ctx.send("❌ You don't have an account yet. Use `!drop` first to start collecting!")
+            return
+
+        coins = user["coins"]
+
+        # Check if user has enough coins
+        if coins < reroll_cost:
+            await ctx.send(f"❌ You need **{reroll_cost} 🌟 aura points** to buy a reroll pack. You only have {coins}.")
+            return
+
+        # Deduct coins
+        await conn.execute("UPDATE users SET coins = coins - $1 WHERE user_id = $2", reroll_cost, user_id)
+
+    # ✅ Confirm purchase
+    embed = discord.Embed(
+        title="🎴 Reroll Pack Purchased!",
+        description=f"{ctx.author.mention} spent **{reroll_cost} 🌟 aura points** for a new pack drop! 🎉",
+        color=discord.Color.gold()
+    )
+    await ctx.send(embed=embed)
+
+    # ✅ Trigger a "drop" as if the user ran !drop
+    await drop(ctx)
     
 @bot.command()
 async def comms(ctx):
