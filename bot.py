@@ -15,6 +15,7 @@ import asyncpg
 from datetime import datetime, timezone, timedelta
 from data_helpers import add_entry, read_entries
 import json
+from utils.pagination import HelpPaginator
 
 SUGGESTIONS_FILE = "suggestions.json"
 BUGFIXES_FILE = "bugfixes.json"
@@ -250,16 +251,6 @@ async def drop(ctx):
                 card["edition"] = edition
                 card["card_uid"] = generate_card_uid(card["name"], short_id, edition)
 
-            # # DATABASE -- AFTER UID IS SET
-            # async with db_pool.acquire() as conn:
-            #     rows = await conn.fetch("""
-            #         SELECT COUNT(*) FROM user_cards
-            #         WHERE user_id = $1 AND card_uid = $2
-            #     """, user.id, card['uid'])
-            #     count = rows[0]['count'] if rows else 0
-            #     edition = count + 1
-
-
             # Claimed card into user_cards table
                 await conn.execute("""
                     INSERT INTO user_cards(user_id, card_uid, short_id, date_obtained, rarity, edition, member_name, group_name, concept, image_path)
@@ -438,9 +429,9 @@ async def tag(ctx, emoji):
     await ctx.send(f"✅ Your collection is now tagged with {emoji}!")
 
     
-
+# !c your cards <card_uid>
 @bot.command()
-async def mycards(ctx, *, card_name: str):
+async def c(ctx, *, card_name: str):
     user_id = ctx.author.id
     card_name = card_name.upper()
 
@@ -501,6 +492,16 @@ async def cd(ctx):
     drop_remaining = max(0, int(DROP_COOLDOWN_DURATION - (now - last_drop))) if last_drop else 0
     claim_remaining = max(0, int(COOLDOWN_DURATION - (now - last_claim))) if last_claim else 0
 
+    # --- DAILY COOLDOWN ---
+    async with db_pool.acquire() as conn:
+        row = await conn.fetchrow("SELECT last_daily FROM users WHERE user_id = $1", user_id)
+        if row and row["last_daily"]:
+            last_daily = row["last_daily"].replace(tzinfo=timezone.utc)
+            next_daily = last_daily + timedelta(hours=24)
+            remaining_daily = max(0, int((next_daily - datetime.now(timezone.utc)).total_seconds()))
+        else:
+            remaining_daily = 0
+
     def format_time(seconds):
         minutes, sec = divmod(seconds, 60)
         return f"{minutes}m {sec}s" if seconds > 0 else "Ready ✅"
@@ -508,60 +509,11 @@ async def cd(ctx):
     embed = discord.Embed(title="⏳ Your Cooldowns", color=discord.Color.orange())
     embed.add_field(name="Drop Cooldown", value=format_time(drop_remaining), inline=False)
     embed.add_field(name="Claim Cooldown", value=format_time(claim_remaining), inline=False)
+    embed.add_field(name="Daily Cooldown", value=format_time(remaining_daily), inline=False)
 
     await ctx.send(embed=embed)
 
-
-# # !view command
-# @bot.command()
-# async def view(ctx, card_uid: str):
-#     user_id = ctx.author.id
-#     card_uid = card_uid.upper()
-
-#     async with db_pool.acquire() as conn:
-#         # Check if user owns this card
-#         card_row = await conn.fetchrow("""
-#             SELECT * FROM user_cards
-#             WHERE user_id = $1 AND card_uid = $2
-#         """, user_id, card_uid)
-
-#         if not card_row:
-#             await ctx.send("❌ You don't own this card.")
-#             return
-
-#         # Fetch full card metadata from the cards table
-#         card_info = await conn.fetchrow("""
-#             SELECT * FROM cards
-#             WHERE card_uid = $1
-#         """, card_uid)
-
-#         if not card_info:
-#             await ctx.send("❌ Card metadata not found in the database.")
-#             return
-
-#     # Build image path
-#     image_path = card_info["image_path"]
-#     if not os.path.exists(image_path):
-#         await ctx.send("❌ Card image not found.")
-#         return
-
-#     # Apply frame and prepare image bytes
-#     framed_image = apply_frame(image_path, FRAME_PATH)
-#     image_bytes = io.BytesIO()
-#     framed_image.save(image_bytes, format="PNG")
-#     image_bytes.seek(0)
-
-#     # Build and send embed
-#     file = discord.File(image_bytes, filename="card.png")
-#     embed = discord.Embed(
-#         title=f"{card_info['group_name']} {card_info['member_name']} [{card_row['rarity']}]",
-#         description=f"Edition: {card_row['edition']}\nConcept: {card_info['concept']}",
-#         color=discord.Color.purple()
-#     )
-#     embed.set_image(url="attachment://card.png")
-
-#     await ctx.send(file=file, embed=embed)
-
+# VIEW COMMAND !view
 @bot.command()
 async def view(ctx, card_uid: str):
     """View a specific photocard by its unique card_uid."""
@@ -734,65 +686,38 @@ async def shop(ctx):
     await ctx.send(embed=embed, view=view)
     
 @bot.command()
-async def bothelp(ctx):
+async def comms(ctx):
     # EMBED FOR HELP COMMAND
-    embed = discord.Embed(
-        title="✨ COMMANDS YOU CAN USE! ✨",
-        description=f"{ctx.author.mention}, here are the commands you can use:",
-        color=discord.Color.blue()
-    )
+    pages = []
 
-    embed.add_field(
-        name="🃏 Drop Cards",
-        value="`!drop` — Drop a set of cards that anyone can claim.",
-        inline=False
-    )
+    # Page 1
+    embed1 = discord.Embed(title="✨ Mingyu Bot Help (1/3) ✨",
+                           description="Here are the commands you can use:",
+                           color=discord.Color.blue())
+    embed1.add_field(name="🃏 Drop Cards", value="`!drop` — Drop a set of cards that anyone can claim.", inline=False)
+    embed1.add_field(name="📁 View Collection", value="`!collection` — View your card collection.", inline=False)
+    embed1.add_field(name="🎴 My Cards", value="`!mycards <name>` — View your owned cards.", inline=False)
+    pages.append(embed1)
 
-    embed.add_field(
-        name="📁 View Collection",
-        value="`!collection` — View your collection of claimed cards. You can also view someone else's collection @user. Can view your collection by rarity or member_name. !collection rarity, !collection member_name",
-        inline=False
-    )
+    # Page 2
+    embed2 = discord.Embed(title="✨ Mingyu Bot Help (2/3) ✨",
+                           description="Trading and managing cards:",
+                           color=discord.Color.blue())
+    embed2.add_field(name="🔁 Trade Cards", value="`!trade @user <card_uid>` — Propose a trade.", inline=False)
+    embed2.add_field(name="♻️ Recycle", value="`!recycle <card_uid>` — Discard a card for coins.", inline=False)
+    embed2.add_field(name="📷 Tag", value="`!tag <emoji>` — Customize your collection tag.", inline=False)
+    pages.append(embed2)
 
-    embed.add_field(
-        name="🔁 Trade Cards",
-        value="`!trade @user <card_uid>` — Propose a trade with someone!",
-        inline=False
-    )
+    # Page 3
+    embed3 = discord.Embed(title="✨ Mingyu Bot Help (3/3) ✨",
+                           description="Coins and shop:",
+                           color=discord.Color.blue())
+    embed3.add_field(name="💰 Coins", value="`!coins` — Check your balance.", inline=False)
+    embed3.add_field(name="💰 Shop", value="`!shop` — Shop (coming soon!).", inline=False)
+    embed3.add_field(name="🤓", value="More features coming soon!", inline=False)
+    pages.append(embed3)
 
-    embed.add_field(
-        name="🎴 My Cards",
-        value="`!mycards <name>` — See a list of the cards you currently own by name.",
-        inline=False
-    )
-
-    embed.add_field(
-        name="📷 Tag",
-        value="`!tag <emoji>` — Change the tag of your collection! -*More tag variants to come*-",
-        inline=False
-    )
-
-    embed.add_field(
-        name="♻️ Recycle",
-        value="`!recycle <card_uid>` — Discard a card that you don't want for coins!",
-    )
-
-    embed.add_field(
-        name="💰 Coins",
-        value="`!coins` — See how much coins you have.",
-    )
-    
-    embed.add_field(
-        name="💰 Shop",
-        value="`!shop` — SHOP COMING SOON!!",
-    )
-
-    embed.add_field(
-        name="🤓",
-        value="`!another command` — -*MORE FEATURES AND COMMANDS COMING!!*-",
-        inline=False
-    )
-
-    await ctx.send(embed=embed)
+    view = HelpPaginator(pages, ctx)
+    view.message = await ctx.send(embed=pages[0], view=view)
 
 bot.run(TOKEN)
