@@ -1018,5 +1018,29 @@
         "group": "Saja Boys",
         "concept": "Base",
         "image": "cards/SajaBoys/romance.JPG"
+    },
+    {
+        "name": "Hwasa",
+        "group": "MAMAMOO",
+        "concept": "Base",
+        "image": "cards/MAMAMOO/hwasa.JPG"
+    },
+    {
+        "name": "Moonbyul",
+        "group": "MAMAMOO",
+        "concept": "Base",
+        "image": "cards/MAMAMOO/moonbyul.JPG"
+    },
+    {
+        "name": "Solar",
+        "group": "MAMAMOO",
+        "concept": "Base",
+        "image": "cards/MAMAMOO/solar.JPG"
+    },
+    {
+        "name": "Wheein",
+        "group": "MAMAMOO",
+        "concept": "Base",
+        "image": "cards/MAMAMOO/wheein.JPG"
     }
 ]
