@@ -946,5 +946,29 @@
         "group": "Girl's Day",
         "concept": "Base",
         "image": "cards/GirlsDay/hyeri.JPG"
+    },
+    {
+        "name": "Chuu",
+        "group": "LOONA/Soloist",
+        "concept": "Base",
+        "image": "cards/LOONA/chuu.JPG"
+    },
+    {
+        "name": "Haseul",
+        "group": "LOONA/ARTMS",
+        "concept": "Base",
+        "image": "cards/LOONA/haseul.JPG"
+    },
+    {
+        "name": "Jinsoul",
+        "group": "LOONA/ARTMS",
+        "concept": "Base",
+        "image": "cards/LOONA/jinsoul.JPG"
+    },
+    {
+        "name": "Kim Lip",
+        "group": "LOONA/ARTMS",
+        "concept": "Base",
+        "image": "cards/LOONA/kimlip.JPG"
     }
 ]
