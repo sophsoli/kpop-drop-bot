@@ -345,11 +345,27 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
             WHERE user_id = $1 AND card_uid = $2
         """, sender_id, card_uid)
 
-
         if not card:
             await ctx.send("❌ You don't own a card with that UID.")
             return
         
+        # ✅ Create embed for trade preview
+        embed = discord.Embed(
+            title="🤝 Trade Request",
+            description=f"{ctx.author.mention} wants to trade a photocard with {partner.mention}!",
+            color=discord.Color.blue()
+        )
+        embed.add_field(name="👤 Member", value=card['member_name'], inline=True)
+        embed.add_field(name="🌟 Rarity", value=card['rarity'], inline=True)
+        embed.add_field(name="🆔 Card UID", value=card['card_uid'], inline=True)
+
+        # If image_path exists, display card image
+        if card.get('image_path'):
+            embed.set_image(url=f"attachment://{card['card_uid']}.png")
+            image_file = discord.File(card['image_path'], filename=f"{card['card_uid']}.png")
+        else:
+            image_file = None
+
         # SAVE PENDING TRADE to memory
         pending_trades[sender_id] = {
             "recipient_id": recipient_id,
@@ -359,15 +375,18 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
             "message_id": None
         }
 
-        # confirmation message
-        message = await ctx.send(f"{partner.mention}! {ctx.author.display_name} wants to give you their [**{card['rarity']}**] **{card['member_name']}** photocard. Accept?")
+        # Send embed message
+        if image_file:
+            message = await ctx.send(file=image_file, embed=embed)
+        else:
+            message = await ctx.send(embed=embed)
 
         await message.add_reaction("🤝")
         await message.add_reaction("❌")
 
         pending_trades[sender_id]["message_id"] = message.id
 
-        # timeout auto-cancel (5 minutes)
+        # Timeout auto-cancel (5 minutes)
         async def auto_cancel():
             await asyncio.sleep(300)
             if sender_id in pending_trades and pending_trades[sender_id]["message_id"] == message.id:
@@ -378,7 +397,7 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
                     pass
         
         asyncio.create_task(auto_cancel())
-
+        
 @bot.event
 async def on_reaction_add(reaction, user):
     message = reaction.message

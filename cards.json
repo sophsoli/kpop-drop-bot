@@ -970,5 +970,53 @@
         "group": "LOONA/ARTMS",
         "concept": "Base",
         "image": "cards/LOONA/kimlip.JPG"
+    },
+    {
+        "name": "Mira",
+        "group": "HUNTR/X",
+        "concept": "Base",
+        "image": "cards/Huntrix/mira.JPG"
+    },
+    {
+        "name": "Rumi",
+        "group": "HUNTR/X",
+        "concept": "Base",
+        "image": "cards/Huntrix/rumi.JPG"
+    },
+    {
+        "name": "Zoey",
+        "group": "HUNTR/X",
+        "concept": "Base",
+        "image": "cards/Huntrix/zoey.JPG"
+    },
+    {
+        "name": "Abby Saja",
+        "group": "Saja Boys",
+        "concept": "Base",
+        "image": "cards/SajaBoys/abby.JPG"
+    },
+    {
+        "name": "Baby Saja",
+        "group": "Saja Boys",
+        "concept": "Base",
+        "image": "cards/SajaBoys/baby.JPG"
+    },
+    {
+        "name": "Jinu Saja",
+        "group": "Saja Boys",
+        "concept": "Base",
+        "image": "cards/SajaBoys/jinu.JPG"
+    },
+    {
+        "name": "Mystery Saja",
+        "group": "Saja Boys",
+        "concept": "Base",
+        "image": "cards/SajaBoys/mystery.JPG"
+    },
+    {
+        "name": "Romance Saja",
+        "group": "Saja Boys",
+        "concept": "Base",
+        "image": "cards/SajaBoys/romance.JPG"
     }
 ]
