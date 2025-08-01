@@ -48,20 +48,30 @@ class CollectionView(View):
         elif self.sort_key == "group_name":
             cards = sorted(cards, key=lambda card: (card['group_name'], card['member_name']))
 
-        # Grouped view
         if self.sort_key == "group_name":
+            # Grouped view by group_name
             grouped = {}
             for card in cards:
                 grouped.setdefault(card['group_name'], []).append(card)
             for group_name, group_cards in grouped.items():
                 member_lines = [
-                    f"{self.emoji} {c['member_name']} • [{c['rarity']}] • Edition {c['edition']} `{card['card_uid']}`"
+                    f"{self.emoji} {c['member_name']} • [{c['rarity']}] • Edition {c['edition']} `#{c['card_uid']}`"
                     for c in group_cards
                 ]
                 embed.add_field(name=f"**{group_name}**", value="\n".join(member_lines), inline=False)
-        else:
+
+        elif self.sort_key == "rarity":
+            # Show rarity first
             lines = [
-                f"{self.emoji} {card['group_name']} • {card['member_name']} • [{card['rarity']}] • Edition {card['edition']} `#{card['card_uid']}`"
+                f"{self.emoji} **[{card['rarity']}]** {card['member_name']} - {card['group_name']} - Edition {card['edition']} `#{card['card_uid']}`"
+                for card in cards
+            ]
+            embed.add_field(name="Cards", value="\n".join(lines), inline=False)
+
+        else:
+            # Default/member_name or others
+            lines = [
+                f"{self.emoji} {card['member_name']} • {card['group_name']} • [{card['rarity']}] • Edition {card['edition']} `#{card['card_uid']}`"
                 for card in cards
             ]
             embed.add_field(name="Cards", value="\n".join(lines), inline=False)
