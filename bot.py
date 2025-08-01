@@ -786,24 +786,24 @@ async def comms(ctx):
                            color=discord.Color.blue())
     embed1.add_field(name="🃏 Drop Cards", value="`!drop` — Drop a set of cards that anyone can claim.", inline=False)
     embed1.add_field(name="📁 View Collection", value="`!collection` — View your card collection.", inline=False)
-    embed1.add_field(name="🎴 My Cards", value="`!mycards <name>` — View your owned cards.", inline=False)
+    embed1.add_field(name="🎴 Cards", value="`!c <name>` — View your owned cards by an idol's name.", inline=False)
+    embed1.add_field(name="🔁 Trade Cards", value="`!trade @user <card_uid>` — Propose a trade.", inline=False)
+    embed1.add_field(name="♻️ Recycle", value="`!r <card_uid>` — Discard a card for coins.", inline=False)
+    embed1.add_field(name="📷 Tag", value="`!tag <emoji>` — Customize your collection tag.", inline=False)
     pages.append(embed1)
 
     # Page 2
     embed2 = discord.Embed(title="✨ Mingyu Bot Help (2/3) ✨",
                            description="Trading and managing cards:",
                            color=discord.Color.blue())
-    embed2.add_field(name="🔁 Trade Cards", value="`!trade @user <card_uid>` — Propose a trade.", inline=False)
-    embed2.add_field(name="♻️ Recycle", value="`!recycle <card_uid>` — Discard a card for coins.", inline=False)
-    embed2.add_field(name="📷 Tag", value="`!tag <emoji>` — Customize your collection tag.", inline=False)
+    embed2.add_field(name="💰 Aura Points", value="`!aura` — Check your balance.", inline=False)
+    embed2.add_field(name="💰 Shop", value="`!shop` — Shop (coming soon!).", inline=False)
     pages.append(embed2)
 
     # Page 3
     embed3 = discord.Embed(title="✨ Mingyu Bot Help (3/3) ✨",
                            description="Coins and shop:",
                            color=discord.Color.blue())
-    embed3.add_field(name="💰 Coins", value="`!coins` — Check your balance.", inline=False)
-    embed3.add_field(name="💰 Shop", value="`!shop` — Shop (coming soon!).", inline=False)
     embed3.add_field(name="🤓", value="More features coming soon!", inline=False)
     pages.append(embed3)
 
