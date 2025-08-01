@@ -760,6 +760,10 @@ async def reroll(ctx):
         # Deduct coins
         await conn.execute("UPDATE users SET coins = coins - $1 WHERE user_id = $2", reroll_cost, user_id)
 
+    # ✅ Remove cooldown for this reroll
+    if user_id in drop_cooldowns:
+        del drop_cooldowns[user_id]
+
     # ✅ Confirm purchase
     embed = discord.Embed(
         title="🎴 Reroll Pack Purchased!",
@@ -768,7 +772,7 @@ async def reroll(ctx):
     )
     await ctx.send(embed=embed)
 
-    # ✅ Trigger a "drop" as if the user ran !drop
+    # ✅ Trigger a "drop" immediately
     await drop(ctx)
     
 @bot.command()
