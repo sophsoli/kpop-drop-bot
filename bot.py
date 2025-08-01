@@ -510,36 +510,48 @@ async def c(ctx, *, card_name: str):
 
     await ctx.send(embed=embed)
 
+# !cd command
 @bot.command()
 async def cd(ctx):
     user_id = ctx.author.id
-    now = time.time()
+    now = datetime.now(timezone.utc)
 
-    # get timestamp
+    # --- DROP & CLAIM COOLDOWNS ---
+    current_time = time.time()
     last_drop = drop_cooldowns.get(user_id)
     last_claim = user_cooldowns.get(user_id)
 
-    drop_remaining = max(0, int(DROP_COOLDOWN_DURATION - (now - last_drop))) if last_drop else 0
-    claim_remaining = max(0, int(COOLDOWN_DURATION - (now - last_claim))) if last_claim else 0
+    drop_remaining = max(0, int(DROP_COOLDOWN_DURATION - (current_time - last_drop))) if last_drop else 0
+    claim_remaining = max(0, int(COOLDOWN_DURATION - (current_time - last_claim))) if last_claim else 0
 
-    # --- DAILY COOLDOWN ---
+    # --- DAILY COOLDOWN (midnight reset) ---
     async with db_pool.acquire() as conn:
         row = await conn.fetchrow("SELECT last_daily FROM users WHERE user_id = $1", user_id)
         if row and row["last_daily"]:
             last_daily = row["last_daily"].replace(tzinfo=timezone.utc)
-            next_daily = last_daily + timedelta(hours=24)
-            remaining_daily = max(0, int((next_daily - datetime.now(timezone.utc)).total_seconds()))
+            today_reset = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            tomorrow_reset = today_reset + timedelta(days=1)
+
+            if last_daily >= today_reset:
+                # User has already claimed today, show time until next midnight
+                remaining_daily = int((tomorrow_reset - now).total_seconds())
+            else:
+                # User has not claimed today
+                remaining_daily = 0
         else:
             remaining_daily = 0
 
     def format_time(seconds):
-        minutes, sec = divmod(seconds, 60)
-        return f"{minutes}m {sec}s" if seconds > 0 else "Ready ✅"
+        hours, remainder = divmod(seconds, 3600)
+        minutes, sec = divmod(remainder, 60)
+        if seconds > 0:
+            return f"{hours}h {minutes}m"
+        return "Ready ✅"
     
     embed = discord.Embed(title="⏳ Your Cooldowns", color=discord.Color.orange())
     embed.add_field(name="Drop Cooldown", value=format_time(drop_remaining), inline=False)
     embed.add_field(name="Claim Cooldown", value=format_time(claim_remaining), inline=False)
-    embed.add_field(name="Daily Cooldown", value=format_time(remaining_daily), inline=False)
+    embed.add_field(name="Daily Reset", value=format_time(remaining_daily), inline=False)
 
     await ctx.send(embed=embed)
 
@@ -589,11 +601,13 @@ async def view(ctx, card_uid: str):
     await ctx.send(file=file, embed=embed)
 
 # !daily
-@bot.command()
 async def daily(ctx):
     user_id = int(ctx.author.id)
     reward = random.randint(1, 10)
-    now = datetime.now(timezone.utc)  # always aware datetime
+    now = datetime.now(timezone.utc)  # Current UTC time
+
+    # Get today's reset time (midnight UTC)
+    today_reset = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
     async with db_pool.acquire() as conn:
         # Ensure user row exists
@@ -607,29 +621,31 @@ async def daily(ctx):
         current_coins = row["coins"]
         last_daily = row["last_daily"]
 
-        # If last_daily is stored naive, make it aware by assuming UTC
+        # Handle timezone awareness
         if last_daily is not None and last_daily.tzinfo is None:
             last_daily = last_daily.replace(tzinfo=timezone.utc)
 
-        if last_daily is not None:
-            next_claim_time = last_daily + timedelta(hours=24)
-            if now < next_claim_time:
-                remaining = next_claim_time - now
-                hours, remainder = divmod(remaining.seconds, 3600)
-                minutes = remainder // 60
-                await ctx.send(f"🕒 You've already claimed your daily coins! Come back in {remaining.days * 24 + hours}h {minutes}m.")
-                return
+        # ✅ If they've already claimed today
+        if last_daily is not None and last_daily >= today_reset:
+            # Calculate time until next reset
+            tomorrow_reset = today_reset + timedelta(days=1)
+            remaining = tomorrow_reset - now
+            hours, remainder = divmod(remaining.seconds, 3600)
+            minutes = remainder // 60
+            await ctx.send(
+                f"🕒 You've already claimed your daily coins! "
+                f"Come back in {remaining.days * 24 + hours}h {minutes}m (midnight UTC reset)."
+            )
+            return
 
+        # ✅ Otherwise, award the daily reward
         new_total = current_coins + reward
         await conn.execute(
             "UPDATE users SET coins = $1, last_daily = $2 WHERE user_id = $3",
             new_total, now, user_id
         )
 
-        if last_daily is None:
-            await ctx.send(f"✅ You received your first {reward} aura points 🌟 today! You now have 🌟 {new_total} aura.")
-        else:
-            await ctx.send(f"✅ You received {reward} aura points 🌟 for your daily check-in! You now have 🌟 {new_total} aura.")
+        await ctx.send(f"✅ You received {reward} aura points 🌟 for your daily check-in! You now have 🌟 {new_total} aura.")
 
 # !r RECYCLE
 @bot.command()
