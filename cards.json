@@ -1042,5 +1042,17 @@
         "group": "MAMAMOO",
         "concept": "Base",
         "image": "cards/MAMAMOO/wheein.JPG"
+    },
+    {
+        "name": "Choerry",
+        "group": "LOONA/ARTMS",
+        "concept": "Base",
+        "image": "cards/LOONA/choerry.JPG"
+    },
+    {
+        "name": "Choerry",
+        "group": "LOONA/ARTMS",
+        "concept": "Base",
+        "image": "cards/LOONA/heejin.JPG"
     }
 ]
