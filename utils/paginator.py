@@ -33,7 +33,7 @@ class CollectionView(View):
 
     def generate_embed(self):
         embed = Embed(
-            title=f"📸 {self.target.display_name}'s Photocard Collection",
+            title=f"📸 {self.target.display_name}'s Photocard Collection 📚",
             description=f"Page {self.current_page + 1}/{len(self.pages)} • Sorted by **{self.sort_key}**",
             color=discord.Color.blue()
         )
