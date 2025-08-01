@@ -468,7 +468,8 @@ async def c(ctx, *, card_name: str):
         rows = await conn.fetch("""
             SELECT card_uid, group_name, member_name, rarity, concept, edition
             FROM user_cards
-            WHERE user_id = $1 AND member_name ILIKE $2
+            WHERE user_id = $1 
+            AND LOWER(member_name) ~* ('\\m' || LOWER($2) || '\\M')
             ORDER BY date_obtained DESC        
         """, user_id, f"%{card_name}%")
 
