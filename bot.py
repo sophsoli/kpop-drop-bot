@@ -620,56 +620,79 @@ async def daily(ctx):
         else:
             await ctx.send(f"✅ You received {reward} aura points 🌟 for your daily check-in! You now have 🌟 {new_total} aura.")
 
-
+# !r RECYCLE
 @bot.command()
-async def recycle(ctx, card_uid: str):
+async def r(ctx, *card_uids):
+    """Recycle one or multiple cards for coins."""
     user_id = int(ctx.author.id)
-    card_uid = card_uid.upper().strip()
+
+    if not card_uids:
+        await ctx.send("❌ You must specify at least one `card_uid` to recycle.")
+        return
+
+    # Clean up and format UIDs
+    card_uids = [uid.upper().strip() for uid in card_uids]
+
+    rarity_coin_values = {
+        'Common': 5,
+        'Rare': 10,
+        'Epic': 20,
+        'Legendary': 50,
+        'Mythic': 150
+    }
+
+    total_earned = 0
+    recycled_cards = []
 
     async with db_pool.acquire() as conn:
-        row = await conn.fetchrow(
-            "SELECT * FROM user_cards WHERE user_id = $1 AND card_uid = $2",
-            user_id,
-            card_uid
-        )
-
-        if not row:
-            await ctx.send(f"❌ You don’t own a card with ID `{card_uid}`.")
-            return
-
-        rarity = row['rarity']
-        member_name = row['member_name']
-
-        rarity_coin_values = {
-            'Common': 5,
-            'Rare': 10,
-            'Epic': 20,
-            'Legendary': 50,
-            'Mythic': 150
-        }
-        coins_earned = rarity_coin_values.get(rarity, 1)
-
         async with conn.transaction():
-            # Delete the card
-            await conn.execute("""
-                DELETE FROM user_cards 
-                WHERE user_id = $1 AND card_uid = $2
-            """, user_id, card_uid)
+            for card_uid in card_uids:
+                row = await conn.fetchrow(
+                    "SELECT * FROM user_cards WHERE user_id = $1 AND card_uid = $2",
+                    user_id,
+                    card_uid
+                )
 
-            # Add coins (insert if new, else update)
-            await conn.execute("""
-                INSERT INTO users (user_id, coins)
-                VALUES ($1, $2)
-                ON CONFLICT (user_id)
-                DO UPDATE SET coins = users.coins + $2
-            """, user_id, coins_earned)
+                if not row:
+                    await ctx.send(f"⚠️ You don't own a card with ID `{card_uid}`.")
+                    continue
 
+                rarity = row['rarity']
+                member_name = row['member_name']
+                coins_earned = rarity_coin_values.get(rarity, 1)
+
+                # Delete the card
+                await conn.execute("""
+                    DELETE FROM user_cards 
+                    WHERE user_id = $1 AND card_uid = $2
+                """, user_id, card_uid)
+
+                # Add coins to total
+                total_earned += coins_earned
+                recycled_cards.append(f"[{rarity}] **{member_name}** (`{card_uid}`)")
+
+            # Add coins to user if any cards were recycled
+            if total_earned > 0:
+                await conn.execute("""
+                    INSERT INTO users (user_id, coins)
+                    VALUES ($1, $2)
+                    ON CONFLICT (user_id)
+                    DO UPDATE SET coins = users.coins + $2
+                """, user_id, total_earned)
+
+    # Final response
+    if recycled_cards:
+        recycled_list = "\n".join(recycled_cards)
         await ctx.send(
-            f"♻️ You recycled a [{rarity}] **{member_name}** card (`#{card_uid}`) for **{coins_earned}** aura 🌟!"
+            f"♻️ You recycled the following cards:\n{recycled_list}\n\n"
+            f"💰 Total earned: **{total_earned} aura 🌟!**"
         )
+    else:
+        await ctx.send("⚠️ No valid cards were recycled.")
 
+# !aura
 @bot.command()
-async def coins(ctx):
+async def aura(ctx):
     user_id = int(ctx.author.id)
 
     async with db_pool.acquire() as conn:
