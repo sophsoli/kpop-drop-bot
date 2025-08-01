@@ -462,16 +462,16 @@ async def tag(ctx, emoji):
 @bot.command()
 async def c(ctx, *, card_name: str):
     user_id = ctx.author.id
-    card_name = card_name.upper()
+    card_name = card_name.upper()  # Keep uppercase for display
 
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT card_uid, group_name, member_name, rarity, concept, edition
             FROM user_cards
-            WHERE user_id = $1 
-            AND LOWER(member_name) ~* ('\\m' || LOWER($2) || '\\M')
+            WHERE user_id = $1
+              AND LOWER(member_name) ~* ('\\m' || LOWER($2) || '\\M')  -- word boundary search
             ORDER BY date_obtained DESC        
-        """, user_id, f"%{card_name}%")
+        """, user_id, card_name)  # ✅ Removed the extra % symbols
 
     if not rows:
         await ctx.send(f'❌ No cards matching "{card_name}" found in your collection.')
