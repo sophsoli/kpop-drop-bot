@@ -279,38 +279,54 @@ async def collection(ctx, sort_key: str = "date_obtained", member: discord.Membe
     target = member or ctx.author
     user_id = target.id
 
-    # ✅ Get user's tag emoji
+    # Map user-friendly input to database column
+    sort_aliases = {
+        "group": "group_name",
+        "member": "member_name",
+        "rarity": "rarity",
+        "date": "date_obtained"
+    }
+    sort_key = sort_aliases.get(sort_key.lower(), sort_key.lower())
+
+    # get user's tag emoji
     async with db_pool.acquire() as conn:
         row = await conn.fetchrow("SELECT emoji FROM users WHERE user_id = $1", user_id)
         emoji = row["emoji"] if row and row["emoji"] else "📸"
 
-    # ✅ Define valid sort options
-    valid_sorts = ["date_obtained", "rarity", "member_name", "group_name"]
-    sort_key = sort_key.lower()
-    if sort_key not in valid_sorts:
-        sort_key = "date_obtained"
+    # Validate sort key
+    valid_sorts = {
+        "date_obtained": "date_obtained DESC",
+        "rarity": """
+            CASE rarity
+                WHEN 'Common' THEN 1
+                WHEN 'Rare' THEN 2
+                WHEN 'Epic' THEN 3
+                WHEN 'Legendary' THEN 4
+                WHEN 'Mythic' THEN 5
+                ELSE 6
+            END
+        """,
+        "member_name": "member_name ASC",
+        "group_name": "group_name ASC"
+    }
 
-    # ✅ Fetch cards from database
+    order_by = valid_sorts.get(sort_key, "date_obtained DESC")
+
+    # Get cards
     async with db_pool.acquire() as conn:
-        rows = await conn.fetch("""
-            SELECT card_uid, group_name, member_name, rarity, concept, edition, date_obtained
-            FROM user_cards
+        rows = await conn.fetch(f"""
+            SELECT * FROM user_cards
             WHERE user_id = $1
-            ORDER BY date_obtained DESC
+            ORDER BY {order_by};
         """, int(user_id))
 
     if not rows:
         await ctx.send(f"{target.display_name} doesn't have any photocards yet. 😢")
         return
 
-    # ✅ Convert rows to list of dicts
-    cards = [dict(row) for row in rows]
-
-    # ✅ Build pages of 10 cards each
+    # PAGINATION
     page_size = 10
-    pages = [cards[i:i + page_size] for i in range(0, len(cards), page_size)]
-
-    # ✅ Use updated CollectionView
+    pages = [rows[i:i + page_size] for i in range(0, len(rows), page_size)]
     view = CollectionView(ctx, pages, emoji, target, sort_key)
     embed = view.generate_embed()
     view.message = await ctx.send(embed=embed, view=view)

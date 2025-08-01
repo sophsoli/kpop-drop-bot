@@ -55,14 +55,16 @@ class CollectionView(View):
                 grouped.setdefault(card['group_name'], []).append(card)
             for group_name, group_cards in grouped.items():
                 member_lines = [
-                    f"{self.emoji} {c['member_name']} • [{c['rarity']}] • Edition {c['edition']}"
+                    f"{self.emoji} {c['member_name']} • [{c['rarity']}] • Edition {c['edition']} `{card['card_uid']}`"
                     for c in group_cards
                 ]
                 embed.add_field(name=f"**{group_name}**", value="\n".join(member_lines), inline=False)
         else:
-            for card in cards:
-                line = f"{self.emoji} {card['group_name']} • {card['member_name']} • [{card['rarity']}] • Edition {card['edition']}"
-                embed.add_field(name=line, value="\u200b", inline=False)
+            lines = [
+                f"{self.emoji} {card['group_name']} • {card['member_name']} • [{card['rarity']}] • Edition {card['edition']} `#{card['card_uid']}`"
+                for card in cards
+            ]
+            embed.add_field(name="Cards", value="\n".join(lines), inline=False)
 
         return embed
 

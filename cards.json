@@ -1054,5 +1054,17 @@
         "group": "LOONA/ARTMS",
         "concept": "Base",
         "image": "cards/LOONA/heejin.JPG"
+    },
+    {
+        "name": "Yeojin",
+        "group": "LOONA/LOOSEMBLE",
+        "concept": "Base",
+        "image": "cards/LOONA/yeojin.JPG"
+    },
+    {
+        "name": "Yves",
+        "group": "LOONA/Soloist",
+        "concept": "Base",
+        "image": "cards/LOONA/yves.JPG"
     }
 ]
