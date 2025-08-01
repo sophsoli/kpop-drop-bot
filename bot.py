@@ -273,59 +273,45 @@ async def drop(ctx):
         except asyncio.TimeoutError:
             break
 
+# !collection command
 @bot.command()
 async def collection(ctx, sort_key: str = "date_obtained", member: discord.Member = None):
     target = member or ctx.author
     user_id = target.id
 
-    # get user's tag emoji
+    # ✅ Get user's tag emoji
     async with db_pool.acquire() as conn:
         row = await conn.fetchrow("SELECT emoji FROM users WHERE user_id = $1", user_id)
         emoji = row["emoji"] if row and row["emoji"] else "📸"
 
-    # Validate sort key
-    valid_sorts = {
-        "date_obtained": "date_obtained DESC",
-        "rarity": """
-            CASE rarity
-                WHEN 'Common' THEN 1
-                WHEN 'Rare' THEN 2
-                WHEN 'Epic' THEN 3
-                WHEN 'Legendary' THEN 4
-                WHEN 'Mythic' THEN 5
-                ELSE 6
-            END
-        """,
-        "member_name": "member_name ASC",
-        "group_name": "group_name ASC"
-    }
+    # ✅ Define valid sort options
+    valid_sorts = ["date_obtained", "rarity", "member_name", "group_name"]
+    sort_key = sort_key.lower()
+    if sort_key not in valid_sorts:
+        sort_key = "date_obtained"
 
-    order_by = valid_sorts.get(sort_key.lower(), "date_obtained DESC")
-
-    # Get cards
+    # ✅ Fetch cards from database
     async with db_pool.acquire() as conn:
-        rows = await conn.fetch(f"""
-            SELECT * FROM user_cards
+        rows = await conn.fetch("""
+            SELECT card_uid, group_name, member_name, rarity, concept, edition, date_obtained
+            FROM user_cards
             WHERE user_id = $1
-            ORDER BY {order_by};
+            ORDER BY date_obtained DESC
         """, int(user_id))
-        # Custom rarity order
-        RARITY_ORDER = {
-            "Common": 0,
-            "Rare": 1,
-            "Epic": 2,
-            "Legendary": 3,
-            "Mythic": 4
-            }
 
     if not rows:
         await ctx.send(f"{target.display_name} doesn't have any photocards yet. 😢")
         return
 
-    # PAGINATION
+    # ✅ Convert rows to list of dicts
+    cards = [dict(row) for row in rows]
+
+    # ✅ Build pages of 10 cards each
     page_size = 10
-    pages = [rows[i:i + page_size] for i in range(0, len(rows), page_size)]
-    view = CollectionView(ctx, pages, emoji, target, sort_key.lower())
+    pages = [cards[i:i + page_size] for i in range(0, len(cards), page_size)]
+
+    # ✅ Use updated CollectionView
+    view = CollectionView(ctx, pages, emoji, target, sort_key)
     embed = view.generate_embed()
     view.message = await ctx.send(embed=embed, view=view)
 
@@ -441,21 +427,54 @@ async def on_reaction_add(reaction, user):
 
 # TAG COMMAND !tag                
 @bot.command()
-async def tag(ctx, emoji):
+async def tag(ctx, *args):
     user_id = ctx.author.id
 
-    if not emoji.startswith("<") and len(emoji) > 2:
-        await ctx.send("❌ Please use a valid emoji or Discord emote!")
+    if not args:
+        await ctx.send("❌ Usage:\n`!tag <emoji>` → Tag your whole collection.\n`!tag <card_uid> <emoji>` → Tag a specific card.")
         return
 
     async with db_pool.acquire() as conn:
-        await conn.execute("""
-            INSERT INTO users (user_id, emoji)
-            VALUES ($1, $2)
-            ON CONFLICT (user_id) DO UPDATE SET emoji = EXCLUDED.emoji
-        """, user_id, emoji)
+        # --- Case 1: Only 1 argument → Global Tag ---
+        if len(args) == 1:
+            emoji = args[0]
+            if not emoji.startswith("<") and len(emoji) > 2:
+                await ctx.send("❌ Please use a valid emoji or Discord emote!")
+                return
 
-    await ctx.send(f"✅ Your collection is now tagged with {emoji}!")
+            await conn.execute("""
+                INSERT INTO users (user_id, emoji)
+                VALUES ($1, $2)
+                ON CONFLICT (user_id) DO UPDATE SET emoji = EXCLUDED.emoji
+            """, user_id, emoji)
+
+            await ctx.send(f"✅ Your entire collection is now tagged with {emoji}!")
+
+        # --- Case 2: 2 arguments → Tag a specific card ---
+        elif len(args) == 2:
+            card_uid, emoji = args[0].upper(), args[1]
+
+            # Check if the user owns this card
+            card = await conn.fetchrow("""
+                SELECT id FROM user_cards
+                WHERE user_id = $1 AND card_uid = $2
+            """, user_id, card_uid)
+
+            if not card:
+                await ctx.send(f"❌ You don’t own a card with ID `{card_uid}`.")
+                return
+
+            # Add a new column if not already added: ALTER TABLE user_cards ADD COLUMN custom_tag TEXT;
+            await conn.execute("""
+                UPDATE user_cards
+                SET custom_tag = $1
+                WHERE user_id = $2 AND card_uid = $3
+            """, emoji, user_id, card_uid)
+
+            await ctx.send(f"✅ Card `#{card_uid}` has been tagged with {emoji}!")
+
+        else:
+            await ctx.send("❌ Too many arguments. Use `!tag <emoji>` or `!tag <card_uid> <emoji>`.")
 
     
 # !c your cards <card_uid>
