@@ -335,7 +335,6 @@ pending_trades = {}
 # COMMAND TRADE !trade
 @bot.command()
 async def trade(ctx, partner: discord.Member, card_uid: str):
-
     sender_id = ctx.author.id
     recipient_id = partner.id
 
@@ -348,25 +347,8 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
         if not card:
             await ctx.send("❌ You don't own a card with that UID.")
             return
-        
-        # ✅ Create embed for trade preview
-        embed = discord.Embed(
-            title="🤝 Trade Request",
-            description=f"{ctx.author.mention} wants to trade a photocard with {partner.mention}!",
-            color=discord.Color.blue()
-        )
-        embed.add_field(name="👤 Member", value=card['member_name'], inline=True)
-        embed.add_field(name="🌟 Rarity", value=card['rarity'], inline=True)
-        embed.add_field(name="🆔 Card UID", value=card['card_uid'], inline=True)
 
-        # If image_path exists, display card image
-        if card.get('image_path'):
-            embed.set_image(url=f"attachment://{card['card_uid']}.png")
-            image_file = discord.File(card['image_path'], filename=f"{card['card_uid']}.png")
-        else:
-            image_file = None
-
-        # SAVE PENDING TRADE to memory
+        # Save pending trade
         pending_trades[sender_id] = {
             "recipient_id": recipient_id,
             "card_uid": card_uid,
@@ -375,18 +357,46 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
             "message_id": None
         }
 
-        # Send embed message
-        if image_file:
-            message = await ctx.send(file=image_file, embed=embed)
+        # ✅ Create framed card preview
+        image_path = card["image_path"]
+        if image_path and os.path.exists(image_path):
+            framed = apply_frame(image_path, FRAME_PATH)
+            buffer = io.BytesIO()
+            framed.save(buffer, format="PNG")
+            buffer.seek(0)
+            file = discord.File(buffer, filename="trade_card.png")
+            image_url = "attachment://trade_card.png"
         else:
-            message = await ctx.send(embed=embed)
+            file = None
+            image_url = None
+
+        # Create embed (no mention here)
+        embed = discord.Embed(
+            title="📸 Photocard Offer",
+            color=discord.Color.gold()
+        )
+        embed.add_field(name="Card", value=f"[{card['rarity']}] **{card['member_name']}**", inline=False)
+        embed.add_field(name="UID", value=f"`{card_uid}`", inline=False)
+        embed.set_footer(text="React with 🤝 to accept or ❌ to decline.")
+
+        if image_url:
+            embed.set_image(url=image_url)
+        else:
+            embed.add_field(name="⚠️ Note", value="Image preview not available.", inline=False)
+
+        # ✅ Send the text message separately
+        message = await ctx.send(
+            f"{partner.mention}, **{ctx.author.display_name}** wants to trade you this photocard!", 
+            embed=embed, 
+            file=file if file else None
+        )
 
         await message.add_reaction("🤝")
         await message.add_reaction("❌")
 
         pending_trades[sender_id]["message_id"] = message.id
 
-        # Timeout auto-cancel (5 minutes)
+        # Timeout auto-cancel (5 min)
         async def auto_cancel():
             await asyncio.sleep(300)
             if sender_id in pending_trades and pending_trades[sender_id]["message_id"] == message.id:
@@ -395,7 +405,7 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
                     await message.channel.send("⌛ Trade request timed out.")
                 except discord.HTTPException:
                     pass
-        
+
         asyncio.create_task(auto_cancel())
 
 @bot.event
