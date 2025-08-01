@@ -601,6 +601,7 @@ async def view(ctx, card_uid: str):
     await ctx.send(file=file, embed=embed)
 
 # !daily
+@bot.command()
 async def daily(ctx):
     user_id = int(ctx.author.id)
     reward = random.randint(1, 10)
