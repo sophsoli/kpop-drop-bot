@@ -22,8 +22,8 @@ class CollectionView(View):
         self.author = ctx.author
         self.sort_key = sort_key
 
-        self.prev_button = Button(label="⬅️", style=discord.ButtonStyle.secondary)
-        self.next_button = Button(label="➡️", style=discord.ButtonStyle.secondary)
+        self.prev_button = Button(label="👈", style=discord.ButtonStyle.secondary)
+        self.next_button = Button(label="👉", style=discord.ButtonStyle.secondary)
 
         self.prev_button.callback = self.prev_page
         self.next_button.callback = self.next_page
