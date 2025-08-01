@@ -1066,5 +1066,11 @@
         "group": "LOONA/Soloist",
         "concept": "Base",
         "image": "cards/LOONA/yves.JPG"
+    },
+    {
+        "name": "Hyewon",
+        "group": "IZ*ONE",
+        "concept": "Base",
+        "image": "cards/IZONE/hyewon.JPG"
     }
 ]
