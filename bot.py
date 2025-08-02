@@ -617,7 +617,7 @@ async def view(ctx, card_uid: str):
         description=(
             f"🆔 **{card['card_uid']}**\n"
             f"⭐ **Rarity:** {card['rarity']}\n"
-            f"📀 **Concept:** {card['concept']}\n"
+            f"📀 **Version:** {card['concept']}\n"
             f"🔢 **Edition:** #{card['edition']}\n"
             f"📅 **Obtained:** {card['date_obtained'].strftime('%Y-%m-%d')}"
         ),
@@ -772,7 +772,7 @@ async def aura(ctx):
 # !shop
 @bot.command()
 async def shop(ctx):
-    view = ShopView(ctx.author.id, db_pool)  # Pass db_pool here!
+    view = ShopView(ctx.author.id, db_pool)  # ✅ Pass db_pool to handle purchases
 
     embed = discord.Embed(
         title="💎🌟 Mingyu's LOVE.MONEY.FAME Shop",
@@ -791,6 +791,8 @@ async def shop(ctx):
         value="Use this to claim another card even after you've hit the limit.",
         inline=False
     )
+
+    embed.set_footer(text="Click a button below to purchase.")
 
     await ctx.send(embed=embed, view=view)
 

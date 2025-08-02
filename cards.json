@@ -1102,5 +1102,17 @@
         "group": "KATSEYE",
         "concept": "Base",
         "image": "cards/KATSEYE/sophia.JPG"
+    },
+    {
+        "name": "Sophia",
+        "group": "KATSEYE",
+        "concept": "Base",
+        "image": "cards/KATSEYE/lara.JPG"
+    },
+    {
+        "name": "Mijoo",
+        "group": "Lovelyz/Soloist",
+        "concept": "Base",
+        "image": "cards/Lovelyz/mijoo.JPG"
     }
 ]
