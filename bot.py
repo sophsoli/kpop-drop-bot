@@ -676,21 +676,22 @@ async def daily(ctx):
         await ctx.send(f"✅ You received {reward} aura points 🌟 for your daily check-in! You now have 🌟 {new_total} aura.")
 
 # !r RECYCLE COMMAND
-@bot.command(name="r")
+@bot.command(name="r", aliases=["recycle"])
 async def recycle(ctx, *args):
-    """Recycle one/multiple cards by UID or all cards with a specific emoji tag."""
+    """Recycle cards by UID, rarity, or emoji tag for coins."""
     user_id = int(ctx.author.id)
 
     if not args:
-        await ctx.send("❌ You must specify at least one `card_uid` or an emoji tag to recycle.")
+        await ctx.send("❌ You must specify at least one `card_uid`, a rarity, or an emoji tag.")
         return
 
+    # Define rarity values
     rarity_coin_values = {
-        'Common': 5,
-        'Rare': 10,
-        'Epic': 20,
-        'Legendary': 50,
-        'Mythic': 150
+        'COMMON': 5,
+        'RARE': 10,
+        'EPIC': 20,
+        'LEGENDARY': 50,
+        'MYTHIC': 150
     }
 
     total_earned = 0
@@ -698,77 +699,46 @@ async def recycle(ctx, *args):
 
     async with db_pool.acquire() as conn:
         async with conn.transaction():
-            if len(args) == 1:
-                # ✅ Try emoji tag first
-                emoji_tag = args[0]
-                tagged_rows = await conn.fetch("""
-                    SELECT * FROM user_cards
-                    WHERE user_id = $1 AND custom_tag = $2
-                """, user_id, emoji_tag)
+            for arg in args:
+                arg_clean = arg.strip().upper()
 
-                if tagged_rows:
-                    for row in tagged_rows:
-                        rarity = row['rarity']
-                        member_name = row['member_name']
-                        card_uid = row['card_uid']
-                        coins_earned = rarity_coin_values.get(rarity, 1)
+                # ✅ CASE 1: Rarity filter
+                if arg_clean in rarity_coin_values:
+                    rows = await conn.fetch("""
+                        SELECT card_uid, member_name, rarity FROM user_cards
+                        WHERE user_id = $1 AND UPPER(rarity) = $2
+                    """, user_id, arg_clean)
 
-                        await conn.execute("""
-                            DELETE FROM user_cards 
-                            WHERE user_id = $1 AND card_uid = $2
-                        """, user_id, card_uid)
+                # ✅ CASE 2: Emoji filter (tagged cards)
+                elif len(arg) <= 4 and not arg_clean.isalnum():
+                    rows = await conn.fetch("""
+                        SELECT card_uid, member_name, rarity FROM user_cards
+                        WHERE user_id = $1 AND custom_tag = $2
+                    """, user_id, arg)
 
-                        total_earned += coins_earned
-                        recycled_cards.append(f"[{rarity}] **{member_name}** (`{card_uid}`)")
+                # ✅ CASE 3: Specific UID
                 else:
-                    # ✅ If no tag match, treat it as a single UID
-                    card_uid = args[0].upper().strip()
                     row = await conn.fetchrow("""
-                        SELECT * FROM user_cards 
-                        WHERE user_id = $1 AND card_uid = $2
-                    """, user_id, card_uid)
+                        SELECT card_uid, member_name, rarity FROM user_cards
+                        WHERE user_id = $1 AND UPPER(card_uid) = $2
+                    """, user_id, arg_clean)
+                    rows = [row] if row else []
 
-                    if row:
-                        rarity = row['rarity']
-                        member_name = row['member_name']
-                        coins_earned = rarity_coin_values.get(rarity, 1)
+                # ♻️ Process cards
+                if not rows:
+                    await ctx.send(f"⚠️ No matching cards found for `{arg}`.")
+                    continue
 
-                        await conn.execute("""
-                            DELETE FROM user_cards 
-                            WHERE user_id = $1 AND card_uid = $2
-                        """, user_id, card_uid)
-
-                        total_earned += coins_earned
-                        recycled_cards.append(f"[{rarity}] **{member_name}** (`{card_uid}`)")
-                    else:
-                        await ctx.send(f"⚠️ No cards found with tag or UID `{args[0]}`.")
-
-            else:
-                # ✅ Multiple UIDs
-                for card_uid in args:
-                    uid = card_uid.upper().strip()
-                    row = await conn.fetchrow("""
-                        SELECT * FROM user_cards 
-                        WHERE user_id = $1 AND card_uid = $2
-                    """, user_id, uid)
-
-                    if not row:
-                        await ctx.send(f"⚠️ You don't own a card with ID `{uid}`.")
-                        continue
-
-                    rarity = row['rarity']
-                    member_name = row['member_name']
-                    coins_earned = rarity_coin_values.get(rarity, 1)
-
+                for row in rows:
                     await conn.execute("""
-                        DELETE FROM user_cards 
+                        DELETE FROM user_cards
                         WHERE user_id = $1 AND card_uid = $2
-                    """, user_id, uid)
+                    """, user_id, row['card_uid'])
 
-                    total_earned += coins_earned
-                    recycled_cards.append(f"[{rarity}] **{member_name}** (`{uid}`)")
+                    total_earned += rarity_coin_values.get(row['rarity'].upper(), 1)
+                    recycled_cards.append(f"[{row['rarity']}] **{row['member_name']}** (`{row['card_uid']}`)")
 
-            # ✅ Add coins if any cards were recycled
+            # ✅ Add coins
             if total_earned > 0:
                 await conn.execute("""
                     INSERT INTO users (user_id, coins)
@@ -777,7 +747,7 @@ async def recycle(ctx, *args):
                     DO UPDATE SET coins = users.coins + $2
                 """, user_id, total_earned)
 
-    # Final response
+    # ✅ Final response
     if recycled_cards:
         recycled_list = "\n".join(recycled_cards)
         await ctx.send(
