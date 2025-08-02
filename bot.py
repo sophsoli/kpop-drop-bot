@@ -343,7 +343,7 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
     async with db_pool.acquire() as conn:
         card = await conn.fetchrow("""
             SELECT * FROM user_cards
-            WHERE user_id = $1 AND card_uid = $2
+            WHERE user_id = $1 AND LOWER(card_uid) = LOWER($2)
         """, sender_id, card_uid)
 
         if not card:
