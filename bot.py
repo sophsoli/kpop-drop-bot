@@ -446,51 +446,43 @@ async def on_reaction_add(reaction, user):
 async def tag(ctx, *args):
     user_id = ctx.author.id
 
-    if not args:
-        await ctx.send("❌ Usage:\n`!tag <emoji>` → Tag your whole collection.\n`!tag <card_uid> <emoji>` → Tag a specific card.")
-        return
-
-    async with db_pool.acquire() as conn:
-        # --- Case 1: Only 1 argument → Global Tag ---
-        if len(args) == 1:
-            emoji = args[0]
-            if not emoji.startswith("<") and len(emoji) > 2:
-                await ctx.send("❌ Please use a valid emoji or Discord emote!")
-                return
-
+    if len(args) == 1:
+        # ✅ Global tag for entire collection
+        emoji = args[0]
+        async with db_pool.acquire() as conn:
             await conn.execute("""
                 INSERT INTO users (user_id, emoji)
                 VALUES ($1, $2)
                 ON CONFLICT (user_id) DO UPDATE SET emoji = EXCLUDED.emoji
             """, user_id, emoji)
+        await ctx.send(f"✅ Your entire collection is now tagged with {emoji}!")
 
-            await ctx.send(f"✅ Your entire collection is now tagged with {emoji}!")
-
-        # --- Case 2: 2 arguments → Tag a specific card ---
-        elif len(args) == 2:
-            card_uid, emoji = args[0].upper(), args[1]
-
-            # Check if the user owns this card
+    elif len(args) == 2:
+        # ✅ Per-card tag using custom_tag column
+        card_uid, emoji = args
+        async with db_pool.acquire() as conn:
+            # Check that user owns the card
             card = await conn.fetchrow("""
-                SELECT id FROM user_cards
+                SELECT card_uid FROM user_cards
                 WHERE user_id = $1 AND card_uid = $2
             """, user_id, card_uid)
 
             if not card:
-                await ctx.send(f"❌ You don’t own a card with ID `{card_uid}`.")
+                await ctx.send("❌ You don't own this card.")
                 return
 
-            # Add a new column if not already added: ALTER TABLE user_cards ADD COLUMN custom_tag TEXT;
             await conn.execute("""
                 UPDATE user_cards
                 SET custom_tag = $1
                 WHERE user_id = $2 AND card_uid = $3
             """, emoji, user_id, card_uid)
 
-            await ctx.send(f"✅ Card `#{card_uid}` has been tagged with {emoji}!")
+        await ctx.send(f"✅ Tagged card `#{card_uid}` with {emoji}!")
 
-        else:
-            await ctx.send("❌ Too many arguments. Use `!tag <emoji>` or `!tag <card_uid> <emoji>`.")
+    else:
+        await ctx.send("❌ Usage:\n"
+                       "`!tag 😎` → Tag entire collection\n"
+                       "`!tag CARD_UID 😎` → Tag a specific card")
 
     
 # !c your cards <card_uid>
@@ -536,7 +528,7 @@ async def c(ctx, *, card_name: str):
         emoji = emoji_map.get(rarity, "🎴")
 
         embed.add_field(
-            name=f"{i}. {emoji} {group} • {name} • {concept} • ({rarity}) • Edition {edition} #{uid}",
+            name=f"{i}. {emoji} {group} • {name} • {concept} • [{rarity}] • Edition {edition} `#{uid}`",
             value="",
             inline=False
         )
