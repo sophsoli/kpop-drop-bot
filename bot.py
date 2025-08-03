@@ -274,7 +274,7 @@ async def drop(ctx):
             break
 
 # !collection command
-@bot.command()
+@bot.command(name="collection", aliases=["pc"])
 async def collection(ctx, *args):
     target = None
     sort_key = "date_obtained"
