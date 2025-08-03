@@ -275,8 +275,21 @@ async def drop(ctx):
 
 # !collection command
 @bot.command()
-async def collection(ctx, sort_key: str = "date_obtained", member: discord.Member = None):
-    target = member or ctx.author
+async def collection(ctx, *args):
+    target = None
+    sort_key = "date_obtained"
+    filter_value = None
+
+    # Parse arguments
+    for arg in args:
+        if isinstance(arg, discord.Member):
+            target = arg
+        elif arg.lower() in ["group", "member", "rarity", "date"]:
+            sort_key = arg.lower()
+        else:
+            filter_value = arg.lower()  # treat anything else as a filter (rarity or group name)
+
+    target = target or ctx.author
     user_id = target.id
 
     # Map user-friendly input to database column
@@ -286,9 +299,9 @@ async def collection(ctx, sort_key: str = "date_obtained", member: discord.Membe
         "rarity": "rarity",
         "date": "date_obtained"
     }
-    sort_key = sort_aliases.get(sort_key.lower(), sort_key.lower())
+    sort_key = sort_aliases.get(sort_key, sort_key)
 
-    # get user's tag emoji
+    # Get user's tag emoji
     async with db_pool.acquire() as conn:
         row = await conn.fetchrow("SELECT emoji FROM users WHERE user_id = $1", user_id)
         emoji = row["emoji"] if row and row["emoji"] else "📸"
@@ -309,19 +322,29 @@ async def collection(ctx, sort_key: str = "date_obtained", member: discord.Membe
         "member_name": "member_name ASC",
         "group_name": "group_name ASC"
     }
-
     order_by = valid_sorts.get(sort_key, "date_obtained DESC")
+
+    # Build filtering condition
+    filter_clause = ""
+    params = [user_id]
+    if filter_value:
+        if filter_value in ["common", "rare", "epic", "legendary", "mythic"]:
+            filter_clause = "AND LOWER(rarity) = $2"
+        else:
+            filter_clause = "AND (LOWER(group_name) = $2 OR LOWER(member_name) = $2)"
+        params.append(filter_value)
 
     # Get cards
     async with db_pool.acquire() as conn:
         rows = await conn.fetch(f"""
             SELECT * FROM user_cards
             WHERE user_id = $1
+            {filter_clause}
             ORDER BY {order_by};
-        """, int(user_id))
+        """, *params)
 
     if not rows:
-        await ctx.send(f"{target.display_name} doesn't have any photocards yet. 😢")
+        await ctx.send(f"{target.display_name} doesn't have any matching photocards. 😢")
         return
 
     # PAGINATION
