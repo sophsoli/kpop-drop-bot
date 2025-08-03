@@ -63,7 +63,7 @@ class CollectionView(View):
         elif self.sort_key == "rarity":
             # Show rarity first
             lines = [
-                f"{(card['custom_tag'] or self.emoji)} {card['member_name']} • {card['group_name']} • [{card['rarity']}] • Edition {card['edition']} `#{card['card_uid']}`"
+                f"{(card['custom_tag'] or self.emoji)} [{card['rarity']}] {card['member_name']} • {card['group_name']} • Edition {card['edition']} `#{card['card_uid']}`"
                 for card in cards
             ]
             embed.add_field(name="Cards", value="\n".join(lines), inline=False)
