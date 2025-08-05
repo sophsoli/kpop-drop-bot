@@ -50,9 +50,9 @@ RARITY_TIERS = {
 RARITY_POINTS = {
     "Common": 1,
     "Rare": 5,
-    "Epic": 15,
-    "Legendary": 75,
-    "Mythic": 200
+    "Epic": 20,
+    "Legendary": 100,
+    "Mythic": 150
 }
 
 leaderboard_cache = {}
@@ -842,13 +842,16 @@ async def rank(ctx):
         user_row = await conn.fetchrow("""
             SELECT SUM(
                        CASE rarity
-                           WHEN 'Legendary' THEN 75
-                           WHEN 'Mythic' THEN 200
+                           WHEN 'Common' THEN 1
+                           WHEN 'Rare' THEN 5
+                           WHEN 'Epic' THEN 20
+                           WHEN 'Legendary' THEN 100
+                           WHEN 'Mythic' THEN 150
                            ELSE 0
                        END
                    ) AS total_points
             FROM user_cards
-            WHERE user_id = $1 AND rarity IN ('Legendary', 'Mythic')
+            WHERE user_id = $1 AND rarity IN ('Common', 'Rare', 'Epic', 'Legendary', 'Mythic')
         """, user_id)
         user_points = user_row['total_points'] or 0
 
@@ -858,8 +861,11 @@ async def rank(ctx):
             FROM (
                 SELECT user_id, SUM(
                     CASE rarity
-                        WHEN 'Legendary' THEN 75
-                        WHEN 'Mythic' THEN 200
+                        WHEN 'Common' THEN 1
+                        WHEN 'Rare' THEN 5
+                        WHEN 'Epic' THEN 20
+                        WHEN 'Legendary' THEN 100
+                        WHEN 'Mythic' THEN 150
                         ELSE 0
                     END
                 ) AS total_points
@@ -870,8 +876,11 @@ async def rank(ctx):
             WHERE total_points > (
                 SELECT SUM(
                     CASE rarity
-                        WHEN 'Legendary' THEN 75
-                        WHEN 'Mythic' THEN 200
+                        WHEN 'Common' THEN 1
+                        WHEN 'Rare' THEN 5
+                        WHEN 'Epic' THEN 20
+                        WHEN 'Legendary' THEN 100
+                        WHEN 'Mythic' THEN 150
                         ELSE 0
                     END
                 )
@@ -899,13 +908,16 @@ async def leaderboard(ctx):
             SELECT user_id,
                    SUM(
                        CASE rarity
-                           WHEN 'Legendary' THEN 75
-                           WHEN 'Mythic' THEN 200
+                           WHEN 'Common' THEN 1
+                           WHEN 'Rare' THEN 5
+                           WHEN 'Epic' THEN 20
+                           WHEN 'Legendary' THEN 100
+                           WHEN 'Mythic' THEN 150
                            ELSE 0
                        END
                    ) AS total_points
             FROM user_cards
-            WHERE rarity IN ('Legendary', 'Mythic')
+            WHERE rarity IN ('Common', 'Rare', 'Epic', 'Legendary', 'Mythic')
             GROUP BY user_id
             ORDER BY total_points DESC
             LIMIT 15;
