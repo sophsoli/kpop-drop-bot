@@ -835,6 +835,7 @@ async def update_leaderboard_cache(force=False):
 # !rank command
 @bot.command()
 async def rank(ctx):
+    user = ctx.author
     user_id = ctx.author.id
     async with db_pool.acquire() as conn:
         # Get total points for this user but only Legendary and Mythic cards
@@ -883,6 +884,8 @@ async def rank(ctx):
     embed = discord.Embed(title=f"📊 {ctx.author.display_name}'s Rank", color=discord.Color.blue())
     embed.add_field(name="Total Points", value=f"**{user_points}**", inline=False)
     embed.add_field(name="Leaderboard Position", value=f"#{rank_position}", inline=False)
+
+    embed.set_thumbnail(url=user.display_avatar.url)
 
     await ctx.send(embed=embed)
 
