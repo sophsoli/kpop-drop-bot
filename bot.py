@@ -47,6 +47,18 @@ RARITY_TIERS = {
     "Mythic": {"color": 0xFFD700, "chance": 1}
 }
 
+RARITY_POINTS = {
+    "Common": 1,
+    "Rare": 5,
+    "Epic": 15,
+    "Legendary": 75,
+    "Mythic": 200
+}
+
+leaderboard_cache = {}
+last_cache_update = 0
+CACHE_DURATION = 300  # 5 minutes
+
 user_cooldowns = {}
 drop_cooldowns = {}
 
@@ -257,6 +269,9 @@ async def drop(ctx):
                     VALUES($1, $2, $3, CURRENT_TIMESTAMP, $4, $5, $6, $7, $8, $9)
                 """, int(user.id), card['card_uid'], card['short_id'],
                     card['rarity'], edition, card['name'], card['group'], card.get('concept', 'Base'), card['image'])
+                
+                points = RARITY_POINTS.get(card['rarity'], 0)
+                leaderboard_cache[user.id] = leaderboard_cache.get(user.id, 0) + points
 
 
             challengers = [cid for cid in claim_challengers[emoji] if cid != user.id]
@@ -791,6 +806,73 @@ async def aura(ctx):
         """, user_id)
 
     await ctx.send(f"🌟 You have **{coins or 0} aura**.")
+
+async def update_leaderboard_cache(force=False):
+    global leaderboard_cache, last_cache_update
+    now = time.time()
+
+    # Only reload DB if forced or cache is empty
+    if not force and leaderboard_cache:
+        return leaderboard_cache
+
+    async with db_pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT user_id, rarity
+            FROM user_cards
+        """)
+
+    scores = {}
+    for row in rows:
+        uid = row["user_id"]
+        rarity = row["rarity"]
+        points = RARITY_POINTS.get(rarity, 0)
+        scores[uid] = scores.get(uid, 0) + points
+
+    leaderboard_cache = dict(sorted(scores.items(), key=lambda x: x[1], reverse=True))
+    last_cache_update = now
+    return leaderboard_cache
+
+# !rank command
+@bot.command()
+async def rank(ctx, member: discord.Member = None):
+    target = member or ctx.author
+    user_id = target.id
+
+    scores = await update_leaderboard_cache()
+    user_score = scores.get(user_id, 0)
+    position = list(scores.keys()).index(user_id) + 1 if user_id in scores else None
+
+    embed = discord.Embed(
+        title=f"📊 {target.display_name}'s Rank",
+        color=discord.Color.blue()
+    )
+    embed.add_field(name="Total Points", value=f"**{user_score}**", inline=False)
+    embed.add_field(name="Leaderboard Position", value=f"#{position}" if position else "Unranked", inline=False)
+
+    await ctx.send(embed=embed)
+
+
+
+# !leaderboard command
+@bot.command()
+async def leaderboard(ctx):
+    scores = await update_leaderboard_cache()
+
+    embed = discord.Embed(
+        title="🏆 Photocard Leaderboard",
+        color=discord.Color.gold()
+    )
+
+    top_10 = list(scores.items())[:10]
+    for idx, (user_id, points) in enumerate(top_10, start=1):
+        user = await bot.fetch_user(user_id)
+        embed.add_field(
+            name=f"#{idx} {user.display_name}",
+            value=f"{points} pts",
+            inline=False
+        )
+
+    await ctx.send(embed=embed)
 
 # !shop
 @bot.command()
