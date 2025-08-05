@@ -842,10 +842,10 @@ async def rank(ctx):
             SELECT SUM(
                        CASE rarity
                            WHEN 'Common' THEN 1
-                           WHEN 'Rare' THEN 3
-                           WHEN 'Epic' THEN 5
-                           WHEN 'Legendary' THEN 8
-                           WHEN 'Mythic' THEN 12
+                           WHEN 'Rare' THEN 5
+                           WHEN 'Epic' THEN 15
+                           WHEN 'Legendary' THEN 75
+                           WHEN 'Mythic' THEN 200
                            ELSE 0
                        END
                    ) AS total_points
@@ -861,10 +861,10 @@ async def rank(ctx):
                 SELECT user_id, SUM(
                     CASE rarity
                         WHEN 'Common' THEN 1
-                        WHEN 'Rare' THEN 3
-                        WHEN 'Epic' THEN 5
-                        WHEN 'Legendary' THEN 8
-                        WHEN 'Mythic' THEN 12
+                        WHEN 'Rare' THEN 5
+                        WHEN 'Epic' THEN 15
+                        WHEN 'Legendary' THEN 75
+                        WHEN 'Mythic' THEN 200
                         ELSE 0
                     END
                 ) AS total_points
@@ -875,10 +875,10 @@ async def rank(ctx):
                 SELECT SUM(
                     CASE rarity
                         WHEN 'Common' THEN 1
-                        WHEN 'Rare' THEN 3
-                        WHEN 'Epic' THEN 5
-                        WHEN 'Legendary' THEN 8
-                        WHEN 'Mythic' THEN 12
+                        WHEN 'Rare' THEN 5
+                        WHEN 'Epic' THEN 15
+                        WHEN 'Legendary' THEN 75
+                        WHEN 'Mythic' THEN 200
                         ELSE 0
                     END
                 )
