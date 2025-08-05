@@ -912,20 +912,20 @@ async def leaderboard(ctx):
         await ctx.send("📊 No leaderboard data yet.")
         return
 
-    embed = discord.Embed(title="🏆 Photocard Leaderboard", color=discord.Color.gold())
+    embed = discord.Embed(title="🏆 _WORLD Leaderboard", color=discord.Color.gold())
 
     for i, row in enumerate(rows, 1):
         member = ctx.guild.get_member(row['user_id'])
         if member:
-            display_name = member.nick or member.name
+            display_name = member.nick or member.display_name
         else:
             user = await bot.fetch_user(row['user_id'])
-            display_name = user.name
+            display_name = user.display_name
 
-        points = row['total_points'] or 0
+        # points = row['total_points'] or 0
         embed.add_field(
             name=f"#{i} {display_name}",
-            value=f"Total Points: **{points}**",
+            value="",
             inline=False
         )
 
