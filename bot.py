@@ -834,20 +834,63 @@ async def update_leaderboard_cache(force=False):
 
 # !rank command
 @bot.command()
-async def rank(ctx, member: discord.Member = None):
-    target = member or ctx.author
-    user_id = target.id
+async def rank(ctx):
+    user_id = ctx.author.id
+    async with db_pool.acquire() as conn:
+        # Get total points for this user
+        user_row = await conn.fetchrow("""
+            SELECT SUM(
+                       CASE rarity
+                           WHEN 'Common' THEN 1
+                           WHEN 'Rare' THEN 3
+                           WHEN 'Epic' THEN 5
+                           WHEN 'Legendary' THEN 8
+                           WHEN 'Mythic' THEN 12
+                           ELSE 0
+                       END
+                   ) AS total_points
+            FROM user_cards
+            WHERE user_id = $1
+        """, user_id)
+        user_points = user_row['total_points'] or 0
 
-    scores = await update_leaderboard_cache()
-    user_score = scores.get(user_id, 0)
-    position = list(scores.keys()).index(user_id) + 1 if user_id in scores else None
+        # Get rank
+        rank_row = await conn.fetchrow("""
+            SELECT COUNT(*) + 1 AS rank
+            FROM (
+                SELECT user_id, SUM(
+                    CASE rarity
+                        WHEN 'Common' THEN 1
+                        WHEN 'Rare' THEN 3
+                        WHEN 'Epic' THEN 5
+                        WHEN 'Legendary' THEN 8
+                        WHEN 'Mythic' THEN 12
+                        ELSE 0
+                    END
+                ) AS total_points
+                FROM user_cards
+                GROUP BY user_id
+            ) AS leaderboard
+            WHERE total_points > (
+                SELECT SUM(
+                    CASE rarity
+                        WHEN 'Common' THEN 1
+                        WHEN 'Rare' THEN 3
+                        WHEN 'Epic' THEN 5
+                        WHEN 'Legendary' THEN 8
+                        WHEN 'Mythic' THEN 12
+                        ELSE 0
+                    END
+                )
+                FROM user_cards
+                WHERE user_id = $1
+            )
+        """, user_id)
+        rank_position = rank_row['rank'] if rank_row else 1
 
-    embed = discord.Embed(
-        title=f"📊 {target.display_name}'s Rank",
-        color=discord.Color.blue()
-    )
-    embed.add_field(name="Total Points", value=f"**{user_score}**", inline=False)
-    embed.add_field(name="Leaderboard Position", value=f"#{position}" if position else "Unranked", inline=False)
+    embed = discord.Embed(title=f"📊 {ctx.author.display_name}'s Rank", color=discord.Color.blue())
+    embed.add_field(name="Total Points", value=f"**{user_points}**", inline=False)
+    embed.add_field(name="Leaderboard Position", value=f"#{rank_position}", inline=False)
 
     await ctx.send(embed=embed)
 
@@ -856,19 +899,37 @@ async def rank(ctx, member: discord.Member = None):
 # !leaderboard command
 @bot.command()
 async def leaderboard(ctx):
-    scores = await update_leaderboard_cache()
+    async with db_pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT user_id,
+                   SUM(
+                       CASE rarity
+                           WHEN 'Common' THEN 1
+                           WHEN 'Rare' THEN 5
+                           WHEN 'Epic' THEN 15
+                           WHEN 'Legendary' THEN 75
+                           WHEN 'Mythic' THEN 200
+                           ELSE 0
+                       END
+                   ) AS total_points
+            FROM user_cards
+            GROUP BY user_id
+            ORDER BY total_points DESC
+            LIMIT 10;
+        """)
 
-    embed = discord.Embed(
-        title="🏆 Photocard Leaderboard",
-        color=discord.Color.gold()
-    )
+    if not rows:
+        await ctx.send("📊 No leaderboard data yet.")
+        return
 
-    top_10 = list(scores.items())[:10]
-    for idx, (user_id, points) in enumerate(top_10, start=1):
-        user = await bot.fetch_user(user_id)
+    embed = discord.Embed(title="🏆 Photocard Leaderboard", color=discord.Color.gold())
+
+    for i, row in enumerate(rows, 1):
+        user = await bot.fetch_user(row['user_id'])
+        points = row['total_points'] or 0
         embed.add_field(
-            name=f"#{idx} {user.display_name}",
-            value=f"{points} pts",
+            name=f"#{i} {user.display_name}",
+            value=f"Total Points: **{points}**",
             inline=False
         )
 
