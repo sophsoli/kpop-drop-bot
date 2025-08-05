@@ -837,53 +837,45 @@ async def update_leaderboard_cache(force=False):
 async def rank(ctx):
     user_id = ctx.author.id
     async with db_pool.acquire() as conn:
-        # Get total points for this user
+        # Get total points for this user but only Legendary and Mythic cards
         user_row = await conn.fetchrow("""
             SELECT SUM(
                        CASE rarity
-                           WHEN 'Common' THEN 1
-                           WHEN 'Rare' THEN 5
-                           WHEN 'Epic' THEN 15
                            WHEN 'Legendary' THEN 75
                            WHEN 'Mythic' THEN 200
                            ELSE 0
                        END
                    ) AS total_points
             FROM user_cards
-            WHERE user_id = $1
+            WHERE user_id = $1 AND rarity IN ('Legendary', 'Mythic')
         """, user_id)
         user_points = user_row['total_points'] or 0
 
-        # Get rank
+        # Get rank based on Legendary and Mythic only
         rank_row = await conn.fetchrow("""
             SELECT COUNT(*) + 1 AS rank
             FROM (
                 SELECT user_id, SUM(
                     CASE rarity
-                        WHEN 'Common' THEN 1
-                        WHEN 'Rare' THEN 5
-                        WHEN 'Epic' THEN 15
                         WHEN 'Legendary' THEN 75
                         WHEN 'Mythic' THEN 200
                         ELSE 0
                     END
                 ) AS total_points
                 FROM user_cards
+                WHERE rarity IN ('Legendary', 'Mythic')
                 GROUP BY user_id
             ) AS leaderboard
             WHERE total_points > (
                 SELECT SUM(
                     CASE rarity
-                        WHEN 'Common' THEN 1
-                        WHEN 'Rare' THEN 5
-                        WHEN 'Epic' THEN 15
                         WHEN 'Legendary' THEN 75
                         WHEN 'Mythic' THEN 200
                         ELSE 0
                     END
                 )
                 FROM user_cards
-                WHERE user_id = $1
+                WHERE user_id = $1 AND rarity IN ('Legendary', 'Mythic')
             )
         """, user_id)
         rank_position = rank_row['rank'] if rank_row else 1
@@ -904,18 +896,16 @@ async def leaderboard(ctx):
             SELECT user_id,
                    SUM(
                        CASE rarity
-                           WHEN 'Common' THEN 1
-                           WHEN 'Rare' THEN 5
-                           WHEN 'Epic' THEN 15
                            WHEN 'Legendary' THEN 75
                            WHEN 'Mythic' THEN 200
                            ELSE 0
                        END
                    ) AS total_points
             FROM user_cards
+            WHERE rarity IN ('Legendary', 'Mythic')
             GROUP BY user_id
             ORDER BY total_points DESC
-            LIMIT 10;
+            LIMIT 15;
         """)
 
     if not rows:
@@ -925,10 +915,16 @@ async def leaderboard(ctx):
     embed = discord.Embed(title="🏆 Photocard Leaderboard", color=discord.Color.gold())
 
     for i, row in enumerate(rows, 1):
-        user = await bot.fetch_user(row['user_id'])
+        member = ctx.guild.get_member(row['user_id'])
+        if member:
+            display_name = member.nick or member.name
+        else:
+            user = await bot.fetch_user(row['user_id'])
+            display_name = user.name
+
         points = row['total_points'] or 0
         embed.add_field(
-            name=f"#{i} {user.display_name}",
+            name=f"#{i} {display_name}",
             value=f"Total Points: **{points}**",
             inline=False
         )
