@@ -1114,5 +1114,65 @@
         "group": "Lovelyz/Soloist",
         "concept": "Base",
         "image": "cards/Lovelyz/mijoo.JPG"
+    },
+    {
+        "name": "Isa",
+        "group": "STAYC",
+        "concept": "Base",
+        "image": "cards/STAYC/isa.JPG"
+    },
+    {
+        "name": "J",
+        "group": "STAYC",
+        "concept": "Base",
+        "image": "cards/STAYC/j.JPG"
+    },
+    {
+        "name": "Seeun",
+        "group": "STAYC",
+        "concept": "Base",
+        "image": "cards/STAYC/seeun.JPG"
+    },
+    {
+        "name": "Sieun",
+        "group": "STAYC",
+        "concept": "Base",
+        "image": "cards/STAYC/sieun.JPG"
+    },
+    {
+        "name": "Sumin",
+        "group": "STAYC",
+        "concept": "Base",
+        "image": "cards/STAYC/sumin.JPG"
+    },
+    {
+        "name": "Yoon",
+        "group": "STAYC",
+        "concept": "Base",
+        "image": "cards/STAYC/yoon.JPG"
+    },
+    {
+        "name": "Chaeyoung",
+        "group": "fromis_9",
+        "concept": "Base",
+        "image": "cards/fromis_9/chaeyoung.JPG"
+    },
+    {
+        "name": "Hayoung",
+        "group": "fromis_9",
+        "concept": "Base",
+        "image": "cards/fromis_9/hayoung.JPG"
+    },
+    {
+        "name": "Jiwon",
+        "group": "fromis_9",
+        "concept": "Base",
+        "image": "cards/fromis_9/jiwon.JPG"
+    },
+    {
+        "name": "Nagyung",
+        "group": "fromis_9",
+        "concept": "Base",
+        "image": "cards/fromis_9/nagyung.JPG"
     }
 ]
