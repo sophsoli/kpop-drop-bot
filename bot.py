@@ -16,6 +16,7 @@ from datetime import datetime, timezone, timedelta
 from data_helpers import add_entry, read_entries
 import json
 from utils.pagination import HelpPaginator
+from utils.drop import notify_wishlist_users
 
 SUGGESTIONS_FILE = "suggestions.json"
 BUGFIXES_FILE = "bugfixes.json"
@@ -159,6 +160,8 @@ async def drop(ctx):
         card_copy['color'] = RARITY_TIERS[rarity]['color']
         card_copy['reaction'] = reactions[i]
         dropped_cards.append(card_copy)
+    
+    await notify_wishlist_users(ctx, dropped_cards, db_pool)
 
     framed_cards = []
     for card in dropped_cards:
