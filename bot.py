@@ -973,7 +973,33 @@ async def shop(ctx):
 
     embed.set_footer(text="Click a button below to purchase.")
 
+    message = await ctx.send(embed=embed, view=view)
+    view.message = message  # 👈 assign after sending
+
     await ctx.send(embed=embed, view=view)
+
+# !items or !i ITEMS COMMAND
+@bot.command(name="items", aliases=["i"])
+async def items(ctx):
+    async with db_pool.acquire() as conn:
+        items = await conn.fetch("""
+            SELECT item, quantity FROM user_items WHERE user_id = $1
+        """, ctx.author.id)
+
+    if not items:
+        await ctx.send(f"{ctx.author.mention}, you have no items.")
+        return
+
+    embed = discord.Embed(
+        title=f"💖 {ctx.author.display_name}'s Items",
+        color=discord.Color.pink()
+    )
+
+    for item in items:
+        item_name = item["item"].replace("_", " ").title()
+        embed.add_field(name=item_name, value=f"Quantity: {item['quantity']}", inline=False)
+
+    await ctx.send(embed=embed)
 
 # !reroll
 @bot.command()
@@ -1077,24 +1103,28 @@ async def comms(ctx):
                            description="Here are the commands you can use:",
                            color=discord.Color.blue())
     embed1.add_field(name="🃏 Drop Cards", value="`!drop` — Drop a set of cards that anyone can claim.", inline=False)
-    embed1.add_field(name="📁 View Collection", value="`!collection` — View your card collection.", inline=False)
+    embed1.add_field(name="📁 View Collection", value="`!collection` or `!pc` — View your card collection. Can sort by group, member, or rarity.", inline=False)
     embed1.add_field(name="🎴 Cards", value="`!c <name>` — View your owned cards by an idol's name.", inline=False)
     embed1.add_field(name="🔁 Trade Cards", value="`!trade @user <card_uid>` — Propose a trade.", inline=False)
-    embed1.add_field(name="♻️ Recycle", value="`!r <card_uid>` — Discard a card for coins.", inline=False)
-    embed1.add_field(name="📷 Tag", value="`!tag <emoji>` — Customize your collection tag.", inline=False)
+    embed1.add_field(name="♻️ Recycle", value="`!r <card_uid>` — Discard a card for coins. Can multi-recycle. Can also recycle by a tag.", inline=False)
+    embed1.add_field(name="📷 Tag", value="`!tag <emoji>` or `!tag <card_uid> emoji`  — Customize your collection tag. Can add different tags for cards.", inline=False)
+    embed1.add_field(name="✅ Daily", value="`!daily` — Random daily check-in!", inline=False)
     pages.append(embed1)
 
     # Page 2
     embed2 = discord.Embed(title="✨ Mingyu Bot Help (2/3) ✨",
-                           description="Trading and managing cards:",
+                           description="Shop and Coins:",
                            color=discord.Color.blue())
-    embed2.add_field(name="💰 Aura Points", value="`!aura` — Check your balance.", inline=False)
+    embed2.add_field(name="🌟 Aura Points", value="`!aura` — Check your balance.", inline=False)
     embed2.add_field(name="💰 Shop", value="`!shop` — Shop (coming soon!).", inline=False)
+    embed2.add_field(name="🏆 Leaderboard", value="`!leaderboard` — Check leaderboard.", inline=False)
+    embed2.add_field(name="🏆 Rank", value="`!rank` — Check your rank.", inline=False)
+    embed1.add_field(name="🔁 Reroll", value="`!reroll` — Didn't like your drop? Reroll for 50 aura points!", inline=False)
     pages.append(embed2)
 
     # Page 3
     embed3 = discord.Embed(title="✨ Mingyu Bot Help (3/3) ✨",
-                           description="Coins and shop:",
+                           description="More coming soon:",
                            color=discord.Color.blue())
     embed3.add_field(name="🤓", value="More features coming soon!", inline=False)
     pages.append(embed3)
