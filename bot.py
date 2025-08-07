@@ -1013,8 +1013,9 @@ async def reroll(ctx):
     # ✅ Trigger a "drop" immediately
     await drop(ctx)
 
-@bot.command()
-async def wl(ctx, action=None, *, card_name=None):
+# !wl wishlist command
+@bot.command(name="wishlist", aliases=["wl"])
+async def wishlist(ctx, action=None, *, card_name=None):
     user_id = ctx.author.id
 
     async with db_pool.acquire() as conn:
@@ -1030,32 +1031,38 @@ async def wl(ctx, action=None, *, card_name=None):
             await ctx.send(embed=embed)
             return
 
+        # Normalize card name regardless of case
+        if card_name:
+            titleized_name = card_name.strip().title()
+        else:
+            titleized_name = None
+
         # ✅ Add to Wishlist
         if action.lower() == "add":
-            if not card_name:
+            if not titleized_name:
                 await ctx.send("⚠️ Please specify the card name to add!")
                 return
 
             try:
                 await conn.execute(
                     "INSERT INTO wishlists (user_id, card_name) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-                    user_id, card_name
+                    user_id, titleized_name
                 )
-                await ctx.send(f"✅ Added **{card_name}** to your wishlist!")
+                await ctx.send(f"✅ Added **{titleized_name}** to your wishlist!")
             except Exception as e:
                 await ctx.send("❌ Error adding to wishlist.")
 
         # ✅ Remove from Wishlist
         elif action.lower() == "remove":
-            if not card_name:
+            if not titleized_name:
                 await ctx.send("⚠️ Please specify the card name to remove!")
                 return
 
-            deleted = await conn.execute("DELETE FROM wishlists WHERE user_id = $1 AND card_name = $2", user_id, card_name)
+            deleted = await conn.execute("DELETE FROM wishlists WHERE user_id = $1 AND card_name = $2", user_id, titleized_name)
             if deleted.endswith("0"):
-                await ctx.send("⚠️ That card wasn't on your wishlist.")
+                await ctx.send(f"⚠️ **{titleized_name}** wasn't on your wishlist.")
             else:
-                await ctx.send(f"🗑️ Removed **{card_name}** from your wishlist!")
+                await ctx.send(f"🗑️ Removed **{titleized_name}** from your wishlist!")
 
         else:
             await ctx.send("⚠️ Invalid option! Use `!wl`, `!wl add <card>`, or `!wl remove <card>`.")
