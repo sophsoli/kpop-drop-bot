@@ -470,7 +470,7 @@ async def on_reaction_add(reaction, user):
                     # transfer ownership
                     await conn.execute("""
                         UPDATE user_cards 
-                        SET user_id = $1, date_obtained = $2 
+                        SET user_id = $1, date_obtained = $2 , custom_tag = NULL
                         WHERE card_uid = $3
                     """, user.id, datetime.now(timezone.utc), card_uid)
 
