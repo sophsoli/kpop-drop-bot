@@ -1174,5 +1174,11 @@
         "group": "fromis_9",
         "concept": "Base",
         "image": "cards/fromis_9/nagyung.JPG"
+    },
+    {
+        "name": "Taeyeon",
+        "group": "Girls' Generation/Soloist",
+        "concept": "Base",
+        "image": "cards/Girls'_Generation/taeyeon.JPG"
     }
 ]

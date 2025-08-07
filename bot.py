@@ -1010,6 +1010,53 @@ async def reroll(ctx):
 
     # ✅ Trigger a "drop" immediately
     await drop(ctx)
+
+@bot.command()
+async def wl(ctx, action=None, *, card_name=None):
+    user_id = ctx.author.id
+
+    async with db_pool.acquire() as conn:
+        # ✅ View Wishlist
+        if action is None:
+            rows = await conn.fetch("SELECT card_name FROM wishlists WHERE user_id = $1", user_id)
+            if not rows:
+                await ctx.send(f"📜 {ctx.author.mention}, your wishlist is empty!")
+                return
+
+            wishlist = "\n".join([f"• {row['card_name']}" for row in rows])
+            embed = discord.Embed(title=f"💖 {ctx.author.display_name}'s Wishlist", description=wishlist, color=discord.Color.pink())
+            await ctx.send(embed=embed)
+            return
+
+        # ✅ Add to Wishlist
+        if action.lower() == "add":
+            if not card_name:
+                await ctx.send("⚠️ Please specify the card name to add!")
+                return
+
+            try:
+                await conn.execute(
+                    "INSERT INTO wishlists (user_id, card_name) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+                    user_id, card_name
+                )
+                await ctx.send(f"✅ Added **{card_name}** to your wishlist!")
+            except Exception as e:
+                await ctx.send("❌ Error adding to wishlist.")
+
+        # ✅ Remove from Wishlist
+        elif action.lower() == "remove":
+            if not card_name:
+                await ctx.send("⚠️ Please specify the card name to remove!")
+                return
+
+            deleted = await conn.execute("DELETE FROM wishlists WHERE user_id = $1 AND card_name = $2", user_id, card_name)
+            if deleted.endswith("0"):
+                await ctx.send("⚠️ That card wasn't on your wishlist.")
+            else:
+                await ctx.send(f"🗑️ Removed **{card_name}** from your wishlist!")
+
+        else:
+            await ctx.send("⚠️ Invalid option! Use `!wl`, `!wl add <card>`, or `!wl remove <card>`.")
     
 @bot.command()
 async def comms(ctx):
