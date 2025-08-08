@@ -365,25 +365,8 @@ async def collection(ctx, *args):
         return
 
     # PAGINATION
-    # page_size = 10
-    # pages = [rows[i:i + page_size] for i in range(0, len(rows), page_size)]
-
-    grouped = defaultdict(list)
-    for card in rows:
-        grouped[card["group_name"]].append(card)
-    
-    sorted_groups = sorted(grouped.items(), key=lambda x: x[0].lower())
-
-
-    group_chunks = []
-    temp = []
-    for i, group in enumerate(sorted_groups):
-        temp.append(group)
-        if len(temp) == 2 or i == len(sorted_groups) - 1:
-            group_chunks.append(temp)
-            temp = []
-    pages = group_chunks
-
+    page_size = 10
+    pages = [rows[i:i + page_size] for i in range(0, len(rows), page_size)]
     view = CollectionView(ctx, pages, emoji, target, sort_key)
     embed = view.generate_embed()
     view.message = await ctx.send(embed=embed, view=view)
