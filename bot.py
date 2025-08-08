@@ -976,7 +976,6 @@ async def shop(ctx):
     message = await ctx.send(embed=embed, view=view)
     view.message = message  # 👈 assign after sending
 
-    await ctx.send(embed=embed, view=view)
 
 # !items or !i ITEMS COMMAND
 @bot.command(name="items", aliases=["i"])
