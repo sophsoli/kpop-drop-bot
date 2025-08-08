@@ -35,19 +35,32 @@ class ShopView(View):
             if row["coins"] < cost:
                 await interaction.response.send_message("❌ Not enough coins!", ephemeral=True)
                 return
-            
-            valid_columns = {"drops_left", "claims_left"}
-            if column not in valid_columns:
+
+            # Validate column and map it to item name
+            column_to_item = {
+                "drops_left": "extra_drop",
+                "claims_left": "extra_claim"
+            }
+
+            if column not in column_to_item:
                 await interaction.response.send_message("❌ Invalid item.", ephemeral=True)
                 return
-            
-            query = f"""
-                UPDATE users
-                SET coins = coins - $1,
-                    {column} = {column} + 1
-                WHERE user_id = $2
-            """
 
-            await conn.execute(query, cost, self.user_id)
+            item_key = column_to_item[column]
+
+            # Deduct coins
+            await conn.execute("""
+                UPDATE users
+                SET coins = coins - $1
+                WHERE user_id = $2
+            """, cost, self.user_id)
+
+            # Add item to user_items table
+            await conn.execute("""
+                INSERT INTO user_items (user_id, item, quantity)
+                VALUES ($1, $2, 1)
+                ON CONFLICT (user_id, item)
+                DO UPDATE SET quantity = user_items.quantity + 1
+            """, self.user_id, item_key)
 
             await interaction.response.send_message(f"✅ You bought **1x {item_name}**!", ephemeral=True)

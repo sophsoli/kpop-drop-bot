@@ -1014,23 +1014,31 @@ async def shop(ctx):
 # !items or !i ITEMS COMMAND
 @bot.command(name="items", aliases=["i"])
 async def items(ctx):
+    user_id = ctx.author.id
+
     async with db_pool.acquire() as conn:
-        items = await conn.fetch("""
-            SELECT item, quantity FROM user_items WHERE user_id = $1
-        """, ctx.author.id)
+        rows = await conn.fetch("""
+            SELECT item, quantity FROM user_items
+            WHERE user_id = $1
+        """, user_id)
 
-    if not items:
-        await ctx.send(f"{ctx.author.mention}, you have no items.")
-        return
+    embed = discord.Embed(title="🎒 Your Items", color=discord.Color.green())
 
-    embed = discord.Embed(
-        title=f"💖 {ctx.author.display_name}'s Items",
-        color=discord.Color.pink()
-    )
+    if not rows:
+        embed.description = "📦 You don't have any items."
+    else:
+        for row in rows:
+            item = row["item"]
+            quantity = row["quantity"]
 
-    for item in items:
-        item_name = item["item"].replace("_", " ").title()
-        embed.add_field(name=item_name, value=f"Quantity: {item['quantity']}", inline=False)
+            if item == "drops_left":
+                name = "🎴 Extra Drops"
+            elif item == "claims_left":
+                name = "📥 Extra Claims"
+            else:
+                name = item.replace("_", " ").title()
+
+            embed.add_field(name=name, value=f"Quantity: {quantity}", inline=False)
 
     await ctx.send(embed=embed)
 
