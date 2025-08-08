@@ -1022,7 +1022,7 @@ async def items(ctx):
             WHERE user_id = $1
         """, user_id)
 
-    embed = discord.Embed(title="🎒 Your Items", color=discord.Color.green())
+    embed = discord.Embed(title="💼 Your Items", color=discord.Color.green())
 
     if not rows:
         embed.description = "📦 You don't have any items."
