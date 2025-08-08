@@ -368,20 +368,22 @@ async def collection(ctx, *args):
     # page_size = 10
     # pages = [rows[i:i + page_size] for i in range(0, len(rows), page_size)]
 
-    # group by group_name
     grouped = defaultdict(list)
-    for row in rows:
-        grouped[row["group_name"]].append(row)
-
-    # sort group names alphabetically
+    for card in rows:
+        grouped[card["group_name"]].append(card)
+    
     sorted_groups = sorted(grouped.items(), key=lambda x: x[0].lower())
 
-    # create a page per group
-    pages = []
-    for group_name, cards in sorted_groups:
-        pages.append(cards)
 
-    
+    group_chunks = []
+    temp = []
+    for i, group in enumerate(sorted_groups):
+        temp.append(group)
+        if len(temp) == 2 or i == len(sorted_groups) - 1:
+            group_chunks.append(temp)
+            temp = []
+    pages = group_chunks
+
     view = CollectionView(ctx, pages, emoji, target, sort_key)
     embed = view.generate_embed()
     view.message = await ctx.send(embed=embed, view=view)

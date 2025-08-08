@@ -100,3 +100,12 @@ class CollectionView(View):
             child.disabled = True
         if self.message:
             await self.message.edit(content="⏳ This collection session has expired.", view=self)
+
+    def format_page(groups_on_page):
+        page_text = ""
+        for group_name, cards in groups_on_page:
+            page_text += f"**{group_name}**\n"
+            for card in cards:
+                page_text += f"- {card['card_uid']}\n"  # Or whatever display format you use
+            page_text += "\n"
+        return page_text
