@@ -374,7 +374,7 @@ async def collection(ctx, *args):
         grouped[row["group_name"]].append(row)
 
     # sort group names alphabetically
-    sorted_groups = sorted(grouped.items(), key=lambda x:[0].lower())
+    sorted_groups = sorted(grouped.items(), key=lambda x: x[0].lower())
 
     # create a page per group
     pages = []
