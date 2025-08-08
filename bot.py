@@ -134,11 +134,27 @@ async def drop(ctx):
     if user_id in drop_cooldowns:
         elapsed = now - drop_cooldowns[user_id]
         if elapsed < DROP_COOLDOWN_DURATION:
-            remaining = int(DROP_COOLDOWN_DURATION - elapsed)
-            hours, remainder = divmod(remaining, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            await ctx.send(f"⏳ {ctx.author.mention} you can drop again in **{hours}h {minutes}m {seconds}s** ⏳")
-            return
+            async with db_pool.acquire() as conn:
+                item = await conn.fetchrow("""
+                    SELECT quantity FROM user_items
+                    WHERE user_id = $1 AND item = 'extra_drop'
+                """, user_id)
+
+            if item and item['quantity'] > 0:
+                # CONSUME ONE EXTRA DROP
+                async with db_pool.acquire() as conn:
+                    await conn.execute("""
+                        UPDATE user_items
+                        SET quantity = quantity - 1
+                        WHERE user_id = $1 AND item = 'extra_drop'
+                    """, user_id)
+                await ctx.send(f"🎴 {ctx.author.mention}, you used an **Extra Drop**! No cooldown applied.")
+            else:
+                remaining = int(DROP_COOLDOWN_DURATION - elapsed)
+                hours, remainder = divmod(remaining, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                await ctx.send(f"⏳ {ctx.author.mention} you can drop again in **{hours}h {minutes}m {seconds}s** ⏳")
+                return
     
     # Announce user is dropping cards
     drop_message = await channel.send(f"🚨 {ctx.author.mention} came to drop some photocards! 🚨")
@@ -227,11 +243,29 @@ async def drop(ctx):
             if user.id in user_cooldowns:
                 elapsed = now - user_cooldowns[user.id]
                 if elapsed < COOLDOWN_DURATION:
-                    remaining = int(COOLDOWN_DURATION - elapsed)
-                    hours, remainder = divmod(remaining, 3600)
-                    minutes, seconds = divmod(remainder, 60)
-                    await ctx.send(f"⏳ {user.mention} you're still on cooldown!! Remaining: **{hours}h {minutes}m {seconds}s ⏳**")
-                    continue
+                    # Check if user has Extra Claim item
+                    async with db_pool.acquire() as conn:
+                        item = await conn.fetchrow("""
+                            SELECT quantity FROM user_items
+                            WHERE user_id = $1 AND item = 'extra_claim'
+                        """, user.id)
+
+                    if item and item['quantity'] > 0:
+                        # Consume one Extra Claim item
+                        async with db_pool.acquire() as conn:
+                            await conn.execute("""
+                                UPDATE user_items
+                                SET quantity = quantity - 1
+                                WHERE user_id = $1 AND item = 'extra_claim'
+                            """, user.id)
+
+                        await ctx.send(f"📥 {user.mention}, you used an **Extra Claim**! No cooldown applied.")
+                    else:
+                        remaining = int(COOLDOWN_DURATION - elapsed)
+                        hours, remainder = divmod(remaining, 3600)
+                        minutes, seconds = divmod(remainder, 60)
+                        await ctx.send(f"⏳ {user.mention} you're still on cooldown!! Remaining: **{hours}h {minutes}m {seconds}s ⏳**")
+                        continue
 
             # # already claimed
             if user.id in already_claimed_users:
