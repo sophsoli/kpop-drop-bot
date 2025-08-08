@@ -212,7 +212,30 @@ async def drop(ctx):
     for card in dropped_cards:
         await message.add_reaction(card['reaction'])
 
+    dropped_idols = {card["name"].title() for card in dropped_cards}
+
     drop_cooldowns[user_id] = now
+    async with db_pool.acquire() as conn:
+        rows = await conn.fetch("""
+            SELECT user_id, card_name
+            FROM wishlists
+            WHERE LOWER(card_name) = ANY($1::text[])
+        """, [idol.lower() for idol in dropped_idols])
+
+    if rows:
+        user_alerts = {}
+        for row in rows:
+            uid = row["user_id"]
+            idol = row["card_name"].title()  # ✅ FIXED this line
+            user_alerts.setdefault(uid, []).append(idol)
+
+        alert_lines = []
+        for uid, idols in user_alerts.items():
+            mention = f"<@{uid}>"
+            idol_list = ", ".join(idols)
+            alert_lines.append(f"{mention} wished for: {idol_list}!")
+
+        await ctx.send("🌟 **Wishlist Alert!**\n" + "\n".join(alert_lines))
 
     claimed = {}
     already_claimed_users = set()
@@ -1115,7 +1138,7 @@ async def wishlist(ctx, action=None, *, card_name=None):
                     "INSERT INTO wishlists (user_id, card_name) VALUES ($1, $2) ON CONFLICT DO NOTHING",
                     user_id, titleized_name
                 )
-                await ctx.send(f"✅ Added **{titleized_name}** to your wishlist!")
+                await ctx.send(f"⭐ Added **{titleized_name}** to your wishlist!")
             except Exception as e:
                 await ctx.send("❌ Error adding to wishlist.")
 
