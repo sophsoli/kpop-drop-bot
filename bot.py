@@ -30,6 +30,7 @@ TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = 1397431382741090314
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), case_insensitive=True)
+bot.remove_command('help')
 
 # Load cards database at startup
 cards = card_collection()
@@ -37,6 +38,7 @@ cards = card_collection()
 user_collections = defaultdict(list, ensure_card_ids(load_collections()))
 
 PRIORITY_WINDOW = 10  # Seconds only the dropper can claim
+
 
 
 RARITY_TIERS = {
@@ -1158,7 +1160,7 @@ async def wishlist(ctx, action=None, *, card_name=None):
             await ctx.send("⚠️ Invalid option! Use `!wl`, `!wl add <card>`, or `!wl remove <card>`.")
     
 @bot.command()
-async def comms(ctx):
+async def help(ctx):
     # EMBED FOR HELP COMMAND
     pages = []
 
