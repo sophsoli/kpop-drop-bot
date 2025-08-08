@@ -16,11 +16,7 @@ from datetime import datetime, timezone, timedelta
 from utils.pagination import HelpPaginator
 from utils.recycle import ConfirmRecycleView
 
-SUGGESTIONS_FILE = "suggestions.json"
-BUGFIXES_FILE = "bugfixes.json"
-
 current_time = datetime.now(timezone.utc)
-
 
 FRAME_PATH = "./images/frame.png"
 
@@ -826,7 +822,7 @@ async def recycle(ctx, *args):
                                 "Do you want to proceed?",
                     color=discord.Color.orange()
                 )
-                embed.set_footer(text="This will earn you coins based on rarity.")
+                embed.set_footer(text="This will earn you aura based on rarity.")
 
                 view = ConfirmRecycleView(ctx)
                 msg = await ctx.send(embed=embed, view=view)
