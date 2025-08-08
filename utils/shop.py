@@ -8,11 +8,11 @@ class ShopView(View):
         self.db_pool = db_pool
         self.message = None  # Add this here so it's properly scoped
 
-    @discord.ui.button(label="🎴 Buy Extra Drop (100 coins)", style=discord.ButtonStyle.green)
+    @discord.ui.button(label="🎴 Buy Extra Drop (100 aura)", style=discord.ButtonStyle.green)
     async def buy_extra_drop(self, interaction: discord.Interaction, button: Button):
         await self.handle_purchase(interaction, "drops_left", 100, "Extra Drop")
 
-    @discord.ui.button(label="📥 Buy Extra Claim (75 coins)", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="📥 Buy Extra Claim (75 aura)", style=discord.ButtonStyle.blurple)
     async def buy_extra_claim(self, interaction: discord.Interaction, button: Button):
         await self.handle_purchase(interaction, "claims_left", 75, "Extra Claim")
     

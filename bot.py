@@ -1017,13 +1017,13 @@ async def shop(ctx):
     )
 
     embed.add_field(
-        name="🎴 Extra Drop — 100 coins",
+        name="🎴 Extra Drop — 100 aura",
         value="Use this to drop a new set of cards.",
         inline=False
     )
 
     embed.add_field(
-        name="📥 Extra Claim — 75 coins",
+        name="📥 Extra Claim — 75 aura",
         value="Use this to claim another card even after you've hit the limit.",
         inline=False
     )
