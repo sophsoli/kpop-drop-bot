@@ -3,7 +3,7 @@ import discord
 import os
 import io
 from dotenv import load_dotenv
-from json_data_helpers import card_collection, load_collections, save_collections, ensure_card_ids
+from json_data_helpers import card_collection, load_collections, ensure_card_ids
 import random
 from image_helpers import apply_frame, merge_cards_horizontally, resize_image
 import asyncio
@@ -13,9 +13,8 @@ from utils.paginator import CollectionView
 from utils.shop import ShopView
 import asyncpg
 from datetime import datetime, timezone, timedelta
-from data_helpers import add_entry, read_entries
-import json
 from utils.pagination import HelpPaginator
+from utils.recycle import ConfirmRecycleView
 
 SUGGESTIONS_FILE = "suggestions.json"
 BUGFIXES_FILE = "bugfixes.json"
@@ -97,14 +96,6 @@ def get_card_by_emoji(emoji, dropped_cards):
 def generate_card_uid(name, short_id, edition):
     name_code = ''.join(filter(str.isalpha, name.upper()))[:4]
     return f"{name_code}{short_id:02}{edition:02}"
-
-# @bot.event
-# async def on_ready():
-#     # start up message
-#     print(f"Yo! Mingyu bot ({bot.user}) has logged in.")
-#     channel = bot.get_channel(CHANNEL_ID)
-#     # send message to channel
-#     await channel.send(f"Yo, Mingyu is here! Let's party!!")
 
 @bot.event
 async def on_ready():
@@ -784,7 +775,6 @@ async def recycle(ctx, *args):
         await ctx.send("❌ You must specify at least one `card_uid`, a rarity, or an emoji tag.")
         return
 
-    # Define rarity values
     rarity_coin_values = {
         'COMMON': 5,
         'RARE': 10,
@@ -798,24 +788,22 @@ async def recycle(ctx, *args):
 
     async with db_pool.acquire() as conn:
         async with conn.transaction():
+            matched_rows = []
+
+            # First pass: Collect matches but don't delete yet
             for arg in args:
                 arg_clean = arg.strip().upper()
 
-                # ✅ CASE 1: Rarity filter
                 if arg_clean in rarity_coin_values:
                     rows = await conn.fetch("""
                         SELECT card_uid, member_name, rarity FROM user_cards
                         WHERE user_id = $1 AND UPPER(rarity) = $2
                     """, user_id, arg_clean)
-
-                # ✅ CASE 2: Emoji filter (tagged cards)
                 elif len(arg) <= 4 and not arg_clean.isalnum():
                     rows = await conn.fetch("""
                         SELECT card_uid, member_name, rarity FROM user_cards
                         WHERE user_id = $1 AND custom_tag = $2
                     """, user_id, arg)
-
-                # ✅ CASE 3: Specific UID
                 else:
                     row = await conn.fetchrow("""
                         SELECT card_uid, member_name, rarity FROM user_cards
@@ -823,21 +811,43 @@ async def recycle(ctx, *args):
                     """, user_id, arg_clean)
                     rows = [row] if row else []
 
-                # ♻️ Process cards
-                if not rows:
-                    await ctx.send(f"⚠️ No matching cards found for `{arg}`.")
-                    continue
+                if rows:
+                    matched_rows.extend(rows)
 
-                for row in rows:
-                    await conn.execute("""
-                        DELETE FROM user_cards
-                        WHERE user_id = $1 AND card_uid = $2
-                    """, user_id, row['card_uid'])
+            if not matched_rows:
+                await ctx.send("⚠️ No matching cards found.")
+                return
 
-                    total_earned += rarity_coin_values.get(row['rarity'].upper(), 1)
-                    recycled_cards.append(f"[{row['rarity']}] **{row['member_name']}** (`{row['card_uid']}`)")
+            # If recycling 5 or more cards, ask for confirmation
+            if len(matched_rows) >= 5:
+                embed = discord.Embed(
+                    title="♻️ Confirm Recycling",
+                    description=f"You are about to recycle **{len(matched_rows)} cards**.\n"
+                                "Do you want to proceed?",
+                    color=discord.Color.orange()
+                )
+                embed.set_footer(text="This will earn you coins based on rarity.")
 
-            # ✅ Add coins
+                view = ConfirmRecycleView(ctx)
+                msg = await ctx.send(embed=embed, view=view)
+                await view.wait()
+
+                if view.value is None:
+                    await msg.edit(content="⌛ Confirmation timed out.", embed=None, view=None)
+                    return
+                elif view.value is False:
+                    await msg.edit(content="❌ Recycling cancelled.", embed=None, view=None)
+                    return
+
+            # Perform deletion after confirmation
+            for row in matched_rows:
+                await conn.execute("""
+                    DELETE FROM user_cards
+                    WHERE user_id = $1 AND card_uid = $2
+                """, user_id, row['card_uid'])
+                total_earned += rarity_coin_values.get(row['rarity'].upper(), 1)
+                recycled_cards.append(f"[{row['rarity']}] **{row['member_name']}** (`{row['card_uid']}`)")
+
             if total_earned > 0:
                 await conn.execute("""
                     INSERT INTO users (user_id, coins)
@@ -846,15 +856,11 @@ async def recycle(ctx, *args):
                     DO UPDATE SET coins = users.coins + $2
                 """, user_id, total_earned)
 
-    # ✅ Final response
-    if recycled_cards:
-        recycled_list = "\n".join(recycled_cards)
-        await ctx.send(
-            f"♻️ You recycled the following cards:\n{recycled_list}\n\n"
-            f"💰 Total earned: **{total_earned} aura 🌟!**"
-        )
-    else:
-        await ctx.send("⚠️ No valid cards were recycled.")
+    recycled_list = "\n".join(recycled_cards)
+    await ctx.send(
+        f"♻️ You recycled the following cards:\n{recycled_list}\n\n"
+        f"💰 Total earned: **{total_earned} aura 🌟!**"
+    )
 
 # !aura
 @bot.command()
@@ -1179,7 +1185,7 @@ async def help(ctx):
 
     # Page 2
     embed2 = discord.Embed(title="✨ Mingyu Bot Help (2/3) ✨",
-                           description="Shop and Coins:",
+                           description="Shop and Points:",
                            color=discord.Color.blue())
     embed2.add_field(name="🌟 Aura Points", value="`!aura` — Check your balance.", inline=False)
     embed2.add_field(name="💰 Shop", value="`!shop` — Shop (coming soon!).", inline=False)
