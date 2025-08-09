@@ -572,56 +572,56 @@ async def tag(ctx, *args):
 
     
 # !c your cards <card_uid>
-@bot.command()
-async def c(ctx, *, card_name: str):
-    user_id = ctx.author.id
-    card_name = card_name.upper()  # Keep uppercase for display
+# @bot.command()
+# async def c(ctx, *, card_name: str):
+#     user_id = ctx.author.id
+#     card_name = card_name.upper()  # Keep uppercase for display
 
-    async with db_pool.acquire() as conn:
-        rows = await conn.fetch("""
-            SELECT card_uid, group_name, member_name, rarity, concept, edition
-            FROM user_cards
-            WHERE user_id = $1
-              AND LOWER(member_name) ~* ('\\m' || LOWER($2) || '\\M')  -- word boundary search
-            ORDER BY date_obtained DESC        
-        """, user_id, card_name)  # ✅ Removed the extra % symbols
+#     async with db_pool.acquire() as conn:
+#         rows = await conn.fetch("""
+#             SELECT card_uid, group_name, member_name, rarity, concept, edition
+#             FROM user_cards
+#             WHERE user_id = $1
+#               AND LOWER(member_name) ~* ('\\m' || LOWER($2) || '\\M')  -- word boundary search
+#             ORDER BY date_obtained DESC        
+#         """, user_id, card_name)  # ✅ Removed the extra % symbols
 
-    if not rows:
-        await ctx.send(f'❌ No cards matching "{card_name}" found in your collection.')
-        return
+#     if not rows:
+#         await ctx.send(f'❌ No cards matching "{card_name}" found in your collection.')
+#         return
 
-    embed = discord.Embed(
-        title=f'📸 Your Cards Matching "{card_name}":',
-        description=f"{len(rows)} card(s) found",
-        color=discord.Color.blue()
-    )
+#     embed = discord.Embed(
+#         title=f'📸 Your Cards Matching "{card_name}":',
+#         description=f"{len(rows)} card(s) found",
+#         color=discord.Color.blue()
+#     )
 
-    emoji_map = {
-        "Common": "🟩",
-        "Rare": "🟦",
-        "Epic": "🟪",
-        "Legendary": "🟥",
-        "Mythic": "🌟"
-    }
+#     emoji_map = {
+#         "Common": "🟩",
+#         "Rare": "🟦",
+#         "Epic": "🟪",
+#         "Legendary": "🟥",
+#         "Mythic": "🌟"
+#     }
 
-    for i, row in enumerate(rows, 1):
-        uid = row["card_uid"]
-        group = row["group_name"] or "Unknown"
-        name = row["member_name"] or "Unknown"
-        rarity = row["rarity"] or "Unknown"
-        concept = row["concept"] or "Idol"
-        edition = row["edition"] or "Unknown"
-        emoji = emoji_map.get(rarity, "🎴")
+#     for i, row in enumerate(rows, 1):
+#         uid = row["card_uid"]
+#         group = row["group_name"] or "Unknown"
+#         name = row["member_name"] or "Unknown"
+#         rarity = row["rarity"] or "Unknown"
+#         concept = row["concept"] or "Idol"
+#         edition = row["edition"] or "Unknown"
+#         emoji = emoji_map.get(rarity, "🎴")
 
-        embed.add_field(
-            name=f"{i}. {emoji} {group} • {name} • {concept} • [{rarity}] • Edition {edition} `#{uid}`",
-            value="",
-            inline=False
-        )
+#         embed.add_field(
+#             name=f"{i}. {emoji} {group} • {name} • {concept} • [{rarity}] • Edition {edition} `#{uid}`",
+#             value="",
+#             inline=False
+#         )
 
-    embed.set_footer(text='Use "!trade @user <uid>" to trade a specific card.')
+#     embed.set_footer(text='Use "!trade @user <uid>" to trade a specific card.')
 
-    await ctx.send(embed=embed)
+#     await ctx.send(embed=embed)
 
 # !cd command
 @bot.command()
