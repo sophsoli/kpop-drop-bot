@@ -1180,5 +1180,53 @@
         "group": "Girls' Generation/Soloist",
         "concept": "Base",
         "image": "cards/Girls'_Generation/taeyeon.JPG"
+    },
+    {
+        "name": "Yoonchae",
+        "group": "KATSEYE",
+        "concept": "Base",
+        "image": "cards/KATSEYE/yoonchae.JPG"
+    },
+    {
+        "name": "Chaeyeon",
+        "group": "IZ*ONE",
+        "concept": "Base",
+        "image": "cards/IZONE/chaeyeon.JPG"
+    },
+    {
+        "name": "Hitomi",
+        "group": "IZ*ONE",
+        "concept": "Base",
+        "image": "cards/IZONE/hitomi.JPG"
+    },
+    {
+        "name": "Minju",
+        "group": "IZ*ONE",
+        "concept": "Base",
+        "image": "cards/IZONE/minju.JPG"
+    },
+    {
+        "name": "Nako",
+        "group": "IZ*ONE",
+        "concept": "Base",
+        "image": "cards/IZONE/nako.JPG"
+    },
+    {
+        "name": "Yena",
+        "group": "IZ*ONE",
+        "concept": "Base",
+        "image": "cards/IZONE/yena.JPG"
+    },
+    {
+        "name": "Eunbi",
+        "group": "IZ*ONE",
+        "concept": "Base",
+        "image": "cards/IZONE/eunbi.JPG"
+    },
+    {
+        "name": "Yuri",
+        "group": "IZ*ONE",
+        "concept": "Base",
+        "image": "cards/IZONE/yuri.JPG"
     }
 ]
