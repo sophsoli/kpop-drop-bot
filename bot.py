@@ -342,7 +342,7 @@ async def drop(ctx):
 
             claimed[emoji] = user.id
             already_claimed_users.add(user.id)
-            user_cooldowns[user.id] = now
+            # user_cooldowns[user.id] = now
 
         except asyncio.TimeoutError:
             break
