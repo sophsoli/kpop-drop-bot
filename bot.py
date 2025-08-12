@@ -287,8 +287,6 @@ async def drop(ctx):
                         minutes, seconds = divmod(remainder, 60)
                         await ctx.send(f"⏳ {user.mention} you're still on cooldown!! Remaining: **{hours}h {minutes}m {seconds}s ⏳**")
                         continue
-            if not used_extra_claim:
-                claim_cooldowns[user.id] = now
 
             # # already claimed
             if user.id in already_claimed_users:
@@ -298,6 +296,9 @@ async def drop(ctx):
             if emoji in claimed:
                 await ctx.send(f"⚠️ Sorry {user.mention} that card is out of stock.")
                 continue
+
+            if not used_extra_claim:
+                claim_cooldowns[user.id] = now
 
             og_card = get_card_by_emoji(emoji, dropped_cards)
             card = og_card.copy()
