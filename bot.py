@@ -119,6 +119,8 @@ async def drop(ctx):
         await ctx.send(f"Hey! The photocards are not in this area.")
         return
     
+    used_extra = False # track if extra_drop was used
+    
     # Check dropper cooldown
     if user_id in drop_cooldowns:
         elapsed = now - drop_cooldowns[user_id]
@@ -138,6 +140,7 @@ async def drop(ctx):
                         WHERE user_id = $1 AND item = 'extra_drop'
                     """, user_id)
                 await ctx.send(f"🎴 {ctx.author.mention}, you used an **Extra Drop**! No cooldown applied.")
+                used_extra = True
             else:
                 remaining = int(DROP_COOLDOWN_DURATION - elapsed)
                 hours, remainder = divmod(remaining, 3600)
@@ -203,7 +206,10 @@ async def drop(ctx):
 
     dropped_idols = {card["name"].title() for card in dropped_cards}
 
-    drop_cooldowns[user_id] = now
+    # only set cooldown if no extra was used
+    if not used_extra:
+        drop_cooldowns[user_id] = now
+
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT user_id, card_name
@@ -272,12 +278,17 @@ async def drop(ctx):
                             """, user.id)
 
                         await ctx.send(f"📥 {user.mention}, you used an **Extra Claim**! No cooldown applied.")
+                        used_extra_claim = True
                     else:
                         remaining = int(COOLDOWN_DURATION - elapsed)
                         hours, remainder = divmod(remaining, 3600)
                         minutes, seconds = divmod(remainder, 60)
                         await ctx.send(f"⏳ {user.mention} you're still on cooldown!! Remaining: **{hours}h {minutes}m {seconds}s ⏳**")
                         continue
+            else:
+                used_extra_claim = False
+            if not used_extra_claim:
+                user_cooldowns[user.id] = now
 
             # # already claimed
             if user.id in already_claimed_users:
