@@ -110,6 +110,7 @@ async def on_ready():
 
 # drop command !drop
 @bot.command()
+@commands.cooldown(1, 5, commands.BucketType.user)  # 1 use per 5 seconds per user
 async def drop(ctx):
     user_id = ctx.author.id
     channel = bot.get_channel(CHANNEL_ID)
