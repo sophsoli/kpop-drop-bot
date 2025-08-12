@@ -60,7 +60,7 @@ user_cooldowns = {}
 drop_cooldowns = {}
 claim_cooldowns = {}
 
-COOLDOWN_DURATION = 1800 # 30mins
+COOLDOWN_DURATION = 900 # 30mins
 DROP_COOLDOWN_DURATION = 1800 # 2 hours = 7200 1 hour = 3600
 
 
