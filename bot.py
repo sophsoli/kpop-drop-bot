@@ -260,7 +260,7 @@ async def drop(ctx):
             if user.id not in claim_challengers[emoji]:
                 claim_challengers[emoji].append(user.id)
 
-            if user.id in user_cooldowns:
+            if user.id in claim_cooldowns:
                 elapsed = now - claim_cooldowns[user.id]
                 if elapsed < COOLDOWN_DURATION:
                     # Check if user has Extra Claim item
