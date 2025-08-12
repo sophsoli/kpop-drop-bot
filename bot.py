@@ -114,14 +114,11 @@ async def drop(ctx):
     user_id = ctx.author.id
     channel = bot.get_channel(CHANNEL_ID)
     now = time.time()
-    used_extra = False # track if extra_drop was used
-    used_extra_claim = False
 
     # Send a message if !drop is used in the wrong channel
     if ctx.channel.id != CHANNEL_ID:
         await ctx.send(f"Hey! The photocards are not in this area.")
         return
-    
     
     # Check dropper cooldown
     if user_id in drop_cooldowns:
@@ -142,7 +139,6 @@ async def drop(ctx):
                         WHERE user_id = $1 AND item = 'extra_drop'
                     """, user_id)
                 await ctx.send(f"🎴 {ctx.author.mention}, you used an **Extra Drop**! No cooldown applied.")
-                used_extra = True
             else:
                 remaining = int(DROP_COOLDOWN_DURATION - elapsed)
                 hours, remainder = divmod(remaining, 3600)
@@ -208,10 +204,7 @@ async def drop(ctx):
 
     dropped_idols = {card["name"].title() for card in dropped_cards}
 
-    # only set cooldown if no extra was used
-    if not used_extra:
-        drop_cooldowns[user_id] = now
-
+    drop_cooldowns[user_id] = now
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT user_id, card_name
@@ -260,8 +253,8 @@ async def drop(ctx):
             if user.id not in claim_challengers[emoji]:
                 claim_challengers[emoji].append(user.id)
 
-            if user.id in claim_cooldowns:
-                elapsed = now - claim_cooldowns[user.id]
+            if user.id in user_cooldowns:
+                elapsed = now - user_cooldowns[user.id]
                 if elapsed < COOLDOWN_DURATION:
                     # Check if user has Extra Claim item
                     async with db_pool.acquire() as conn:
@@ -280,7 +273,6 @@ async def drop(ctx):
                             """, user.id)
 
                         await ctx.send(f"📥 {user.mention}, you used an **Extra Claim**! No cooldown applied.")
-                        used_extra_claim = True
                     else:
                         remaining = int(COOLDOWN_DURATION - elapsed)
                         hours, remainder = divmod(remaining, 3600)
@@ -296,9 +288,6 @@ async def drop(ctx):
             if emoji in claimed:
                 await ctx.send(f"⚠️ Sorry {user.mention} that card is out of stock.")
                 continue
-
-            if not used_extra_claim:
-                claim_cooldowns[user.id] = now
 
             og_card = get_card_by_emoji(emoji, dropped_cards)
             card = og_card.copy()
@@ -343,7 +332,7 @@ async def drop(ctx):
 
             claimed[emoji] = user.id
             already_claimed_users.add(user.id)
-            # user_cooldowns[user.id] = now
+            user_cooldowns[user.id] = now
 
         except asyncio.TimeoutError:
             break
