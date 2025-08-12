@@ -58,6 +58,7 @@ CACHE_DURATION = 300  # 5 minutes
 
 user_cooldowns = {}
 drop_cooldowns = {}
+claim_cooldowns = {}
 
 COOLDOWN_DURATION = 1800 # 30mins
 DROP_COOLDOWN_DURATION = 1800 # 2 hours = 7200 1 hour = 3600
@@ -113,13 +114,14 @@ async def drop(ctx):
     user_id = ctx.author.id
     channel = bot.get_channel(CHANNEL_ID)
     now = time.time()
+    used_extra = False # track if extra_drop was used
+    used_extra_claim = False
 
     # Send a message if !drop is used in the wrong channel
     if ctx.channel.id != CHANNEL_ID:
         await ctx.send(f"Hey! The photocards are not in this area.")
         return
     
-    used_extra = False # track if extra_drop was used
     
     # Check dropper cooldown
     if user_id in drop_cooldowns:
@@ -259,7 +261,7 @@ async def drop(ctx):
                 claim_challengers[emoji].append(user.id)
 
             if user.id in user_cooldowns:
-                elapsed = now - user_cooldowns[user.id]
+                elapsed = now - claim_cooldowns[user.id]
                 if elapsed < COOLDOWN_DURATION:
                     # Check if user has Extra Claim item
                     async with db_pool.acquire() as conn:
@@ -285,10 +287,8 @@ async def drop(ctx):
                         minutes, seconds = divmod(remainder, 60)
                         await ctx.send(f"⏳ {user.mention} you're still on cooldown!! Remaining: **{hours}h {minutes}m {seconds}s ⏳**")
                         continue
-            else:
-                used_extra_claim = False
             if not used_extra_claim:
-                user_cooldowns[user.id] = now
+                claim_cooldowns[user.id] = now
 
             # # already claimed
             if user.id in already_claimed_users:
