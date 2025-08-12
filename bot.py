@@ -328,7 +328,7 @@ async def drop(ctx):
                 fought_off_mentions = ", ".join(f"<@{cid}>" for cid in challengers)
                 await ctx.send(f"{user.mention} fought off {fought_off_mentions} and gained a {card['rarity']}-Tier **{card['name']}** photocard! 🤩")
             else:
-                await ctx.send(f"{user.mention} gained a {card['rarity']}-Tier **{card['name']}** photocard! 🤩")
+                await ctx.send(f"{user.mention} gained a {card['rarity']}-Tier **{card['name']}** `{card['card_uid']}` photocard! 🤩")
 
             claimed[emoji] = user.id
             already_claimed_users.add(user.id)
