@@ -35,13 +35,13 @@ user_collections = defaultdict(list, ensure_card_ids(load_collections()))
 PRIORITY_WINDOW = 10  # Seconds only the dropper can claim
 
 
-
+# RARITY TIER AND POINTS
 RARITY_TIERS = {
-    "Common": {"color": 0xAAAAAA, "chance": 54},
-    "Rare": {"color": 0x3498DB, "chance": 25},
-    "Epic": {"color": 0x9B59B6, "chance": 15},
-    "Legendary": {"color": 0xFFD700, "chance": 5},
-    "Mythic": {"color": 0xFFD700, "chance": 1}
+    "Common": {"chance": 54},
+    "Rare": {"chance": 25},
+    "Epic": {"chance": 15},
+    "Legendary": {"chance": 5},
+    "Mythic": {"chance": 1}
 }
 
 RARITY_POINTS = {
@@ -56,12 +56,14 @@ leaderboard_cache = {}
 last_cache_update = 0
 CACHE_DURATION = 300  # 5 minutes
 
+# INITIALIZE COOLDOWNS
 user_cooldowns = {}
 drop_cooldowns = {}
 claim_cooldowns = {}
 
-COOLDOWN_DURATION = 900 # 30mins
-DROP_COOLDOWN_DURATION = 1800 # 2 hours = 7200 1 hour = 3600
+# COOLDOWN TIMERS
+DROP_COOLDOWN_DURATION = 1800 # 30 MINS
+COOLDOWN_DURATION = 900 # 15 MINS
 
 
 db_pool = None
@@ -163,7 +165,6 @@ async def drop(ctx):
         rarity = assign_rarity()
         card_copy = card.copy()
         card_copy['rarity'] = rarity
-        card_copy['color'] = RARITY_TIERS[rarity]['color']
         card_copy['reaction'] = reactions[i]
         dropped_cards.append(card_copy)
     
@@ -245,15 +246,15 @@ async def drop(ctx):
             now = time.time()
             emoji = str(reaction.emoji)
 
-            # cooldown check
-            now = time.time()
-
-            if user.id != dropper_id and (now - drop_time) < PRIORITY_WINDOW:
-                continue
-
+            # log challengers
             if user.id not in claim_challengers[emoji]:
                 claim_challengers[emoji].append(user.id)
 
+            # priority window without message
+            if user.id != dropper_id and (now - drop_time) < PRIORITY_WINDOW:
+                continue
+
+            # cooldown check
             if user.id in user_cooldowns:
                 elapsed = now - user_cooldowns[user.id]
                 if elapsed < COOLDOWN_DURATION:
