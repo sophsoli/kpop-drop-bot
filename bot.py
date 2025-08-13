@@ -626,7 +626,7 @@ async def tag(ctx, *args):
 
 #     await ctx.send(embed=embed)
 
-# !cd command
+# !cd command COOLDOWN COMMAND
 @bot.command()
 async def cd(ctx):
     user_id = ctx.author.id
@@ -661,7 +661,7 @@ async def cd(ctx):
         hours, remainder = divmod(seconds, 3600)
         minutes, sec = divmod(remainder, 60)
         if seconds > 0:
-            return f"{hours}h {minutes}m"
+            return f"{hours}h {minutes}m {sec}s"
         return "Ready ✅"
     
     embed = discord.Embed(title="⏳ Your Cooldowns", color=discord.Color.orange())
