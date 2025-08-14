@@ -794,7 +794,7 @@ async def recycle(ctx, *args):
         async with conn.transaction():
             matched_rows = []
 
-            # First pass: Collect matches but don't delete yet
+            # Collect matching cards first
             for arg in args:
                 arg_clean = arg.strip().upper()
 
@@ -822,16 +822,14 @@ async def recycle(ctx, *args):
                 await ctx.send("⚠️ No matching cards found.")
                 return
 
-            # If recycling 5 or more cards, ask for confirmation
+            # Ask for confirmation if 5 or more cards
             if len(matched_rows) >= 5:
                 embed = discord.Embed(
                     title="♻️ Confirm Recycling",
-                    description=f"You are about to recycle **{len(matched_rows)} cards**.\n"
-                                "Do you want to proceed?",
+                    description=f"You are about to recycle **{len(matched_rows)} cards**.\nDo you want to proceed?",
                     color=discord.Color.orange()
                 )
                 embed.set_footer(text="This will earn you aura based on rarity.")
-
                 view = ConfirmRecycleView(ctx)
                 msg = await ctx.send(embed=embed, view=view)
                 await view.wait()
@@ -843,7 +841,7 @@ async def recycle(ctx, *args):
                     await msg.edit(content="❌ Recycling cancelled.", embed=None, view=None)
                     return
 
-            # Perform deletion after confirmation
+            # Delete cards and calculate coins
             for row in matched_rows:
                 await conn.execute("""
                     DELETE FROM user_cards
