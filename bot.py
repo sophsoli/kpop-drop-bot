@@ -657,17 +657,21 @@ async def cd(ctx):
         else:
             remaining_daily = 0
 
-    def format_time(seconds):
+    def format_time(seconds, show_hours=False):
+        seconds = max(0, seconds)
         hours, remainder = divmod(seconds, 3600)
         minutes, sec = divmod(remainder, 60)
         if seconds > 0:
-            return f"{hours}h {minutes}m {sec}s"
+            if show_hours:
+                return f"{hours}h {minutes}m {sec}s" # for daily
+            else:
+                return f"{minutes}m {sec}s" # for drop and claim
         return "Ready ✅"
     
     embed = discord.Embed(title="⏳ Your Cooldowns", color=discord.Color.orange())
     embed.add_field(name="Drop Cooldown", value=format_time(drop_remaining), inline=False)
     embed.add_field(name="Claim Cooldown", value=format_time(claim_remaining), inline=False)
-    embed.add_field(name="Daily Reset", value=format_time(remaining_daily), inline=False)
+    embed.add_field(name="Daily Reset", value=format_time(remaining_daily, show_hours=True), inline=False)
 
     await ctx.send(embed=embed)
 
