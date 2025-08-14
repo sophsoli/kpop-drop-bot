@@ -1,6 +1,7 @@
 import discord
 from discord.ui import View, Button
 from discord import Interaction, Embed
+import re
 
 RARITY_ORDER = {
     "Common": 1,
@@ -9,6 +10,9 @@ RARITY_ORDER = {
     "Legendary": 4,
     "Mythic": 5
 }
+def escape_md(text: str) -> str:
+        """Escape Discord markdown special characters in a string."""
+        return re.sub(r'([_*`~])', r'\\\1', text)
 
 class CollectionView(View):
     def __init__(self, ctx, pages, emoji, target, sort_key="date_obtained"):
@@ -55,15 +59,15 @@ class CollectionView(View):
                 grouped.setdefault(card['group_name'], []).append(card)
             for group_name, group_cards in grouped.items():
                 member_lines = [
-                    f"{(c['custom_tag'] or self.emoji)} {c['member_name']} • [{c['rarity']}] • Edition {c['edition']} `#{c['card_uid']}`"
+                    f"{(c['custom_tag'] or self.emoji)} {escape_md(c['member_name'])} • [{c['rarity']}] • Edition {c['edition']} `#{c['card_uid']}`"
                     for c in group_cards
                 ]
-                embed.add_field(name=f"**{group_name}**", value="\n".join(member_lines), inline=False)
+                embed.add_field(name=f"**{escape_md(group_name)}**", value="\n".join(member_lines), inline=False)
 
         elif self.sort_key == "rarity":
             # Show rarity first
             lines = [
-                f"{(card['custom_tag'] or self.emoji)} [{card['rarity']}] {card['member_name']} • {card['group_name']} • Edition {card['edition']} `#{card['card_uid']}`"
+                f"{(card['custom_tag'] or self.emoji)} [{card['rarity']}] {escape_md(card['member_name'])} • {escape_md(card['group_name'])} • Edition {card['edition']} `#{card['card_uid']}`"
                 for card in cards
             ]
             embed.add_field(name="Cards", value="\n".join(lines), inline=False)
@@ -71,7 +75,7 @@ class CollectionView(View):
         else:
             # Default/member_name or others
             lines = [
-                f"{(card['custom_tag'] or self.emoji)} {card['member_name']} • {card['group_name']} • [{card['rarity']}] • Edition {card['edition']} `#{card['card_uid']}`"
+                f"{(card['custom_tag'] or self.emoji)} {escape_md(card['member_name'])} • {escape_md(card['group_name'])} • [{card['rarity']}] • Edition {card['edition']} `#{card['card_uid']}`"
                 for card in cards
             ]
             embed.add_field(name="Cards", value="\n".join(lines), inline=False)
