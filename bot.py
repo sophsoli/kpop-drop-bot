@@ -832,6 +832,7 @@ async def recycle(ctx, *args):
                 embed.set_footer(text="This will earn you aura based on rarity.")
                 view = ConfirmRecycleView(ctx)
                 msg = await ctx.send(embed=embed, view=view)
+                view.message = msg
                 await view.wait()
 
                 if view.value is None:
