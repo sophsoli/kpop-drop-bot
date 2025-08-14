@@ -52,6 +52,7 @@ RARITY_POINTS = {
     "Mythic": 150
 }
 
+# leaderboard
 leaderboard_cache = {}
 last_cache_update = 0
 CACHE_DURATION = 300  # 5 minutes
@@ -940,7 +941,7 @@ async def rank(ctx):
                     END
                 ) AS total_points
                 FROM user_cards
-                WHERE rarity IN ('Legendary', 'Mythic')
+                WHERE rarity IN ('Common', 'Rare', 'Epic', 'Legendary', 'Mythic')
                 GROUP BY user_id
             ) AS leaderboard
             WHERE total_points > (
@@ -955,7 +956,7 @@ async def rank(ctx):
                     END
                 )
                 FROM user_cards
-                WHERE user_id = $1 AND rarity IN ('Legendary', 'Mythic')
+                WHERE user_id = $1 AND rarity IN ('Common', 'Rare', 'Epic', 'Legendary', 'Mythic')
             )
         """, user_id)
         rank_position = rank_row['rank'] if rank_row else 1
