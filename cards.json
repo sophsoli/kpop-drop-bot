@@ -410,7 +410,7 @@
     {
         "name": "Dahyun",
         "group": "TWICE",
-        "concept": "Base",
+        "concept": "V1.0",
         "image": "cards/TWICE/dahyun.JPG"
     },
     {
@@ -1228,5 +1228,47 @@
         "group": "IZ*ONE",
         "concept": "Base",
         "image": "cards/IZONE/yuri.JPG"
+    },
+    {
+        "name": "Yena",
+        "group": "IZ*ONE",
+        "concept": "V2.0",
+        "image": "cards/IZONE/yenav2.JPG"
+    },
+    {
+        "name": "Dahyun",
+        "group": "TWICE",
+        "concept": "V2.0",
+        "image": "cards/TWICE/dahyunv2.JPG"
+    },
+    {
+        "name": "Daniela",
+        "group": "KATSEYE",
+        "concept": "V1.0",
+        "image": "cards/KATSEYE/daniela.JPG"
+    },
+    {
+        "name": "Manon",
+        "group": "KATSEYE",
+        "concept": "V1.0",
+        "image": "cards/KATSEYE/manon.JPG"
+    },
+    {
+        "name": "Megan",
+        "group": "KATSEYE",
+        "concept": "V1.0",
+        "image": "cards/KATSEYE/megan.JPG"
+    },
+    {
+        "name": "Rosé",
+        "group": "BLACKPINK",
+        "concept": "V2.0",
+        "image": "cards/BLACKPINK/rosev2.JPG"
+    },
+    {
+        "name": "Chaewon",
+        "group": "LESSERAFIM",
+        "concept": "V2.0",
+        "image": "cards/LESSERAFIM/chaewonv2.JPG"
     }
 ]
