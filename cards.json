@@ -1270,5 +1270,47 @@
         "group": "LE SSERAFIM",
         "concept": "V2.0",
         "image": "cards/LESSERAFIM/chaewonv2.JPG"
+    },
+    {
+        "name": "Sana",
+        "group": "TWICE",
+        "concept": "V2.0",
+        "image": "cards/TWICE/sanav2.JPG"
+    },
+    {
+        "name": "Gaeul",
+        "group": "IVE",
+        "concept": "V2.0",
+        "image": "cards/IVE/gaeulv2.JPG"
+    },
+    {
+        "name": "Liz",
+        "group": "IVE",
+        "concept": "V2.0",
+        "image": "cards/IVE/lizv2.JPG"
+    },
+    {
+        "name": "Rei",
+        "group": "IVE",
+        "concept": "V2.0",
+        "image": "cards/IVE/reiv2.JPG"
+    },
+    {
+        "name": "Leeseo",
+        "group": "IVE",
+        "concept": "V2.0",
+        "image": "cards/IVE/leeseov2.JPG"
+    },
+    {
+        "name": "Wonyoung",
+        "group": "IVE",
+        "concept": "V2.0",
+        "image": "cards/IVE/wonyoungv2.JPG"
+    },
+    {
+        "name": "Yujin",
+        "group": "IVE",
+        "concept": "V2.0",
+        "image": "cards/IVE/yujinv2.JPG"
     }
 ]
