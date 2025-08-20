@@ -872,8 +872,8 @@ async def recycle(ctx, *args):
     )
 
     embed.add_field(
-        name=f"💰 Total earned: **{total_earned} aura 🌟!**",
-        value=f"Recycled {len(recycled_cards)} cards.",
+        name="",
+        value=f"💰 Total earned: **{total_earned} aura 🌟!**",
         inline=False
     )
 
