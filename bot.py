@@ -69,6 +69,7 @@ COOLDOWN_DURATION = 900 # 15 MINS
 
 db_pool = None
 
+# bot connect
 async def get_db_pool():
     return await asyncpg.create_pool(
         host=os.getenv("DB_HOST"),
