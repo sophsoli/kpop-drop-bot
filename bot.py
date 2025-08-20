@@ -108,7 +108,8 @@ async def on_ready():
             port = int(os.getenv("DB_PORT", 5432)),
             user=os.getenv("DB_USER"),
             password=os.getenv("DB_PASSWORD"),
-            database=os.getenv("DB_NAME")
+            database=os.getenv("DB_NAME"),
+            ssl="require"
         )
         await bot.change_presence(activity=discord.Game(name="!drop to play"))
     print(f"Mingyu Bot ready and connected to DB!")
