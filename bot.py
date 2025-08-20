@@ -841,6 +841,8 @@ async def recycle(ctx, *args):
                 elif view.value is False:
                     await msg.edit(content="❌ Recycling cancelled.", embed=None, view=None)
                     return
+                else:
+                    await msg.edit(content="♻️ Recycling in progress...", embed=None, view=None)
 
             # Delete cards and calculate coins
             for row in matched_rows:
@@ -860,10 +862,23 @@ async def recycle(ctx, *args):
                 """, user_id, total_earned)
 
     recycled_list = "\n".join(recycled_cards)
-    await ctx.send(
-        f"♻️ You recycled the following cards:\n{recycled_list}\n\n"
-        f"💰 Total earned: **{total_earned} aura 🌟!**"
+    embed = discord.Embed(
+        title="♻️ Cards Recycled",
+        description=f"You recycled the following cards:\n{recycled_list}",
+        color=discord.Color.green()
     )
+
+    embed.add_field(
+        name="💰 Total Earned",
+        value=f"**{total_earned} aura 🌟!**",
+        inline=False
+    )
+
+    await ctx.send(embed=embed)
+    # await ctx.send(
+    #     f"♻️ You recycled the following cards:\n{recycled_list}\n\n"
+    #     f"💰 Total earned: **{total_earned} aura 🌟!**"
+    # )
 
 # !aura
 @bot.command()
