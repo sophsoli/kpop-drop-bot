@@ -152,7 +152,6 @@ async def drop(ctx):
                             SET quantity = quantity - 1
                             WHERE user_id = $1 AND item = 'extra_drop'
                         """, user_id)
-                        drop_cooldowns.pop(user_id, None)  # ✅ reset cooldown
                         used_extra_drop = True
                         await ctx.send(f"🎴 {ctx.author.mention}, you used an **Extra Drop**! No cooldown applied.")
                     
@@ -216,7 +215,7 @@ async def drop(ctx):
     dropped_idols = {card["name"].title() for card in dropped_cards}
 
     # remove if this doesn't work
-    if user_id not in drop_cooldowns and not used_extra_drop:
+    if not used_extra_drop:
         drop_cooldowns[user_id] = now
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
@@ -290,7 +289,6 @@ async def drop(ctx):
                                     WHERE user_id = $1 AND item = 'extra_claim'
                                 """, user.id)
 
-                                user_cooldowns.pop(user.id, None)  # ✅ reset claim cooldown
                                 used_extra_claim = True
                                 await ctx.send(f"📥 {user.mention}, you used an **Extra Claim**! No cooldown applied.")
                             else:
@@ -354,7 +352,7 @@ async def drop(ctx):
             already_claimed_users.add(user.id)
 
             # remove if this doesn't work
-            if user.id not in user_cooldowns and not used_extra_claim:
+            if not used_extra_claim:
                 user_cooldowns[user.id] = now
 
         except asyncio.TimeoutError:
