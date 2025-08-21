@@ -1312,5 +1312,47 @@
         "group": "IVE",
         "concept": "V2.0",
         "image": "cards/IVE/yujinv2.JPG"
+    },
+    {
+        "name": "BamBam",
+        "group": "GOT7",
+        "concept": "V1.0",
+        "image": "cards/GOT7/bambam.JPG"
+    },
+    {
+        "name": "Jackson",
+        "group": "GOT7",
+        "concept": "V1.0",
+        "image": "cards/GOT7/jackson.JPG"
+    },
+    {
+        "name": "Jay B",
+        "group": "GOT7",
+        "concept": "V1.0",
+        "image": "cards/GOT7/jayb.JPG"
+    },
+    {
+        "name": "Jinyoung",
+        "group": "GOT7",
+        "concept": "V1.0",
+        "image": "cards/GOT7/jinyoung.JPG"
+    },
+    {
+        "name": "Mark",
+        "group": "GOT7",
+        "concept": "V1.0",
+        "image": "cards/GOT7/mark.JPG"
+    },
+    {
+        "name": "Youngjae",
+        "group": "GOT7",
+        "concept": "V1.0",
+        "image": "cards/GOT7/youngjae.JPG"
+    },
+    {
+        "name": "Yugyeom",
+        "group": "GOT7",
+        "concept": "V1.0",
+        "image": "cards/GOT7/yugyeom.JPG"
     }
 ]
