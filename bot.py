@@ -121,6 +121,8 @@ async def drop(ctx):
     user_id = ctx.author.id
     channel = bot.get_channel(CHANNEL_ID)
     now = time.time()
+    used_extra_drop = False
+    used_extra_claim = False
 
     # Send a message if !drop is used in the wrong channel
     if ctx.channel.id != CHANNEL_ID:
@@ -151,6 +153,7 @@ async def drop(ctx):
                             WHERE user_id = $1 AND item = 'extra_drop'
                         """, user_id)
                         drop_cooldowns.pop(user_id, None)  # ✅ reset cooldown
+                        used_extra_drop = True
                         await ctx.send(f"🎴 {ctx.author.mention}, you used an **Extra Drop**! No cooldown applied.")
                     
                     else:
@@ -202,11 +205,6 @@ async def drop(ctx):
         description=f"{ctx.author.mention} just dropped some cards!",
         color=discord.Color.blue()
     )
-    # for card in dropped_cards:
-    #     embed.add_field(name=f"{card['name']}")
-
-    # Message before sending the image
-    # await ctx.send("✨ React with one of the emojis to claim a card below!")
 
     embed.set_image(url="attachment://drop.png")
     message = await ctx.send(file=file, embed=embed)
@@ -217,7 +215,9 @@ async def drop(ctx):
 
     dropped_idols = {card["name"].title() for card in dropped_cards}
 
-    drop_cooldowns[user_id] = now
+    # remove if this doesn't work
+    if not used_extra_drop:
+        drop_cooldowns[user_id] = now
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
             SELECT user_id, card_name
@@ -291,6 +291,7 @@ async def drop(ctx):
                                 """, user.id)
 
                                 user_cooldowns.pop(user.id, None)  # ✅ reset claim cooldown
+                                used_extra_claim = True
                                 await ctx.send(f"📥 {user.mention}, you used an **Extra Claim**! No cooldown applied.")
                             else:
                                 remaining = int(COOLDOWN_DURATION - elapsed)
@@ -351,7 +352,10 @@ async def drop(ctx):
 
             claimed[emoji] = user.id
             already_claimed_users.add(user.id)
-            user_cooldowns[user.id] = now
+
+            # remove if this doesn't work
+            if not used_extra_claim:
+                user_cooldowns[user.id] = now
 
         except asyncio.TimeoutError:
             break
