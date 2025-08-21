@@ -216,7 +216,7 @@ async def drop(ctx):
     dropped_idols = {card["name"].title() for card in dropped_cards}
 
     # remove if this doesn't work
-    if not used_extra_drop:
+    if user_id not in drop_cooldowns and not used_extra_drop:
         drop_cooldowns[user_id] = now
     async with db_pool.acquire() as conn:
         rows = await conn.fetch("""
@@ -354,7 +354,7 @@ async def drop(ctx):
             already_claimed_users.add(user.id)
 
             # remove if this doesn't work
-            if not used_extra_claim:
+            if user.id not in user_cooldowns and not used_extra_claim:
                 user_cooldowns[user.id] = now
 
         except asyncio.TimeoutError:
