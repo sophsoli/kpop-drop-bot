@@ -1354,5 +1354,11 @@
         "group": "GOT7",
         "concept": "V1.0",
         "image": "cards/GOT7/yugyeom.JPG"
+    },
+    {
+        "name": "Hyewon",
+        "group": "IZ*ONE",
+        "concept": "V2.0",
+        "image": "cards/IZONE/hyewonv2.JPG"
     }
 ]
