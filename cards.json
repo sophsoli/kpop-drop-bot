@@ -1360,5 +1360,29 @@
         "group": "IZ*ONE",
         "concept": "V2.0",
         "image": "cards/IZONE/hyewonv2.JPG"
+    },
+    {
+        "name": "Namste Cat",
+        "group": "The Three Catsketeers",
+        "concept": "V1.0",
+        "image": "/cards/MISC/namstecat.JPG"
+    },
+    {
+        "name": "Lenny Cat",
+        "group": "The Three Catsketeers",
+        "concept": "V1.0",
+        "image": "/cards/MISC/lennycat.JPG"
+    },
+    {
+        "name": "Sophia Cat",
+        "group": "The Three Catsketeers",
+        "concept": "V1.0",
+        "image": "/cards/MISC/sophiacat.JPG"
+    },
+    {
+        "name": "Soli",
+        "group": "HUH",
+        "concept": "V1.0",
+        "image": "/cards/MISC/soli.JPG"
     }
 ]
