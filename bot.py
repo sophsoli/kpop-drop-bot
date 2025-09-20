@@ -89,6 +89,23 @@ def assign_rarity():
             return rarity
     return "Common"  # Fallback
 
+# choose rarity
+async def choose_rarity_for_card(card, conn):
+    rarity = assign_rarity()
+
+    if rarity == "Mythic" and card.get("limit_mythic") == 1:
+        existing = await conn.fetchval("""
+            SELECT COUNT(*)
+            FROM user_cards
+            WHERE member_name = $1
+                AND concept = $2
+                AND rarity = 'Mythic'
+        """, card['name'], card.get("concept", "Base"))
+        if existing >= 1:
+            while rarity == "Mythic":
+                rarity = assign_rarity()
+    return rarity
+
 def get_card_by_emoji(emoji, dropped_cards):
     for card in dropped_cards:
         if card['reaction'] == emoji:
@@ -174,12 +191,13 @@ async def drop(ctx):
     # Randomly select 3 cards from database
     selected_cards = random.sample(cards, 3)
 
-    for i, card in enumerate(selected_cards):
-        rarity = assign_rarity()
-        card_copy = card.copy()
-        card_copy['rarity'] = rarity
-        card_copy['reaction'] = reactions[i]
-        dropped_cards.append(card_copy)
+    async with db_pool.acquire() as conn:
+        for i, card in enumerate(selected_cards):
+            rarity = await choose_rarity_for_card(card, conn)
+            card_copy = card.copy()
+            card_copy['rarity'] = rarity
+            card_copy['reaction'] = reactions[i]
+            dropped_cards.append(card_copy)
     
     # await notify_wishlist_users(ctx, dropped_cards, db_pool)
 
@@ -519,35 +537,46 @@ async def trade(ctx, partner: discord.Member, card_uid: str):
         asyncio.create_task(auto_cancel())
 
 @bot.event
-async def on_reaction_add(reaction, user):
-    message = reaction.message
-    emoji = str(reaction.emoji)
+async def on_raw_reaction_add(payload):
+    if payload.user_id == bot.user.id:
+        return
+    
+    sender_id = next(
+        (sid for sid, t in pending_trades.items() if t["message_id"] == payload.message_id),
+        None
+    )
 
-    for sender_id, trade in list(pending_trades.items()):
-        if trade["message_id"] != message.id:
-            continue
+    if sender_id is None:
+        return
+    
+    trade = pending_trades[sender_id]
+    if payload.user_id != trade["recipient_id"]:
+        return
+    
+    channel = bot.get_channel(payload.channel_id)
+    message = await channel.fetch_message(payload.message_id)
+    user = bot.get_user(payload.user_id)
 
-        if user.id != trade["recipient_id"]:
-            continue # only allows recipient to respond
+    emoji = str(payload.emoji)
 
-        card_uid = trade["card_uid"]
-
-        if emoji == "🤝":
-            async with db_pool.acquire() as conn:
-
-                    # transfer ownership
-                    await conn.execute("""
-                        UPDATE user_cards 
-                        SET user_id = $1, date_obtained = $2 , custom_tag = NULL
-                        WHERE card_uid = $3 AND user_id = $4
-                    """, user.id, datetime.now(timezone.utc), card_uid, sender_id)
-
-                    await message.channel.send(f"✅ Trade successful! [**{trade['rarity']}**] **{trade['member_name']}** photocard is now added to your collection!")
-                    del pending_trades[sender_id]
-                    
-        elif emoji == "❌":
-            await message.channel.send(f"❌ Trade was declined.")
-            del pending_trades[sender_id]
+    if emoji == "🤝":
+        async with db_pool.acquire() as conn:
+            await conn.execute(
+                """
+                UPDATE user_cards
+                SET user_id = $1,
+                    date_obtained = $2,
+                    custom_tag = NULL
+                WHERE card_uid = $3 AND user_id = $4
+                """,
+                user.id, datetime.now(timezone.utc),
+                trade["card_uid"], sender_id
+            )
+        await channel.send(f"✅ Trade successful! [**{trade['rarity']}**] **{trade['member_name']}** photocard is now added to your collection!")
+        del pending_trades[sender_id]
+    elif emoji == "❌":
+        await channel.send("❌ Trade was declined.")
+        del pending_trades[sender_id]
 
 # TAG COMMAND !tag                
 @bot.command()
