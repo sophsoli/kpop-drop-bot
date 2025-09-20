@@ -567,7 +567,7 @@ async def on_raw_reaction_add(payload):
                 SET user_id = $1,
                     date_obtained = $2,
                     custom_tag = NULL
-                WHERE card_uid = $3 AND user_id = $4
+                WHERE LOWER(card_uid) = LOWER($3) AND user_id = $4
                 """,
                 user.id, datetime.now(timezone.utc),
                 trade["card_uid"], sender_id
