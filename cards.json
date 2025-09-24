@@ -1385,5 +1385,35 @@
         "concept": "V1.0",
         "image": "cards/MISC/soli.JPG",
         "limit_mythic": 1
+    },
+    {
+        "name": "Danielle",
+        "group": "NewJeans",
+        "concept": "V1.0",
+        "image": "cards/NewJeans/danielle.JPG"
+    },
+    {
+        "name": "Haerin",
+        "group": "NewJeans",
+        "concept": "V1.0",
+        "image": "cards/NewJeans/haerin.JPG"
+    },
+    {
+        "name": "Hanni",
+        "group": "NewJeans",
+        "concept": "V1.0",
+        "image": "cards/NewJeans/hanni.JPG"
+    },
+    {
+        "name": "Hyein",
+        "group": "NewJeans",
+        "concept": "V1.0",
+        "image": "cards/NewJeans/hyein.JPG"
+    },
+    {
+        "name": "Minji",
+        "group": "NewJeans",
+        "concept": "V1.0",
+        "image": "cards/NewJeans/minji.JPG"
     }
 ]
