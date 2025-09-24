@@ -960,6 +960,50 @@ async def update_leaderboard_cache(force=False):
     last_cache_update = now
     return leaderboard_cache
 
+# give aura command !give
+@bot.command()
+async def give(ctx, member: discord.Member, amount: int):
+    sender_id = ctx.author.id
+    recipient_id = member.id
+
+    if amount <= 0:
+        await ctx.send("❌ Please enter a valid amount of aura to give.")
+        return
+    
+    async with db_pool.acquire() as conn:
+        async with conn.transaction():
+            # check sender balance
+            sender_balance = await conn.fetchval(
+                "SELECT coins FROM users WHERE user_id = $1",
+                sender_id
+            ) or 0
+
+            if sender_balance < amount:
+                await ctx.send("❌ You don't have enough aura.")
+                return
+            
+            if sender_id == recipient_id:
+                await ctx.send("❌ Hey! You can't give aura to yourself.")
+                return
+            
+            # minus from sender
+            await conn.execute(
+                "UPDATE users SET coins = coins - $1 WHERE user_id = $2",
+                amount, sender_id
+            )
+
+            # add to recipient
+            await conn.execute("""
+                INSERT into users (user_id, coins)
+                VALUES ($1, $2)
+                ON CONFLICT (user_id)
+                DO UPDATE SET coins = users.coins + EXCLUDED.coins
+            """, recipient_id, amount)
+
+    await ctx.send(
+        f"🤑 {ctx.author.display_name} gave {amount} aura 🌟 to {member.display_name}!"
+    )
+
 # !rank command
 @bot.command()
 async def rank(ctx):
