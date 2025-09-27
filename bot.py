@@ -601,7 +601,7 @@ async def tag(ctx, *args):
             # Check that user owns the card
             card = await conn.fetchrow("""
                 SELECT card_uid FROM user_cards
-                WHERE user_id = $1 AND card_uid = $2
+                WHERE user_id = $1 AND LOWER(card_uid) = LOWER($2)
             """, user_id, card_uid)
 
             if not card:
@@ -611,7 +611,7 @@ async def tag(ctx, *args):
             await conn.execute("""
                 UPDATE user_cards
                 SET custom_tag = $1
-                WHERE user_id = $2 AND card_uid = $3
+                WHERE user_id = $2 AND LOWER(card_uid) = LOWER($3)
             """, emoji, user_id, card_uid)
 
         await ctx.send(f"✅ Tagged card `#{card_uid}` with {emoji}!")
