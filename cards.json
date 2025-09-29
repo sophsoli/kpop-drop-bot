@@ -1415,5 +1415,12 @@
         "group": "NewJeans",
         "concept": "V1.0",
         "image": "cards/NewJeans/minji.JPG"
+    },
+    {
+        "name": "Sophia",
+        "group": "HUH",
+        "concept": "V1.0",
+        "image": "cards/MISC/um.JPG",
+        "limit_mythic": 1
     }
 ]
