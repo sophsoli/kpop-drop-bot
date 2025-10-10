@@ -1,6 +1,100 @@
 import discord
 from discord.ui import View, Button
 
+class CustomizeUIDModal(discord.ui.Modal, title="Customize Card UID"):
+    old_uid = discord.ui.TextInput(
+        label="Old UID",
+        placeholder="Enter your current card UID",
+        required=True,
+        max_length=20
+    )
+    new_uid = discord.ui.TextInput(
+        label="New UID",
+        placeholder="Enter your new desired UID",
+        required=True,
+        max_length=10
+    )
+
+    def __init__(self, user_id, db_pool):
+        super().__init__()
+        self.user_id = user_id
+        self.db_pool = db_pool
+
+    async def on_submit(self, interaction: discord.Interaction):
+        user_id = self.user_id
+        old_uid = self.old_uid.value.strip()
+        new_uid = self.new_uid.value.upper().strip()
+        cost = 500
+
+        # ✅ Validate UID format
+        if not new_uid.isalnum() or len(new_uid) > 10:
+            await interaction.response.send_message(
+                "❌ UID must be alphanumeric and ≤10 characters.",
+                ephemeral=True
+            )
+            return
+
+        async with self.db_pool.acquire() as conn:
+            # Check ownership
+            card = await conn.fetchrow("""
+                SELECT * FROM user_cards
+                WHERE user_id = $1 AND LOWER(card_uid) = LOWER($2)
+            """, user_id, old_uid)
+
+            if not card:
+                await interaction.response.send_message(
+                    "❌ You don't own a card with that UID.",
+                    ephemeral=True
+                )
+                return
+
+            # Check if new UID is taken
+            exists = await conn.fetchval("""
+                SELECT 1 FROM user_cards WHERE LOWER(card_uid) = LOWER($1)
+            """, new_uid)
+
+            if exists:
+                await interaction.response.send_message(
+                    "❌ That UID is already taken. Choose another.",
+                    ephemeral=True
+                )
+                return
+
+            # Check aura balance
+            balance = await conn.fetchval("""
+                SELECT COALESCE(coins, 0) FROM users WHERE user_id = $1
+            """, user_id)
+
+            if balance < cost:
+                await interaction.response.send_message(
+                    f"❌ You need {cost} aura. You only have {balance}.",
+                    ephemeral=True
+                )
+                return
+
+            # Deduct aura and update card UID
+            async with conn.transaction():
+                await conn.execute("""
+                    UPDATE users
+                    SET coins = coins - $1
+                    WHERE user_id = $2
+                """, cost, user_id)
+
+                await conn.execute("""
+                    UPDATE user_cards
+                    SET card_uid = $1
+                    WHERE user_id = $2 AND LOWER(card_uid) = LOWER($3)
+                """, new_uid, user_id, old_uid)
+
+        # ✅ Confirmation Embed
+        embed = discord.Embed(
+            title="✨ Card UID Customized!",
+            description=f"`{old_uid}` → `{new_uid}` for **{card['member_name']}**",
+            color=discord.Color.gold()
+        )
+        embed.set_footer(text=f"-{cost} aura spent • Remaining: {balance - cost}")
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
 class ShopView(View):
     def __init__(self, user_id, db_pool):
         super().__init__(timeout=60)

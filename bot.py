@@ -621,58 +621,70 @@ async def tag(ctx, *args):
                        "`!tag 😎` → Tag entire collection\n"
                        "`!tag CARD_UID 😎` → Tag a specific card")
 
-    
-# !c your cards <card_uid>
-# @bot.command()
-# async def c(ctx, *, card_name: str):
-#     user_id = ctx.author.id
-#     card_name = card_name.upper()  # Keep uppercase for display
+# customize card_uid 
+@bot.command()
+async def customize(ctx, old_uid: str, new_uid: str):
+    user_id = ctx.author.id
+    cost = 500  # aura cost for customization
 
-#     async with db_pool.acquire() as conn:
-#         rows = await conn.fetch("""
-#             SELECT card_uid, group_name, member_name, rarity, concept, edition
-#             FROM user_cards
-#             WHERE user_id = $1
-#               AND LOWER(member_name) ~* ('\\m' || LOWER($2) || '\\M')  -- word boundary search
-#             ORDER BY date_obtained DESC        
-#         """, user_id, card_name)  # ✅ Removed the extra % symbols
+    # Enforce formatting (optional)
+    new_uid = new_uid.upper().strip()
 
-#     if not rows:
-#         await ctx.send(f'❌ No cards matching "{card_name}" found in your collection.')
-#         return
+    if not new_uid.isalnum() or len(new_uid) > 10:
+        await ctx.send("❌ UID must be alphanumeric and less than 10 characters.")
+        return
 
-#     embed = discord.Embed(
-#         title=f'📸 Your Cards Matching "{card_name}":',
-#         description=f"{len(rows)} card(s) found",
-#         color=discord.Color.blue()
-#     )
+    async with db_pool.acquire() as conn:
+        # 1️⃣ Check if user owns the card
+        card = await conn.fetchrow("""
+            SELECT * FROM user_cards
+            WHERE user_id = $1 AND LOWER(card_uid) = LOWER($2)
+        """, user_id, old_uid)
 
-#     emoji_map = {
-#         "Common": "🟩",
-#         "Rare": "🟦",
-#         "Epic": "🟪",
-#         "Legendary": "🟥",
-#         "Mythic": "🌟"
-#     }
+        if not card:
+            await ctx.send("❌ You don't own a card with that UID.")
+            return
 
-#     for i, row in enumerate(rows, 1):
-#         uid = row["card_uid"]
-#         group = row["group_name"] or "Unknown"
-#         name = row["member_name"] or "Unknown"
-#         rarity = row["rarity"] or "Unknown"
-#         concept = row["concept"] or "Idol"
-#         edition = row["edition"] or "Unknown"
-#         emoji = emoji_map.get(rarity, "🎴")
+        # 2️⃣ Check if new UID is already taken
+        exists = await conn.fetchval("""
+            SELECT 1 FROM user_cards WHERE LOWER(card_uid) = LOWER($1)
+        """, new_uid)
 
-#         embed.add_field(
-#             name=f"{i}. {emoji} {group} • {name} • {concept} • [{rarity}] • Edition {edition} `#{uid}`",
-#             value="",
-#             inline=False
-#         )
+        if exists:
+            await ctx.send("❌ That UID is already in use! Please choose a different one.")
+            return
 
-#     embed.set_footer(text='Use "!trade @user <uid>" to trade a specific card.')
+        # 3️⃣ Check aura balance
+        balance = await conn.fetchval("""
+            SELECT COALESCE(coins, 0) FROM users WHERE user_id = $1
+        """, user_id)
 
-#     await ctx.send(embed=embed)
+        if balance < cost:
+            await ctx.send(f"❌ You need {cost} aura to customize a card UID. You currently have {balance}.")
+            return
+
+        # 4️⃣ Deduct aura and update UID
+        async with conn.transaction():
+            await conn.execute("""
+                UPDATE users
+                SET coins = coins - $1
+                WHERE user_id = $2
+            """, cost, user_id)
+
+            await conn.execute("""
+                UPDATE user_cards
+                SET card_uid = $1
+                WHERE user_id = $2 AND LOWER(card_uid) = LOWER($3)
+            """, new_uid, user_id, old_uid)
+
+        # 5️⃣ Confirm success
+        embed = discord.Embed(
+            title="✨ UID Customized!",
+            description=f"Your card **{card['member_name']}** has been updated:\n`{old_uid}` → `{new_uid}`",
+            color=discord.Color.gold()
+        )
+        embed.set_footer(text=f"-{cost} aura spent • Remaining: {balance - cost}")
+        await ctx.send(embed=embed)
 
 # !cd command COOLDOWN COMMAND
 @bot.command()
