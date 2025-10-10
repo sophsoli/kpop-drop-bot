@@ -9,15 +9,15 @@ class ShopView(View):
         self.db_pool = db_pool
         self.message = None
 
-    @discord.ui.button(label="🎴 Buy Extra Drop (100 aura)", style=discord.ButtonStyle.green)
+    @discord.ui.button(label="🎴 Extra Drop — 100🌟", style=discord.ButtonStyle.green)
     async def buy_extra_drop(self, interaction: discord.Interaction, button: Button):
         await self.handle_purchase(interaction, "drops_left", 100, "Extra Drop")
 
-    @discord.ui.button(label="📥 Buy Extra Claim (75 aura)", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="📥 Extra Claim — 75🌟", style=discord.ButtonStyle.blurple)
     async def buy_extra_claim(self, interaction: discord.Interaction, button: Button):
         await self.handle_purchase(interaction, "claims_left", 75, "Extra Claim")
 
-    @discord.ui.button(label="🆔 Customize Card UID (500 aura)", style=discord.ButtonStyle.gray)
+    @discord.ui.button(label="🆔 Customize UID — 500🌟", style=discord.ButtonStyle.gray)
     async def customize_uid(self, interaction: discord.Interaction, button: Button):
         await interaction.response.send_message(
             "✏️ Please type your **current card UID** in the chat (you have 30 seconds):",
