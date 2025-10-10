@@ -1,106 +1,13 @@
 import discord
 from discord.ui import View, Button
-
-class CustomizeUIDModal(discord.ui.Modal, title="Customize Card UID"):
-    old_uid = discord.ui.TextInput(
-        label="Old UID",
-        placeholder="Enter your current card UID",
-        required=True,
-        max_length=20
-    )
-    new_uid = discord.ui.TextInput(
-        label="New UID",
-        placeholder="Enter your new desired UID",
-        required=True,
-        max_length=10
-    )
-
-    def __init__(self, user_id, db_pool):
-        super().__init__()
-        self.user_id = user_id
-        self.db_pool = db_pool
-
-    async def on_submit(self, interaction: discord.Interaction):
-        user_id = self.user_id
-        old_uid = self.old_uid.value.strip()
-        new_uid = self.new_uid.value.upper().strip()
-        cost = 500
-
-        # ✅ Validate UID format
-        if not new_uid.isalnum() or len(new_uid) > 10:
-            await interaction.response.send_message(
-                "❌ UID must be alphanumeric and ≤10 characters.",
-                ephemeral=True
-            )
-            return
-
-        async with self.db_pool.acquire() as conn:
-            # Check ownership
-            card = await conn.fetchrow("""
-                SELECT * FROM user_cards
-                WHERE user_id = $1 AND LOWER(card_uid) = LOWER($2)
-            """, user_id, old_uid)
-
-            if not card:
-                await interaction.response.send_message(
-                    "❌ You don't own a card with that UID.",
-                    ephemeral=True
-                )
-                return
-
-            # Check if new UID is taken
-            exists = await conn.fetchval("""
-                SELECT 1 FROM user_cards WHERE LOWER(card_uid) = LOWER($1)
-            """, new_uid)
-
-            if exists:
-                await interaction.response.send_message(
-                    "❌ That UID is already taken. Choose another.",
-                    ephemeral=True
-                )
-                return
-
-            # Check aura balance
-            balance = await conn.fetchval("""
-                SELECT COALESCE(coins, 0) FROM users WHERE user_id = $1
-            """, user_id)
-
-            if balance < cost:
-                await interaction.response.send_message(
-                    f"❌ You need {cost} aura. You only have {balance}.",
-                    ephemeral=True
-                )
-                return
-
-            # Deduct aura and update card UID
-            async with conn.transaction():
-                await conn.execute("""
-                    UPDATE users
-                    SET coins = coins - $1
-                    WHERE user_id = $2
-                """, cost, user_id)
-
-                await conn.execute("""
-                    UPDATE user_cards
-                    SET card_uid = $1
-                    WHERE user_id = $2 AND LOWER(card_uid) = LOWER($3)
-                """, new_uid, user_id, old_uid)
-
-        # ✅ Confirmation Embed
-        embed = discord.Embed(
-            title="✨ Card UID Customized!",
-            description=f"`{old_uid}` → `{new_uid}` for **{card['member_name']}**",
-            color=discord.Color.gold()
-        )
-        embed.set_footer(text=f"-{cost} aura spent • Remaining: {balance - cost}")
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+import asyncio
 
 class ShopView(View):
     def __init__(self, user_id, db_pool):
         super().__init__(timeout=60)
         self.user_id = user_id
         self.db_pool = db_pool
-        self.message = None  # Add this here so it's properly scoped
+        self.message = None
 
     @discord.ui.button(label="🎴 Buy Extra Drop (100 aura)", style=discord.ButtonStyle.green)
     async def buy_extra_drop(self, interaction: discord.Interaction, button: Button):
@@ -112,17 +19,27 @@ class ShopView(View):
 
     @discord.ui.button(label="🆔 Customize Card UID (500 aura)", style=discord.ButtonStyle.gray)
     async def customize_uid(self, interaction: discord.Interaction, button: Button):
-        modal = CustomizeUIDModal(self.user_id, self.db_pool)
-        await interaction.response.send_modal(modal)
-    
-    async def on_timeout(self):
-        for child in self.children:
-            child.disabled = True
-        if self.message:
-            try:
-                await self.message.edit(view=self)
-            except discord.NotFound:
-                pass
+        await interaction.response.send_message(
+            "✏️ Please type your **current card UID** in the chat (you have 30 seconds):",
+            ephemeral=True
+        )
+
+        def check(m):
+            return m.author.id == self.user_id and m.channel == interaction.channel
+
+        try:
+            old_msg = await interaction.client.wait_for("message", check=check, timeout=30)
+            old_uid = old_msg.content.strip()
+
+            await interaction.channel.send("✅ Got it! Now type your **new desired UID** (≤10 characters):")
+            new_msg = await interaction.client.wait_for("message", check=check, timeout=30)
+            new_uid = new_msg.content.strip().upper()
+
+            # Run customization
+            await self.customize_card(interaction.channel, old_uid, new_uid)
+
+        except asyncio.TimeoutError:
+            await interaction.channel.send("⌛ Timed out! Please try again later.")
 
     async def handle_purchase(self, interaction, column, cost, item_name):
         async with self.db_pool.acquire() as conn:
@@ -134,18 +51,6 @@ class ShopView(View):
             if row["coins"] < cost:
                 await interaction.response.send_message("❌ Not enough coins!", ephemeral=True)
                 return
-
-            # Validate column and map it to item name
-            column_to_item = {
-                "drops_left": "extra_drop",
-                "claims_left": "extra_claim"
-            }
-
-            if column not in column_to_item:
-                await interaction.response.send_message("❌ Invalid item.", ephemeral=True)
-                return
-
-            item_key = column_to_item[column]
 
             # Deduct coins
             await conn.execute("""
@@ -160,6 +65,59 @@ class ShopView(View):
                 VALUES ($1, $2, 1)
                 ON CONFLICT (user_id, item)
                 DO UPDATE SET quantity = user_items.quantity + 1
-            """, self.user_id, item_key)
+            """, self.user_id, column)
 
             await interaction.response.send_message(f"✅ You bought **1x {item_name}**!", ephemeral=True)
+
+    async def customize_card(self, channel, old_uid, new_uid):
+        cost = 500
+        user_id = self.user_id
+
+        if not new_uid.isalnum() or len(new_uid) > 10:
+            await channel.send("❌ UID must be alphanumeric and ≤10 characters.")
+            return
+
+        async with self.db_pool.acquire() as conn:
+            # Check ownership
+            card = await conn.fetchrow("""
+                SELECT * FROM user_cards
+                WHERE user_id = $1 AND LOWER(card_uid) = LOWER($2)
+            """, user_id, old_uid)
+
+            if not card:
+                await channel.send("❌ You don't own a card with that UID.")
+                return
+
+            # Check new UID availability
+            exists = await conn.fetchval("""
+                SELECT 1 FROM user_cards WHERE LOWER(card_uid) = LOWER($1)
+            """, new_uid)
+            if exists:
+                await channel.send("❌ That UID is already taken. Try a different one.")
+                return
+
+            # Check balance
+            balance = await conn.fetchval("""
+                SELECT COALESCE(coins, 0) FROM users WHERE user_id = $1
+            """, user_id)
+            if balance < cost:
+                await channel.send(f"❌ You need {cost} aura, but you only have {balance}.")
+                return
+
+            # Deduct aura and update
+            async with conn.transaction():
+                await conn.execute("""
+                    UPDATE users SET coins = coins - $1 WHERE user_id = $2
+                """, cost, user_id)
+                await conn.execute("""
+                    UPDATE user_cards SET card_uid = $1
+                    WHERE user_id = $2 AND LOWER(card_uid) = LOWER($3)
+                """, new_uid, user_id, old_uid)
+
+        embed = discord.Embed(
+            title="✨ Card UID Customized!",
+            description=f"Your **{card['member_name']}** card UID has been updated:\n`{old_uid}` → `{new_uid}`",
+            color=discord.Color.gold()
+        )
+        embed.set_footer(text=f"-{cost} aura spent • Remaining: {balance - cost}")
+        await channel.send(embed=embed)
