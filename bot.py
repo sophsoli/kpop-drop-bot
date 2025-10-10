@@ -1153,6 +1153,12 @@ async def shop(ctx):
         inline=False
     )
 
+    embed.add_field(
+        name="🆔 Customize Card UID — 500 aura",
+        value="Replace your card_uid with a customized one! (Up to 10 characters)",
+        inline=False
+    )
+
     embed.set_footer(text="Click a button below to purchase.")
 
     message = await ctx.send(embed=embed, view=view)

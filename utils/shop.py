@@ -109,6 +109,11 @@ class ShopView(View):
     @discord.ui.button(label="📥 Buy Extra Claim (75 aura)", style=discord.ButtonStyle.blurple)
     async def buy_extra_claim(self, interaction: discord.Interaction, button: Button):
         await self.handle_purchase(interaction, "claims_left", 75, "Extra Claim")
+
+    @discord.ui.button(label="🆔 Customize Card UID (500 aura)", style=discord.ButtonStyle.gray)
+    async def customize_uid(self, interaction: discord.Interaction, button: Button):
+        modal = CustomizeUIDModal(self.user_id, self.db_pool)
+        await interaction.response.send_modal(modal)
     
     async def on_timeout(self):
         for child in self.children:
