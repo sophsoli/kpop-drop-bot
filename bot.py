@@ -595,32 +595,42 @@ async def tag(ctx, *args):
             """, user_id, emoji)
         await ctx.send(f"✅ Your entire collection is now tagged with {emoji}!")
 
-    elif len(args) == 2:
-        # ✅ Per-card tag using custom_tag column
-        card_uid, emoji = args
-        async with db_pool.acquire() as conn:
-            # Check that user owns the card
-            card = await conn.fetchrow("""
-                SELECT card_uid FROM user_cards
-                WHERE user_id = $1 AND LOWER(card_uid) = LOWER($2)
-            """, user_id, card_uid)
+    elif len(args) >= 2:
+        # ✅ Multi-card tagging
+        *card_uids, emoji = args  # All args except the last one are UIDs
+        card_uids = [uid.upper().strip() for uid in card_uids]
 
-            if not card:
-                await ctx.send("❌ You don't own this card.")
+        async with db_pool.acquire() as conn:
+            # Check which cards user owns
+            owned_cards = await conn.fetch("""
+                SELECT card_uid FROM user_cards
+                WHERE user_id = $1 AND card_uid = ANY($2::text[])
+            """, user_id, card_uids)
+
+            owned_uids = [row["card_uid"] for row in owned_cards]
+            missing_uids = [uid for uid in card_uids if uid not in owned_uids]
+
+            if missing_uids:
+                await ctx.send(f"⚠️ You don't own these cards: {', '.join(missing_uids)}")
                 return
 
+            # Update all tagged cards
             await conn.execute("""
                 UPDATE user_cards
                 SET custom_tag = $1
-                WHERE user_id = $2 AND LOWER(card_uid) = LOWER($3)
-            """, emoji, user_id, card_uid)
+                WHERE user_id = $2 AND card_uid = ANY($3::text[])
+            """, emoji, user_id, owned_uids)
 
-        await ctx.send(f"✅ Tagged card `#{card_uid}` with {emoji}!")
+        if len(card_uids) == 1:
+            await ctx.send(f"✅ Tagged card `#{card_uids[0]}` with {emoji}!")
+        else:
+            await ctx.send(f"✅ Tagged {len(card_uids)} cards with {emoji}!")
 
     else:
         await ctx.send("❌ Usage:\n"
                        "`!tag 😎` → Tag entire collection\n"
-                       "`!tag CARD_UID 😎` → Tag a specific card")
+                       "`!tag CARD_UID 😎` → Tag a specific card\n"
+                       "`!tag CARD1 CARD2 CARD3 😎` → Tag multiple cards")
 
 # customize card_uid 
 @bot.command()
