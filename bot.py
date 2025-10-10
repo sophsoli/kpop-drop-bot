@@ -19,6 +19,7 @@ from utils.recycle import ConfirmRecycleView
 current_time = datetime.now(timezone.utc)
 
 FRAME_PATH = "./images/frame.png"
+MYTHIC_FRAME_PATH = "./images/scuff_frame.png"
 
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
@@ -752,13 +753,20 @@ async def view(ctx, card_uid: str):
         await ctx.send(f"⚠️ You don't own a card with UID `{card_uid}`.")
         return
 
+    # ✅ Pick correct frame based on rarity
+    rarity = card["rarity"]
+    if rarity.lower() == "mythic":
+        frame_path = MYTHIC_FRAME_PATH
+    else:
+        frame_path = FRAME_PATH
+
     # Build framed image directly from the saved path
     image_path = card["image_path"]
     if not image_path or not os.path.exists(image_path):
         await ctx.send("⚠️ The image file for this card couldn't be found.")
         return
 
-    framed = apply_frame(image_path, FRAME_PATH)
+    framed = apply_frame(image_path, frame_path)
     buffer = io.BytesIO()
     framed.save(buffer, format="PNG")
     buffer.seek(0)
@@ -774,7 +782,7 @@ async def view(ctx, card_uid: str):
             f"🔢 **Edition:** #{card['edition']}\n"
             f"📅 **Obtained:** {card['date_obtained'].strftime('%Y-%m-%d')}"
         ),
-        color=discord.Color.blue()
+        color=discord.Color.gold() if rarity.lower() == "mythic" else discord.Color.blue()
     )
     embed.set_image(url="attachment://card.png")
 
