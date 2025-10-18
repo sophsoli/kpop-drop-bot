@@ -1305,7 +1305,8 @@ async def wishlist(ctx, action=None, *, card_name=None):
 
         else:
             await ctx.send("⚠️ Invalid option! Use `!wl`, `!wl add <card>`, or `!wl remove <card>`.")
-    
+
+# !help    
 @bot.command()
 async def help(ctx):
     # EMBED FOR HELP COMMAND
@@ -1317,7 +1318,6 @@ async def help(ctx):
                            color=discord.Color.blue())
     embed1.add_field(name="🃏 Drop Cards", value="`!drop` — Drop a set of cards that anyone can claim.", inline=False)
     embed1.add_field(name="📁 View Collection", value="`!collection` or `!pc` — View your card collection. Can sort by group, member, or rarity.", inline=False)
-    embed1.add_field(name="🎴 Cards", value="`!c <name>` — View your owned cards by an idol's name.", inline=False)
     embed1.add_field(name="🔁 Trade Cards", value="`!trade @user <card_uid>` — Propose a trade.", inline=False)
     embed1.add_field(name="♻️ Recycle", value="`!r <card_uid>` — Discard a card for coins. Can multi-recycle. Can also recycle by a tag.", inline=False)
     embed1.add_field(name="📷 Tag", value="`!tag <emoji>` or `!tag <card_uid> emoji`  — Customize your collection tag. Can add different tags for cards.", inline=False)
@@ -1329,7 +1329,7 @@ async def help(ctx):
                            description="Shop and Points:",
                            color=discord.Color.blue())
     embed2.add_field(name="🌟 Aura Points", value="`!aura` — Check your balance.", inline=False)
-    embed2.add_field(name="💰 Shop", value="`!shop` — Shop (coming soon!).", inline=False)
+    embed2.add_field(name="💰 Shop", value="`!shop` — Shop - Buy drop, claim, custom card_uid", inline=False)
     embed2.add_field(name="🏆 Leaderboard", value="`!leaderboard` — Check leaderboard.", inline=False)
     embed2.add_field(name="🏆 Rank", value="`!rank` — Check your rank.", inline=False)
     embed1.add_field(name="🔁 Reroll", value="`!reroll` — Didn't like your drop? Reroll for 50 aura points!", inline=False)
