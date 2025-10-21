@@ -288,11 +288,11 @@ async def drop(ctx):
                 elapsed = now - user_cooldowns[user.id]
                 if elapsed < COOLDOWN_DURATION:
                     # Check if user has Extra Claim item
-                    async with db_pool.acquire() as conn:
-                        item = await conn.fetchrow("""
-                            SELECT quantity FROM user_items
-                            WHERE user_id = $1 AND item = 'extra_claim'
-                        """, user.id)
+                    # async with db_pool.acquire() as conn:
+                    #     item = await conn.fetchrow("""
+                    #         SELECT quantity FROM user_items
+                    #         WHERE user_id = $1 AND item = 'extra_claim'
+                    #     """, user.id)
                     
                     async with db_pool.acquire() as conn:
                         async with conn.transaction():
