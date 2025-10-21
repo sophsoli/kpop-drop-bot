@@ -1203,9 +1203,9 @@ async def items(ctx):
             item = row["item"]
             quantity = row["quantity"]
 
-            if item in ["drops_left", "extra_drop"]:
+            if item == "extra_drop":
                 name = "🎴 Extra Drops"
-            elif item in ["claims_left", "extra_claim"]:
+            elif item == "extra_claim":
                 name = "📥 Extra Claims"
             else:
                 name = item.replace("_", " ").title()
