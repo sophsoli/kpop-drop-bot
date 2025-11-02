@@ -1424,6 +1424,13 @@
         "limit_mythic": 1
     },
     {
+        "name": "Sophia",
+        "group": "HUH",
+        "concept": "V2.0",
+        "image": "cards/MISC/um2.JPG",
+        "limit_mythic": 1
+    },
+    {
         "name": "Iroha",
         "group": "ILLIT",
         "concept": "V1.0",
