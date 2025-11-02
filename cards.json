@@ -1422,5 +1422,35 @@
         "concept": "V1.0",
         "image": "cards/MISC/um.JPG",
         "limit_mythic": 1
+    },
+    {
+        "name": "Iroha",
+        "group": "ILLIT",
+        "concept": "V1.0",
+        "image": "cards/ILLIT/iroha.JPG"
+    },
+    {
+        "name": "Minju",
+        "group": "ILLIT",
+        "concept": "V1.0",
+        "image": "cards/ILLIT/minju.JPG"
+    },
+    {
+        "name": "Moka",
+        "group": "ILLIT",
+        "concept": "V1.0",
+        "image": "cards/ILLIT/moka.JPG"
+    },
+    {
+        "name": "Wonhee",
+        "group": "ILLIT",
+        "concept": "V1.0",
+        "image": "cards/ILLIT/wonhee.JPG"
+    },
+    {
+        "name": "Yunah",
+        "group": "ILLIT",
+        "concept": "V1.0",
+        "image": "cards/ILLIT/yunah.JPG"
     }
 ]
