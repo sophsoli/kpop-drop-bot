@@ -1384,7 +1384,7 @@
         "group": "HUH",
         "concept": "V1.0",
         "image": "cards/MISC/soli.JPG",
-        "limit_mythic": 1
+        "is_limited_mythic": 1
     },
     {
         "name": "Danielle",
@@ -1421,14 +1421,14 @@
         "group": "HUH",
         "concept": "V1.0",
         "image": "cards/MISC/um.JPG",
-        "limit_mythic": 1
+        "is_limited_mythic": 1
     },
     {
         "name": "Sophia",
         "group": "HUH",
         "concept": "V2.0",
         "image": "cards/MISC/um2.JPG",
-        "limit_mythic": 1
+        "is_limited_mythic": 1
     },
     {
         "name": "Iroha",

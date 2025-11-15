@@ -94,17 +94,23 @@ def assign_rarity():
 async def choose_rarity_for_card(card, conn):
     rarity = assign_rarity()
 
-    if rarity == "Mythic" and card.get("limit_mythic") == 1:
+    # Unified name (JSON + database both use is_limited_mythic)
+    is_limited = card.get("is_limited_mythic") in (1, True, "1")
+
+    if rarity == "Mythic" and is_limited:
         existing = await conn.fetchval("""
             SELECT COUNT(*)
             FROM user_cards
             WHERE member_name = $1
-                AND concept = $2
-                AND rarity = 'Mythic'
+              AND concept = $2
+              AND rarity = 'Mythic'
         """, card['name'], card.get("concept", "Base"))
+
         if existing >= 1:
+            # reroll until rarity is NOT mythic
             while rarity == "Mythic":
                 rarity = assign_rarity()
+
     return rarity
 
 def get_card_by_emoji(emoji, dropped_cards):
