@@ -1459,5 +1459,29 @@
         "group": "ILLIT",
         "concept": "V1.0",
         "image": "cards/ILLIT/yunah.JPG"
+    },
+    {
+        "name": "Chodan",
+        "group": "QWER",
+        "concept": "V1.0",
+        "image": "cards/QWER/chodan.JPG"
+    },
+    {
+        "name": "Magenta",
+        "group": "QWER",
+        "concept": "V1.0",
+        "image": "cards/QWER/magenta.JPG"
+    },
+    {
+        "name": "Siyeon",
+        "group": "QWER",
+        "concept": "V1.0",
+        "image": "cards/QWER/siyeon.JPG"
+    },
+    {
+        "name": "Hina",
+        "group": "QWER",
+        "concept": "V1.0",
+        "image": "cards/QWER/hina.JPG"
     }
 ]
